@@ -2,7 +2,6 @@ bin
 .DS_Store
 *.log
 *~
-thirdparty
 aws.properties
 build
 rain.jar
