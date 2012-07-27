@@ -39,7 +39,7 @@
 		<pathelement location="thirdparty/thrift/slf4j-log4j12-1.5.8.jar" />
 	</path>
 
-	<target name="compile">
+	<target name="compile" depends="thrift">
 
 		<property name="myclasspath" refid="rain.git.classpath" />
 		<echo message="classpath = ${myclasspath}" />
@@ -59,6 +59,16 @@
 
 	<target name="package" depends="prepare, compile, jar">
 
+	</target>
+
+	<target name="thrift">
+		<exec executable="thrift">
+			<arg value="-out" />
+			<arg value="generated" />
+			<arg value="--gen" />
+			<arg value="java" />
+			<arg value="../../sonar/Thrift/rain.thrift" />
+		</exec>
 	</target>
 
 	<target name="clean">
