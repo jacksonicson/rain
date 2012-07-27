@@ -1,0 +1,10 @@
+{
+    "profilesCreatorClass": "radlab.rain.workload.gradit.GraditRampProfileCreator",
+    "profilesCreatorClassParams": {
+    },
+    "timing": {
+        "rampUp": 60,
+        "duration": 420,
+        "rampDown": 15
+    }
+}
