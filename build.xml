@@ -40,21 +40,21 @@
 	</path>
 
 	<target name="compile" depends="thrift">
-
 		<property name="myclasspath" refid="rain.git.classpath" />
 		<echo message="classpath = ${myclasspath}" />
 
-		<javac srcdir="${src}:generated:workloads:test" destdir="${build}" debug="true">
+		<javac srcdir="${src}:generated:workloads:test" destdir="${build}/bin" debug="true">
 			<classpath refid="rain.git.classpath" />
 		</javac>
 	</target>
 
 	<target name="prepare">
 		<mkdir dir="${build}" />
+		<mkdir dir="${build}/bin" />
 	</target>
 
 	<target name="jar">
-		<jar destfile="rain.jar" basedir="build" />
+		<jar destfile="build/rain.jar" basedir="build/bin" />
 	</target>
 
 	<target name="package" depends="prepare, compile, jar">
