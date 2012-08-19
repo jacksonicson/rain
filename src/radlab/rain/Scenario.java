@@ -38,6 +38,8 @@ import java.util.TreeMap;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import radlab.rain.communication.RainPipe;
 import radlab.rain.util.ConfigUtil;
@@ -49,6 +51,7 @@ import radlab.rain.util.ConfigUtil;
  * ramp down) and the different scenario tracks.
  */
 public class Scenario {
+	private static Logger logger = LoggerFactory.getLogger(Scenario.class);
 	public static String CFG_PROFILES_KEY = "profiles";
 	public static String CFG_PROFILES_CREATOR_CLASS_KEY = "profilesCreatorClass";
 	public static String CFG_PROFILES_CREATOR_CLASS_PARAMS_KEY = "profilesCreatorClassParams";
@@ -265,10 +268,10 @@ public class Scenario {
 			if (jsonConfig.has(CFG_AGGREGATE_STATS))
 				this._aggregateStats = jsonConfig.getBoolean(CFG_AGGREGATE_STATS);
 		} catch (JSONException e) {
-			System.out.println("[SCENARIO] ERROR reading JSON configuration object. Reason: " + e.toString());
+			logger.info("[SCENARIO] ERROR reading JSON configuration object. Reason: " + e.toString());
 			System.exit(1);
 		} catch (IOException e) {
-			System.out.println("[SCENARIO] ERROR loading tracks configuration file. Reason: " + e.toString());
+			logger.info("[SCENARIO] ERROR loading tracks configuration file. Reason: " + e.toString());
 			System.exit(1);
 		}
 
@@ -306,11 +309,11 @@ public class Scenario {
 				this._tracks.put(track._name, track);
 			}
 		} catch (JSONException e) {
-			System.out.println("[SCENARIO] ERROR parsing tracks in JSON configuration file/object. Reason: " + e.toString());
+			logger.info("[SCENARIO] ERROR parsing tracks in JSON configuration file/object. Reason: " + e.toString());
 			e.printStackTrace();
 			System.exit(1);
 		} catch (Exception e) {
-			System.out.println("[SCENARIO] ERROR initializing tracks. Reason: " + e.toString());
+			logger.info("[SCENARIO] ERROR initializing tracks. Reason: " + e.toString());
 			e.printStackTrace();
 			System.exit(1);
 		}

@@ -31,8 +31,13 @@
 
 package radlab.rain;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class MixMatrix 
 {
+	private static Logger logger = LoggerFactory.getLogger(MixMatrix.class);
+	
 	// Default cloudstone mix, but could be anything
 	
 	private double [][] _mix = { {  0.0, 11, 52, 36,  0.0, 1,  0.0 }, 
@@ -72,7 +77,7 @@ public class MixMatrix
 				rowSum += this._mix[i][j];
 			}
 			
-			//System.out.println( rowSum );
+			//logger.info( rowSum );
 			
 			for( int k = 0; k < this._mix.length; k++ )
 			{
@@ -109,12 +114,12 @@ public class MixMatrix
 		{
 			for( int j = 0; j < this._mix.length; j++ )
 			{
-				System.out.print( this._mix[i][j] );
-        		System.out.print( " " );
+				logger.info( Double.toString(this._mix[i][j]) );
+        		logger.info( " " );
 			}
-			System.out.println( "" );
+			logger.info( "" );
 		}
-		System.out.println( "" );
+		logger.info( "" );
 	}
 	
 	public void printSelectionMix()
@@ -123,12 +128,12 @@ public class MixMatrix
 		{
 			for( int j = 0; j < this._selectionMix.length; j++ )
 			{
-				System.out.print( this._selectionMix[i][j] );
-        		System.out.print( " " );
+				logger.info(Double.toString( this._selectionMix[i][j]) );
+        		logger.info( " " );
 			}
-			System.out.println( "" );
+			logger.info( "" );
 		}
-		System.out.println( "" );
+		logger.info( "" );
 	}
 	
 	public boolean converges( long steps, double tolerance )

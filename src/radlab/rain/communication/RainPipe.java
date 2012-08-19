@@ -4,12 +4,17 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.LinkedList;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * Singleton conduit into Rain driver from the outside world.
  * Listens on a socket and waits for commands from a controller
  * */
 public class RainPipe
 {
+	private static Logger logger = LoggerFactory.getLogger(RainPipe.class);
+	
 	public static int DEFAULT_PORT 			= 7851;
 	public static int DEFAULT_NUM_THREADS 	= 3;
 	private static Object _instLock 		= new Object();
@@ -62,8 +67,8 @@ public class RainPipe
 			LFThread p = this._workers.get(i);
 			
 			if( p.getLFThreadState() == LFThread.ThreadState.Leading )
-				System.out.println( "[Comm Threadpool stats] " + p.getName() + " " + p.getMessagesProcessed() + " (leader)" );
-			else System.out.println( "[Comm Threadpool stats] " + p.getName() + " " + p.getMessagesProcessed() );
+				logger.info( "[Comm Threadpool stats] " + p.getName() + " " + p.getMessagesProcessed() + " (leader)" );
+			else logger.info( "[Comm Threadpool stats] " + p.getName() + " " + p.getMessagesProcessed() );
 			
 			switch( p.getLFThreadState() )
 			{
@@ -78,11 +83,11 @@ public class RainPipe
 					break;
 			}	
 		}	
-		System.out.println( "[Comm Threadpool stats] Leaders: " + leaders + " Busy: " + busy + " Followers: " + followers );
-		System.out.println( "[Comm Threadpool stats] Total Messages received : " + LFThread.messagesReceived );
-		System.out.println( "[Comm Threadpool stats] Total Messages processed: " + LFThread.messagesProccessed );
-		System.out.println( "[Comm Threadpool stats] Total Messages ignored  : " + (LFThread.messagesReceived - LFThread.messagesProccessed) );
-		System.out.println( " " );
+		logger.info( "[Comm Threadpool stats] Leaders: " + leaders + " Busy: " + busy + " Followers: " + followers );
+		logger.info( "[Comm Threadpool stats] Total Messages received : " + LFThread.messagesReceived );
+		logger.info( "[Comm Threadpool stats] Total Messages processed: " + LFThread.messagesProccessed );
+		logger.info( "[Comm Threadpool stats] Total Messages ignored  : " + (LFThread.messagesReceived - LFThread.messagesProccessed) );
+		logger.info( " " );
 	}
 	
 	public void start() throws IOException

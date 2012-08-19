@@ -31,34 +31,48 @@
 
 package radlab.rain.util;
 
-import java.io.IOException;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import org.apache.http.Header;
-//import org.apache.http.HttpHost;
-import org.apache.http.HttpMessage; 
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpMessage;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.params.HttpClientParams;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
-//import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-//import org.apache.http.params.BasicHttpParams;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.protocol.HTTP;
+import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+//import org.apache.http.HttpHost;
+//import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+//import org.apache.http.params.BasicHttpParams;
 //import org.apache.http.conn.ClientConnectionManager;
 //import org.apache.http.conn.params.ConnManagerParams;
 //import org.apache.http.conn.params.ConnPerRouteBean;
@@ -67,27 +81,14 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 //import org.apache.http.conn.scheme.Scheme;
 //import org.apache.http.conn.scheme.SchemeRegistry;
 //import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.protocol.HTTP;
-import org.apache.http.util.EntityUtils;
-
 // SSL 
-import java.security.SecureRandom;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.SSLSocketFactory;
 
 /**
  * The HttpTransport class is used to issue various HTTP requests.
  */
 public class HttpTransport 
 {
+	private static Logger logger = LoggerFactory.getLogger(HttpTransport.class);
 	/** Default HTTP headers required for a POST request. */
 	private static Map<String, String> postHeaders;
 	static 
@@ -624,7 +625,7 @@ public class HttpTransport
 		long end = System.currentTimeMillis();
 		
 		if( this._debug )
-			System.out.println( "HttpClient request: " + httpRequest.getRequestLine() + " (" +  (end - start)/1000.0 + ")" );
+			logger.info( "HttpClient request: " + httpRequest.getRequestLine() + " (" +  (end - start)/1000.0 + ")" );
 				
 		HttpEntity entity = response.getEntity();
 		
@@ -654,7 +655,7 @@ public class HttpTransport
 				EntityUtils.consume( entity );
 				end = System.currentTimeMillis();
 				if( this._debug )
-					System.out.println( "HttpClient request consume content: " + httpRequest.getRequestLine() + " (" +  (end - start)/1000.0 + ")" );
+					logger.info( "HttpClient request consume content: " + httpRequest.getRequestLine() + " (" +  (end - start)/1000.0 + ")" );
 								
 				if ( redirectsFollowed > 0 )
 				{
@@ -666,7 +667,7 @@ public class HttpTransport
 						httpRequest = new HttpGet( locationHeaders[0].getValue() );
 						end = System.currentTimeMillis();
 						if( this._debug )
-							System.out.println( "HttpClient request get redirect: " + httpRequest.getRequestLine() + " (" +  (end - start)/1000.0 + ")" );
+							logger.info( "HttpClient request get redirect: " + httpRequest.getRequestLine() + " (" +  (end - start)/1000.0 + ")" );
 						
 						// Save the redirect URL
 						this._finalUrl = locationHeaders[0].getValue();

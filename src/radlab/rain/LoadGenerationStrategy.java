@@ -34,6 +34,8 @@ package radlab.rain;
 import java.util.concurrent.ExecutorService;
 
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The LoadGenerationStrategy abstract class is a basic thread that keeps
@@ -42,6 +44,8 @@ import org.json.JSONObject;
  */
 public abstract class LoadGenerationStrategy extends Thread
 {
+	private static Logger logger = LoggerFactory.getLogger(LoadGenerationStrategy.class);
+
 	/** The states in which a LoadGenerationStrategy thread can be in. */
 	public enum LGState
 	{
@@ -202,7 +206,7 @@ public abstract class LoadGenerationStrategy extends Thread
 						double waitIntervalMsecs = (1000.0/myRate);
 						
 						this._sendNextRequest = System.currentTimeMillis() + new Double(waitIntervalMsecs).longValue();
-						//System.out.println( this.getName() + " my rate: " + myRate + " wait interval: " + waitIntervalMsecs +  " now: " + now + " next Request @ " + this._sendNextRequest );
+						//logger.info( this.getName() + " my rate: " + myRate + " wait interval: " + waitIntervalMsecs +  " now: " + now + " next Request @ " + this._sendNextRequest );
 						// Send a request now and figure out the timestamp of the next request based on the
 						// rate
 						this._sharedWorkPool.submit( operation );	
@@ -217,7 +221,7 @@ public abstract class LoadGenerationStrategy extends Thread
 						} 
 						catch (InterruptedException e) 
 						{
-							System.out.println( this.getName() + " interrupted from sleep" );
+							logger.error( this.getName() + " interrupted from sleep" );
 						}
 						
 						this._sharedWorkPool.submit( operation );

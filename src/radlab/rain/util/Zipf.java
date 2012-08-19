@@ -92,9 +92,9 @@ public class Zipf
 		{
 			// Sample from zipf
 			k = this.sampleZipf();
-			//System.out.println(k);
+			//logger.info(k);
 		} while (k > this._upperBound);
-		//System.out.println(k);
+		//logger.info(k);
 				
 		return Math.abs( (Double.valueOf((k+1)*this._r)).hashCode() ) % (this._upperBound-this._lowerBound) + this._lowerBound;
 		//return (k % (this._upperBound - this._lowerBound) ) + this._lowerBound;
@@ -140,12 +140,12 @@ public class Zipf
 			if( val > max )
 				max = val;
 			total += val;
-			//System.out.println( val );
+			//logger.info( val );
 		}
 		
-		//System.out.println( "Avg: " + (total/(double)iterations) );
-		//System.out.println( "Min: " + min );
-		//System.out.println( "Max: " + max );
+		//logger.info( "Avg: " + (total/(double)iterations) );
+		//logger.info( "Min: " + min );
+		//logger.info( "Max: " + max );
 	}
 
 }

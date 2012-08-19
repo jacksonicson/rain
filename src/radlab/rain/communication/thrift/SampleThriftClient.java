@@ -7,11 +7,15 @@ import org.apache.thrift.async.AsyncMethodCallback;
 import org.apache.thrift.async.TAsyncClientManager;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TNonblockingSocket;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.tum.in.storm.rain.RainService;
 import de.tum.in.storm.rain.RainService.AsyncClient.startBenchmark_call;
 
 public class SampleThriftClient {
+	
+	private static Logger logger = LoggerFactory.getLogger(SampleThriftClient.class);
 
 	private RainService.AsyncClient client;
 	private TNonblockingSocket socket;
@@ -28,14 +32,14 @@ public class SampleThriftClient {
 
 		@Override
 		public void onComplete(startBenchmark_call response) {
-			System.out.println("Benchmark started");
+			logger.info("Benchmark started");
 			socket.close(); 
 			System.exit(0); 
 		}
 
 		@Override
 		public void onError(Exception exception) {
-			System.out.println("Failed");
+			logger.error("Failed");
 		}
 	}
 

@@ -33,6 +33,9 @@ package radlab.rain;
 
 import java.util.Random;
 import org.json.JSONException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.LinkedList;
 import java.util.Calendar;
 import java.text.DateFormat;
@@ -45,6 +48,8 @@ import java.text.SimpleDateFormat;
  */
 public class DefaultScenarioTrack extends ScenarioTrack 
 {
+	private static Logger logger = LoggerFactory.getLogger(DefaultScenarioTrack.class);
+
 	private LoadManagerThread _loadManager;
 	private Random _random = new Random();
 	
@@ -165,13 +170,13 @@ public class DefaultScenarioTrack extends ScenarioTrack
 		
 		if( profile._numberOfUsers <= 0 )
 		{
-			System.out.println( this + " Invalid load profile. Number of users <= 0. Profile details: " + profile.toString() );
+			logger.info( this + " Invalid load profile. Number of users <= 0. Profile details: " + profile.toString() );
 			retVal = ScenarioTrack.ERROR_INVALID_LOAD_PROFILE_BAD_NUM_USERS;
 		}
 		
 		if( profile._mixName.length() > 0 && !this._mixMap.containsKey( profile._mixName ) )
 		{
-			System.out.println( this + " Invalid load profile. mixname not in track's mixmap. Profile details: " + profile.toString() );
+			logger.info( this + " Invalid load profile. mixname not in track's mixmap. Profile details: " + profile.toString() );
 			retVal = ScenarioTrack.ERROR_INVALID_LOAD_PROFILE_BAD_MIX_NAME;
 		}
 		
@@ -179,7 +184,7 @@ public class DefaultScenarioTrack extends ScenarioTrack
 		int maxUsersForTrack = this.getMaxUsers();
 		if( profile._numberOfUsers > maxUsersForTrack )
 		{
-			System.out.println( this + " LoadProfile validation capping number of users to " + maxUsersForTrack + "." );
+			logger.info( this + " LoadProfile validation capping number of users to " + maxUsersForTrack + "." );
 			profile._numberOfUsers = maxUsersForTrack;
 		}
 		
@@ -208,7 +213,7 @@ public class DefaultScenarioTrack extends ScenarioTrack
 		}
 		catch ( Exception e )
 		{
-			System.out.println( "ERROR creating default generator. Reason: " + e.toString() );
+			logger.info( "ERROR creating default generator. Reason: " + e.toString() );
 			System.exit( 1 );
 		}*/
 		// 3) Target Information
@@ -249,7 +254,7 @@ public class DefaultScenarioTrack extends ScenarioTrack
 			return;
 		}
 		
-		System.out.println( this + " starting load scheduler" );
+		logger.info( this + " starting load scheduler" );
 		this._loadManager.start();
 	}
 	
@@ -262,7 +267,7 @@ public class DefaultScenarioTrack extends ScenarioTrack
 		
 		try
 		{
-			System.out.println(  this + " stopping load scheduler" );
+			logger.info(  this + " stopping load scheduler" );
 			this._loadManager.setDone( true );
 			this._loadManager.interrupt();
 			this._loadManager.join();
@@ -340,7 +345,7 @@ public class DefaultScenarioTrack extends ScenarioTrack
 			this._track._currentLoadProfile = this._currentProfile;
 			this._track._currentLoadProfile.setTimeStarted( now + rampUp );
 			this._track._currentLoadProfile._activeCount++;
-			System.out.println( this + " ramping up for " + rampUp + "ms." );
+			logger.info( this + " ramping up for " + rampUp + "ms." );
 			
 			this.formatter = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss.SSS");
 			this.cal = Calendar.getInstance();
@@ -348,16 +353,16 @@ public class DefaultScenarioTrack extends ScenarioTrack
 			try {
 				Thread.sleep( rampUp );
 			} catch (InterruptedException e1) {
-				System.out.println( this + " interrupted during ramp up... exiting." );
+				logger.info( this + " interrupted during ramp up... exiting." );
 				this._done = true;
 				return;
 			}
 			
-			System.out.println( this + " Ramp up finished!" );
+			logger.info( this + " Ramp up finished!" );
 			System.out.flush();
 			
 			cal.setTimeInMillis(now);
-			System.out.println( this + " current time: " + formatter.format(cal.getTime()) + " (" +  now + ") " + this._track._currentLoadProfile.toString() );
+			logger.info( this + " current time: " + formatter.format(cal.getTime()) + " (" +  now + ") " + this._track._currentLoadProfile.toString() );
 			
 			while( !this.getDone() )
 			{
@@ -380,7 +385,7 @@ public class DefaultScenarioTrack extends ScenarioTrack
 					if( this._dynamicLoadProfiles.size() > 0 )
 					{
 						// Try to acquire a lock on the list
-						System.out.println( this + " Dynamic load profile found! Attempting to load..." );
+						logger.info( this + " Dynamic load profile found! Attempting to load..." );
 						// Grab lock before pop - only this thread pops, all other threads push, so after we see that the list is non-empty
 						// its size can only increase, so pop should not fail
 						LoadProfile dynProfile = null;
@@ -392,7 +397,7 @@ public class DefaultScenarioTrack extends ScenarioTrack
 						// Just in case, make sure that we acutally got a "real"/valid load profile
 						if( dynProfile != null && this._track.validateLoadProfile( dynProfile ) == ScenarioTrack.VALID_LOAD_PROFILE )
 						{
-							System.out.println( this + " Dynamic load profile passed validation..." );
+							logger.info( this + " Dynamic load profile passed validation..." );
 							now = System.currentTimeMillis();
 							// Store this dynProfile as the current
 							this._currentProfile = dynProfile;
@@ -400,15 +405,15 @@ public class DefaultScenarioTrack extends ScenarioTrack
 							this._track._currentLoadProfile = this._currentProfile;
 							this._track._currentLoadProfile._activeCount++;
 							this._track._currentLoadProfile.setTimeStarted( now );
-							System.out.println( this + " Dynamic load profile activated! Profile: " + dynProfile.toString() );
+							logger.info( this + " Dynamic load profile activated! Profile: " + dynProfile.toString() );
 						}
 						else
 						{
-							System.out.println( this + " Dynamic load profile failed validation. Advancing load schedule the usual way." );
+							logger.info( this + " Dynamic load profile failed validation. Advancing load schedule the usual way." );
 							// Advance the schedule the old-fashioned way and if that returns false, then we're done
 							if( !this.advanceSchedule() )
 							{
-								System.out.println( this + " end of load schedule... exiting." );
+								logger.info( this + " end of load schedule... exiting." );
 								this._done = true;
 							}
 						}// End-else loadprofile failed track validation
@@ -418,23 +423,23 @@ public class DefaultScenarioTrack extends ScenarioTrack
 						// Advance the schedule and if that returns false, then we're done
 						if( !this.advanceSchedule() )
 						{
-							System.out.println( this + " end of load schedule... exiting." );
+							logger.info( this + " end of load schedule... exiting." );
 							this._done = true;
 						}
 					}// End-selecting next load profile the regular way
 				}
 				catch( InterruptedException ie )
 				{
-					System.out.println( this + " interrupted... exiting." );
+					logger.info( this + " interrupted... exiting." );
 					this._done = true;
 				}
 				catch( Exception e )
 				{
-					System.out.println( this + " died... exiting. Reason: " + e.toString() );
+					logger.info( this + " died... exiting. Reason: " + e.toString() );
 					this._done = true;
 				}
 			}
-			System.out.println( this + " finished!" );
+			logger.info( this + " finished!" );
 		}
 		
 		/**
@@ -449,13 +454,13 @@ public class DefaultScenarioTrack extends ScenarioTrack
 			// If we reach index 0, we cycled; log it.
 			if ( loadScheduleIndex == 0 )
 			{
-				System.out.println( this + " cycling." );
+				logger.info( this + " cycling." );
 			}
 			
 			// Update the track's reference of the current load profile.
 			if ( loadScheduleIndex < this._track._loadSchedule.size() )
 			{
-				System.out.println( this + " advancing load schedule" );
+				logger.info( this + " advancing load schedule" );
 				
 				now = System.currentTimeMillis();
 				
@@ -466,12 +471,12 @@ public class DefaultScenarioTrack extends ScenarioTrack
 				this._track._currentLoadProfile.setTimeStarted( now );
 				
 				cal.setTimeInMillis(now);
-				System.out.println( this + " current time: " + formatter.format(cal.getTime()) + " (" +  now + ") " + this._track._currentLoadProfile.toString() );
+				logger.info( this + " current time: " + formatter.format(cal.getTime()) + " (" +  now + ") " + this._track._currentLoadProfile.toString() );
 				return true;
 			}
 			else 
 			{
-				//System.out.println( this + " end of load schedule... exiting." );
+				//logger.info( this + " end of load schedule... exiting." );
 				//this._done = true;
 				return false;
 			}

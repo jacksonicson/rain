@@ -53,6 +53,9 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * The Scoreboard class implements the IScoreboard interface. Each Scoreboard
  * is specific to a single instantiation of a track (i.e. the statistical
@@ -70,6 +73,8 @@ import java.sql.SQLException;
  */
 public class Scoreboard implements Runnable, IScoreboard
 {
+	private static Logger log = LoggerFactory.getLogger(Scoreboard.class);
+	
 	public static String NO_TRACE_LABEL          	= "[NONE]";
 	public static String STEADY_STATE_TRACE_LABEL 	= "[STEADY-STATE]";
 	public static String LATE_LABEL               	= "[LATE]";
@@ -424,7 +429,7 @@ public class Scoreboard implements Runnable, IScoreboard
 					}
 					catch( IOException ioe )
 					{
-						System.out.println( this + " Error writing error record: Thread name: " + Thread.currentThread().getName() + " on behalf of: " + result.getOperation().getGeneratedBy() + " Reason: " + ioe.toString() );
+						log.info( this + " Error writing error record: Thread name: " + Thread.currentThread().getName() + " on behalf of: " + result.getOperation().getGeneratedBy() + " Reason: " + ioe.toString() );
 					}
 				}
 			}
@@ -459,7 +464,7 @@ public class Scoreboard implements Runnable, IScoreboard
 					catch( IOException ioe )
 					{
 						result.getOperation().disposeOfTrace();
-						System.out.println( this + " Error writing trace record: Thread name: " + Thread.currentThread().getName() + " on behalf of: " + result.getOperation().getGeneratedBy() + " Reason: " + ioe.toString() );
+						log.error("Error writing trace record: Thread name: " + Thread.currentThread().getName() + " on behalf of: " + result.getOperation().getGeneratedBy() + " Reason: " + ioe.toString() );
 					}
 				}
 			}
@@ -566,7 +571,7 @@ public class Scoreboard implements Runnable, IScoreboard
 				{
 					// Decrease activation count
 					double intervalSpillOver = (this._endTime - profile.getTimeStarted())/( (profile._interval*1000) + (profile._transitionTime*1000) );
-					System.out.println( this + " Need to decrease activation count for: " + profile._name + " spillover: " + intervalSpillOver );
+					log.info( this + " Need to decrease activation count for: " + profile._name + " spillover: " + intervalSpillOver );
 					card._activeCount -= intervalSpillOver;
 					continue;
 				}
@@ -579,8 +584,8 @@ public class Scoreboard implements Runnable, IScoreboard
 				if( diff > 0 )
 				{
 					double delta = (diff/(double)(profile._interval*1000));
-					System.out.println( this + " " + card._name + " shortchanged (msecs): " + this._formatter.format( diff ) );
-					System.out.println( this + " " + card._name + " shortchanged (delta): " + this._formatter.format( delta ) );
+					log.info( this + " " + card._name + " shortchanged (msecs): " + this._formatter.format( diff ) );
+					log.info( this + " " + card._name + " shortchanged (delta): " + this._formatter.format( delta ) );
 					// Interval truncated so revise activation count downwards
 					card._activeCount -= delta;
 				}
@@ -713,7 +718,7 @@ public class Scoreboard implements Runnable, IScoreboard
 			}
 			catch( Exception e )
 			{
-				System.out.println( this + " Error printing think/cycle time summary. Reason: " + e.toString() );
+				log.info( this + " Error printing think/cycle time summary. Reason: " + e.toString() );
 				e.printStackTrace();
 			}
 		}
@@ -786,7 +791,7 @@ public class Scoreboard implements Runnable, IScoreboard
 			}
 			catch( Exception e )
 			{
-				System.out.println( this + " Error printing operation summary. Reason: " + e.toString() );
+				log.info( this + " Error printing operation summary. Reason: " + e.toString() );
 				e.printStackTrace();
 			}
 		}
@@ -805,10 +810,10 @@ public class Scoreboard implements Runnable, IScoreboard
 			{
 				this._snapshotThread = new SnapshotWriterThread( this );
 				if( this._metricWriter == null )
-					System.out.println( this + " Metric snapshots disabled - No metric writer instance provided" );
+					log.info( this + " Metric snapshots disabled - No metric writer instance provided" );
 				else 
 				{
-					System.out.println( this + " Metric snapshots enabled - " + this._metricWriter.getDetails() );
+					log.info( this + " Metric snapshots enabled - " + this._metricWriter.getDetails() );
 					this._snapshotThread.setMetricWriter( this._metricWriter );
 				}
 				this._snapshotThread.setName( "Scoreboard-Snapshot-Writer" );
@@ -830,11 +835,11 @@ public class Scoreboard implements Runnable, IScoreboard
 				//	this._workerThread.interrupt();
 				//}
 				// If not give it time to exit; if it takes too long interrupt it.
-				System.out.println( this + " waiting " + WORKER_EXIT_TIMEOUT + " seconds for worker thread to exit!" );
+				log.info( this + " waiting " + WORKER_EXIT_TIMEOUT + " seconds for worker thread to exit!" );
 				this._workerThread.join( WORKER_EXIT_TIMEOUT * 1000 );
 				if ( this._workerThread.isAlive() )
 				{
-					System.out.println( this + " interrupting worker thread." );
+					log.info( this + " interrupting worker thread." );
 					this._workerThread.interrupt();
 				}
 				
@@ -847,11 +852,11 @@ public class Scoreboard implements Runnable, IScoreboard
 						this._snapshotThread.interrupt();
 					}
 					// If not give it time to exit; if it takes too long interrupt it.
-					System.out.println( this + " waiting " + WORKER_EXIT_TIMEOUT + " seconds for snapshot thread to exit!" );
+					log.info( this + " waiting " + WORKER_EXIT_TIMEOUT + " seconds for snapshot thread to exit!" );
 					this._snapshotThread.join( WORKER_EXIT_TIMEOUT * 1000 );
 					if( this._snapshotThread.isAlive() )
 					{
-						System.out.println( this + " interrupting snapshot thread." );
+						log.info( this + " interrupting snapshot thread." );
 						this._snapshotThread.interrupt();
 					}
 				}
@@ -860,11 +865,11 @@ public class Scoreboard implements Runnable, IScoreboard
 				if( this._statsObjPool.isActive() )
 					this._statsObjPool.shutdown();
 				
-				//System.out.println( this + " processingQ contains: " + this._processingQ.size() + " unprocessed records." );
+				//log.info( this + " processingQ contains: " + this._processingQ.size() + " unprocessed records." );
 			}
 			catch( InterruptedException ie )
 			{
-				System.out.println( this + " Interrupted waiting on worker thread exit!" );
+				log.info( this + " Interrupted waiting on worker thread exit!" );
 			}
 		}
 	}
@@ -885,7 +890,7 @@ public class Scoreboard implements Runnable, IScoreboard
 	 */
 	public void run()
 	{
-		System.out.println( this + " worker thread started." );
+		log.info( this + " worker thread started." );
 		while ( !this._done || this._dropOffQ.size() > 0 )
 		{
 			if ( this._dropOffQ.size() > 0 )
@@ -923,15 +928,15 @@ public class Scoreboard implements Runnable, IScoreboard
 				}
 				catch( InterruptedException tie )
 				{ 
-					System.out.println( this + " worker thread interrupted." );
-					//System.out.println( this + " drop off queue size: " + this._dropOffQ.size());
-					//System.out.println( this + " processing queue size: " + this._processingQ.size());
+					log.info( this + " worker thread interrupted." );
+					//log.info( this + " drop off queue size: " + this._dropOffQ.size());
+					//log.info( this + " processing queue size: " + this._processingQ.size());
 				}
 			}
 		}
-		System.out.println( this + " drop off queue size: " + this._dropOffQ.size());
-		System.out.println( this + " processing queue size: " + this._processingQ.size());
-		System.out.println( this + " worker thread finished!" );
+		log.info( this + " drop off queue size: " + this._dropOffQ.size());
+		log.info( this + " processing queue size: " + this._processingQ.size());
+		log.info( this + " worker thread finished!" );
 	}
 	
 	/**
@@ -983,7 +988,7 @@ public class Scoreboard implements Runnable, IScoreboard
 					if ( result.isAsynchronous() )
 						intervalScorecard._totalOpsAsync++;
 					else intervalScorecard._totalOpsSync++;
-					//System.out.println( "Cover (msecs): " + ( intervalEndTime - result.getTimeFinished() ) );
+					//log.info( "Cover (msecs): " + ( intervalEndTime - result.getTimeFinished() ) );
 					
 					intervalScorecard._totalOpsSuccessful++;
 					intervalScorecard._totalActionsSuccessful += result.getActionsPerformed();
@@ -1082,10 +1087,10 @@ public class Scoreboard implements Runnable, IScoreboard
 					stat = (ResponseTimeStat) this._statsObjPool.rentObject( ResponseTimeStat.NAME );
 					if( stat == null )
 					{
-						//System.out.println( "Got stats container from heap (not pool)" );
+						//log.info( "Got stats container from heap (not pool)" );
 						stat = new ResponseTimeStat();
 					}
-					//else System.out.println( "Got stats container from pool" );
+					//else log.info( "Got stats container from pool" );
 					
 					stat._timestamp = result.getTimeFinished();
 					stat._responseTime = responseTime;
@@ -1095,7 +1100,7 @@ public class Scoreboard implements Runnable, IScoreboard
 					stat._operationRequest = result._operationRequest;
 					if( result._generatedDuring != null )
 						stat._generatedDuring = result._generatedDuring._name;
-					//System.out.println( "Pre-push stat: " + stat );
+					//log.info( "Pre-push stat: " + stat );
 					
 					// Push this stat onto a Queue for the snapshot thread
 					synchronized( this._responseTimeQLock )
@@ -1190,7 +1195,7 @@ public class Scoreboard implements Runnable, IScoreboard
 				this._lastTotalActionsSuccessful = currentTotalActionsSuccessful;
 					
 				// Do the printing
-				System.out.println( this + " " + metricTime + 
+				log.info( this + " " + metricTime + 
 							" ttl response time delta (msecs): " + responseTimeDelta + 
 							" operations successful delta: " + opsSuccessfulDelta + 
 							" actions successful delta: " + actionsSuccessfulDelta );
@@ -1220,7 +1225,7 @@ public class Scoreboard implements Runnable, IScoreboard
 				if( this._owner._responseTimeQ.size() > 0 )
 				{
 					// Print pre-swap sizes
-					//System.out.println( "Pre-swap todoQ: " + this._todoQ.size() + " responseTimeQ: " + this._owner._responseTimeQ.size() );
+					//log.info( "Pre-swap todoQ: " + this._todoQ.size() + " responseTimeQ: " + this._owner._responseTimeQ.size() );
 					
 					// grab the queue lock and swap queues so we can write what's currently there
 					synchronized( this._owner._responseTimeQLock )
@@ -1230,7 +1235,7 @@ public class Scoreboard implements Runnable, IScoreboard
 						this._todoQ = temp;
 					}
 					
-					//System.out.println( "Post-swap todoQ: " + this._todoQ.size() + " responseTimeQ: " + this._owner._responseTimeQ.size() );
+					//log.info( "Post-swap todoQ: " + this._todoQ.size() + " responseTimeQ: " + this._owner._responseTimeQ.size() );
 					
 					// Now write everything out
 					while( !this._todoQ.isEmpty() )
@@ -1253,7 +1258,7 @@ public class Scoreboard implements Runnable, IScoreboard
 							}
 						}
 					}
-					//System.out.println( this + " todoQ empty, re-checking..." );
+					//log.info( this + " todoQ empty, re-checking..." );
 				}
 				else
 				{
@@ -1263,7 +1268,7 @@ public class Scoreboard implements Runnable, IScoreboard
 					}
 					catch( InterruptedException tie )
 					{ 
-						System.out.println( this + " snapshot thread interrupted." );
+						log.info( this + " snapshot thread interrupted." );
 						// Close the log file if we're interrupted
 						if( this._metricWriter != null )
 						{
@@ -1309,10 +1314,10 @@ public class Scoreboard implements Runnable, IScoreboard
 			{}
 			
 			long now = System.currentTimeMillis();
-			System.out.println( this._owner.toString() + " current time: " + now  + " metric snapshot thread started!" );
+			log.info( this._owner.toString() + " current time: " + now  + " metric snapshot thread started!" );
 			*/
 			// Print out stats at time started
-			/*System.out.println( this + " " + now + 
+			/*log.info( this + " " + now + 
 					" ttl response time (msecs): " + this._owner.finalCard._totalOpResponseTime + 
 					" operations successful: " + this._owner.finalCard._totalOpsSuccessful + 
 					" actions successful: " + this._owner.finalCard._totalActionsSuccessful );*/
@@ -1323,7 +1328,7 @@ public class Scoreboard implements Runnable, IScoreboard
 			}
 			catch( SQLException e )
 			{
-				System.out.println( this + "Error pushing startup stats to metric database: " + e.toString() );
+				log.info( this + "Error pushing startup stats to metric database: " + e.toString() );
 				e.printStackTrace();
 			}
 			
@@ -1338,7 +1343,7 @@ public class Scoreboard implements Runnable, IScoreboard
 					//this._owner.finalCard._totalOpResponseTime;
 					*/
 					/*long metricTime = System.currentTimeMillis();
-					System.out.println( this + " " + metricTime + 
+					log.info( this + " " + metricTime + 
 										" ttl response time (msecs): " + this._owner.finalCard._totalOpResponseTime + 
 										" operations successful: " + this._owner.finalCard._totalOpsSuccessful + 
 										" actions successful: " + this._owner.finalCard._totalActionsSuccessful );*/
@@ -1365,7 +1370,7 @@ public class Scoreboard implements Runnable, IScoreboard
 				}
 				catch( SQLException sqe )
 				{
-					System.out.println( this + " Interacting with the database failed: " + sqe.toString() );
+					log.info( this + " Interacting with the database failed: " + sqe.toString() );
 					sqe.printStackTrace();
 					
 					this._done = false;
@@ -1395,7 +1400,7 @@ public class Scoreboard implements Runnable, IScoreboard
 				this._conn = null;
 			}
 			
-			System.out.println( this._owner + " snapshot-writer thread finished!" );
+			log.info( this._owner + " snapshot-writer thread finished!" );
 		}*/
 	}
 }

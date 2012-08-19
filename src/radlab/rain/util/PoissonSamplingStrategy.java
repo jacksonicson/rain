@@ -115,7 +115,7 @@ public class PoissonSamplingStrategy implements ISamplingStrategy
 		for( Long value : this._samples )
 		{
 			// Print out value so we can debug the sd computation
-			//System.out.println( value );
+			//logger.info( value );
 			deviationSqSum += Math.pow( (double)(value - sampleMean), 2 );
 		}
 		// Divide deviationSqSum by N-1 then return the square root
@@ -141,9 +141,9 @@ public class PoissonSamplingStrategy implements ISamplingStrategy
 			this._samples.add(value);
 			// Update the nextSampleToAccept
 			double randExp = this._expRandom.nextDouble();
-			//System.out.println( "Random exp: " + randExp );
+			//logger.info( "Random exp: " + randExp );
 			this._nextSampleToAccept = this._currentSample + (int) Math.ceil( randExp ) ;
-			//System.out.println("Next sample to accept: " + this._nextSampleToAccept);
+			//logger.info("Next sample to accept: " + this._nextSampleToAccept);
 			return true;
 		}
 		return false;
@@ -215,26 +215,26 @@ public class PoissonSamplingStrategy implements ISamplingStrategy
 		long exp90th = PoissonSamplingStrategy.getNthPercentile( 90, allSamplesExp );
 		long exp99th = PoissonSamplingStrategy.getNthPercentile( 99, allSamplesExp );
 		
-		System.out.println( "Max uniform      : " + maxUniform );
-		System.out.println( "Mean uniform     : " + meanUniform );
-		System.out.println( "Min uniform      : " + minUniform );
-		System.out.println( "90th uniform gt  : " + uniform90th );
-		System.out.println( "90th uniform smp : " +  expSamplerAllUniform.getNthPercentile( 90 ) );
-		System.out.println( "99th uniform gt  : " + uniform99th );
-		System.out.println( "99th uniform smp : " +  expSamplerAllUniform.getNthPercentile( 99 ) );
-		System.out.println( "# samples seen   : " + expSamplerAllUniform.getSamplesSeen() );
-		System.out.println( "# samples saved  : " + expSamplerAllUniform.getSamplesCollected() );
+		logger.info( "Max uniform      : " + maxUniform );
+		logger.info( "Mean uniform     : " + meanUniform );
+		logger.info( "Min uniform      : " + minUniform );
+		logger.info( "90th uniform gt  : " + uniform90th );
+		logger.info( "90th uniform smp : " +  expSamplerAllUniform.getNthPercentile( 90 ) );
+		logger.info( "99th uniform gt  : " + uniform99th );
+		logger.info( "99th uniform smp : " +  expSamplerAllUniform.getNthPercentile( 99 ) );
+		logger.info( "# samples seen   : " + expSamplerAllUniform.getSamplesSeen() );
+		logger.info( "# samples saved  : " + expSamplerAllUniform.getSamplesCollected() );
 		
-		System.out.println( "" );
-		System.out.println( "Max exp          : " + maxExp );
-		System.out.println( "Mean exp         : " + meanExp );
-		System.out.println( "Min exp          : " + minExp );
-		System.out.println( "90th exp gt      : " + exp90th );
-		System.out.println( "90th uniform smp : " + expSamplerExp.getNthPercentile( 90 ) );
-		System.out.println( "99th exp gt      : " + exp99th );
-		System.out.println( "99th uniform smp : " + expSamplerExp.getNthPercentile( 99 ) );
-		System.out.println( "# samples seen   : " + expSamplerExp.getSamplesSeen() );
-		System.out.println( "# samples saved  : " + expSamplerExp.getSamplesCollected() );
+		logger.info( "" );
+		logger.info( "Max exp          : " + maxExp );
+		logger.info( "Mean exp         : " + meanExp );
+		logger.info( "Min exp          : " + minExp );
+		logger.info( "90th exp gt      : " + exp90th );
+		logger.info( "90th uniform smp : " + expSamplerExp.getNthPercentile( 90 ) );
+		logger.info( "99th exp gt      : " + exp99th );
+		logger.info( "99th uniform smp : " + expSamplerExp.getNthPercentile( 99 ) );
+		logger.info( "# samples seen   : " + expSamplerExp.getSamplesSeen() );
+		logger.info( "# samples saved  : " + expSamplerExp.getSamplesCollected() );
 		
 		// Use bootstrapping to quantify the variance in our samples
 		int numTrials = 1000;
@@ -248,10 +248,10 @@ public class PoissonSamplingStrategy implements ISamplingStrategy
 		
 		LinkedList<Long> randomSamples = new LinkedList<Long>();
 		
-		System.out.println( "Starting bootstrapping..." );
+		logger.info( "Starting bootstrapping..." );
 		for( int i = 0; i < numTrials; i++ )
 		{
-			System.out.println( "Trial: " + i );
+			logger.info( "Trial: " + i );
 			// Create samplers
 			randomSamples.clear();
 			expSamplerAllUniform.reset();
@@ -261,7 +261,7 @@ public class PoissonSamplingStrategy implements ISamplingStrategy
 			for( int j = 0; j < maxNumbers; j++ )
 			{
 				if( j%100000 == 0 )
-					System.out.println( "Number: " + j );
+					logger.info( "Number: " + j );
 				
 				expSamplerAllUniform.accept( allSamplesUniform.get(j) );
 				expSamplerExp.accept( allSamplesExp.get( j ) );
@@ -271,7 +271,7 @@ public class PoissonSamplingStrategy implements ISamplingStrategy
 					randomSamples.add( allSamplesExp.get( j ) );
 			}
 			
-			System.out.println( "Computing percentiles for trial: " + i );
+			logger.info( "Computing percentiles for trial: " + i );
 			arrU90[i] = expSamplerAllUniform.getNthPercentile( 90 );
 			arrU99[i] = expSamplerAllUniform.getNthPercentile( 99 );
 			arrE90[i] = expSamplerExp.getNthPercentile( 90 );
@@ -279,20 +279,20 @@ public class PoissonSamplingStrategy implements ISamplingStrategy
 			arrE90Usample[i] = PoissonSamplingStrategy.getNthPercentile( 90, randomSamples );
 			arrE99Usample[i] = PoissonSamplingStrategy.getNthPercentile( 99, randomSamples );
 			
-			System.out.println( "Poisson sampler uniform data : " + expSamplerAllUniform.getSamplesCollected() );
-			System.out.println( "Poisson sampler exp data     : " + expSamplerExp.getSamplesCollected() );
-			System.out.println( "Uniform sampler exp data     : " + randomSamples.size() );
-			System.out.println( arrU90[i] + " " + arrU99[i] + " " + arrE90[i] + " " + arrE99[i] + " " + arrE90Usample[i] + " " + arrE99Usample[i] );
+			logger.info( "Poisson sampler uniform data : " + expSamplerAllUniform.getSamplesCollected() );
+			logger.info( "Poisson sampler exp data     : " + expSamplerExp.getSamplesCollected() );
+			logger.info( "Uniform sampler exp data     : " + randomSamples.size() );
+			logger.info( arrU90[i] + " " + arrU99[i] + " " + arrE90[i] + " " + arrE99[i] + " " + arrE90Usample[i] + " " + arrE99Usample[i] );
 		}
 		
-		System.out.println( "Final results..." );
-		System.out.println( "Poisson sampler uniform data : " + expSamplerAllUniform.getSamplesCollected() );
-		System.out.println( "Poisson sampler exp data     : " + expSamplerExp.getSamplesCollected() );
-		System.out.println( "Uniform sampler exp data     : " + randomSamples.size() );
+		logger.info( "Final results..." );
+		logger.info( "Poisson sampler uniform data : " + expSamplerAllUniform.getSamplesCollected() );
+		logger.info( "Poisson sampler exp data     : " + expSamplerExp.getSamplesCollected() );
+		logger.info( "Uniform sampler exp data     : " + randomSamples.size() );
 		
 		for( int i = 0; i < numTrials; i++ )
 		{
-			System.out.println( arrU90[i] + " " + arrU99[i] + " " + arrE90[i] + " " + arrE99[i] + " " + arrE90Usample[i] + " " + arrE99Usample[i] );
+			logger.info( arrU90[i] + " " + arrU99[i] + " " + arrE90[i] + " " + arrE99[i] + " " + arrE90Usample[i] + " " + arrE99Usample[i] );
 		}
 	}*/
 }

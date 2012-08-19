@@ -41,8 +41,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.LogManager;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import radlab.rain.communication.RainPipe;
 import radlab.rain.communication.thrift.ThriftService;
@@ -53,6 +56,9 @@ import radlab.rain.util.ConfigUtil;
  * specified by a provided scenario.
  */
 public class Benchmark {
+
+	private static Logger logger = LoggerFactory.getLogger(Benchmark.class);
+
 	public static String ZK_PATH_SEPARATOR = "/";
 	public static Benchmark BenchmarkInstance = null;
 	public static Scenario BenchmarkScenario = null;
@@ -96,8 +102,7 @@ public class Benchmark {
 
 		int sharedThreads = scenario.getMaxSharedThreads();
 		ExecutorService pool = Executors.newFixedThreadPool(sharedThreads);
-		System.out.println("[BENCHMARK] Creating " + sharedThreads
-				+ " shared threads.");
+		logger.info("[BENCHMARK] Creating " + sharedThreads + " shared threads.");
 
 		LinkedList<LoadGenerationStrategy> threads = new LinkedList<LoadGenerationStrategy>();
 
@@ -106,11 +111,9 @@ public class Benchmark {
 		// | ramp up |------ duration ------| ramp down |
 		long start = System.currentTimeMillis() + timeToStart;
 		long startSteadyState = start + (scenario.getRampUp() * 1000);
-		long endSteadyState = startSteadyState
-				+ (scenario.getDuration() * 1000);
+		long endSteadyState = startSteadyState + (scenario.getDuration() * 1000);
 
-		System.out.println("[BENCHMARK] Initializing "
-				+ scenario.getTracks().size() + " track(s).");
+		logger.info("[BENCHMARK] Initializing " + scenario.getTracks().size() + " track(s).");
 		for (ScenarioTrack track : scenario.getTracks().values()) {
 			// Start the scoreboard. It needs to know the timings because we
 			// only
@@ -119,8 +122,7 @@ public class Benchmark {
 			IScoreboard scoreboard = track.createScoreboard(null);
 			if (scoreboard != null) {
 				scoreboard.initialize(startSteadyState, endSteadyState);
-				scoreboard.setMetricSnapshotInterval((long) (track
-						.getMetricSnapshotInterval() * 1000));
+				scoreboard.setMetricSnapshotInterval((long) (track.getMetricSnapshotInterval() * 1000));
 				scoreboard.setMetricWriter(track.getMetricWriter());
 				scoreboard.start();
 			}
@@ -133,24 +135,18 @@ public class Benchmark {
 			// 2) whether to forge ahead
 
 			long maxUsers = track.getMaxUsers();
-			System.out.println("[BENCHMARK] Creating " + maxUsers
-					+ " threads for track.");
+			logger.info("[BENCHMARK] Creating " + maxUsers + " threads for track.");
 			// Create enough threads for maximum users needed by the scenario.
 			for (int i = 0; i < maxUsers; i++) {
-				Generator generator = track.createWorkloadGenerator(
-						track.getGeneratorClassName(),
+				Generator generator = track.createWorkloadGenerator(track.getGeneratorClassName(),
 						track.getGeneratorParams());
 				generator.setScoreboard(scoreboard);
-				generator
-						.setMeanCycleTime((long) (track.getMeanCycleTime() * 1000));
-				generator
-						.setMeanThinkTime((long) (track.getMeanThinkTime() * 1000));
+				generator.setMeanCycleTime((long) (track.getMeanCycleTime() * 1000));
+				generator.setMeanThinkTime((long) (track.getMeanThinkTime() * 1000));
 				// Allow the load generation strategy to be configurable
-				LoadGenerationStrategy lgThread = track
-						.createLoadGenerationStrategy(
-								track.getLoadGenerationStrategyClassName(),
-								track.getLoadGenerationStrategyParams(),
-								generator, i);
+				LoadGenerationStrategy lgThread = track.createLoadGenerationStrategy(
+						track.getLoadGenerationStrategyClassName(), track.getLoadGenerationStrategyParams(), generator,
+						i);
 				generator.setName(lgThread.getName());
 				generator.initialize();
 				lgThread.setInteractive(track.getInteractive());
@@ -168,16 +164,14 @@ public class Benchmark {
 			try {
 				lgThread.join();
 			} catch (InterruptedException ie) {
-				System.out
-						.println("[BENCHMARK] Main thread interrupted... exiting!");
+				logger.error("[BENCHMARK] Main thread interrupted... exiting!");
 			} finally {
 				lgThread.dispose();
 			}
 		}
 
 		// Purge threads.
-		System.out
-				.println("[BENCHMARK] Purging threads and shutting down... exiting!");
+		logger.info("[BENCHMARK] Purging threads and shutting down... exiting!");
 		threads.clear();
 
 		// Set up for stats aggregation across tracks based on the generators
@@ -199,13 +193,11 @@ public class Benchmark {
 			// Get the name of the generator active for this track
 			String generatorClassName = track.getGeneratorClassName();
 			// Get the final scorecard for this track
-			Scorecard finalScorecard = track.getScoreboard()
-					.getFinalScorecard();
+			Scorecard finalScorecard = track.getScoreboard().getFinalScorecard();
 			if (!aggStats.containsKey(generatorClassName)) {
 				StringBuffer buf = new StringBuffer();
 				buf.append(generatorClassName).append(" (agg)");
-				Scorecard aggCard = new Scorecard("aggregated",
-						finalScorecard._intervalDuration, buf.toString());
+				Scorecard aggCard = new Scorecard("aggregated", finalScorecard._intervalDuration, buf.toString());
 				aggStats.put(generatorClassName, aggCard);
 			}
 			// Get the current aggregated scorecard for this generator
@@ -223,7 +215,7 @@ public class Benchmark {
 		if (scenario.getAggregateStats()) {
 			// Print aggregated stats
 			if (aggStats.size() > 0)
-				System.out.println("");
+				logger.info("");
 
 			for (String generatorName : aggStats.keySet()) {
 				Scorecard card = aggStats.get(generatorName);
@@ -234,31 +226,27 @@ public class Benchmark {
 		// Shutdown the shared threadpool.
 		pool.shutdown();
 		try {
-			System.out
-					.println("[BENCHMARK] waiting up to 10 seconds for shared threadpool to shutdown!");
+			logger.info("[BENCHMARK] waiting up to 10 seconds for shared threadpool to shutdown!");
 			pool.awaitTermination(10000, TimeUnit.MILLISECONDS);
 			if (!pool.isTerminated()) {
 				pool.shutdownNow();
 			}
 		} catch (InterruptedException ie) {
-			System.out
-					.println("[BENCHMARK] INTERRUPTED while waiting for shared threadpool to shutdown!");
+			logger.info("[BENCHMARK] INTERRUPTED while waiting for shared threadpool to shutdown!");
 		}
 
 		// Close down the pipe
 		if (RainConfig.getInstance()._usePipe) {
-			System.out
-					.println("[BENCHMARK] Shutting down the communication pipe!");
+			logger.info("[BENCHMARK] Shutting down the communication pipe!");
 			RainPipe.getInstance().stop();
 		}
 
 		if (RainConfig.getInstance()._useThrift) {
-			System.out
-					.println("[BENCHMARK] Shutting down the thrift communication!");
+			logger.info("[BENCHMARK] Shutting down the thrift communication!");
 			ThriftService.getInstance().stop();
 		}
 
-		System.out.println("[BENCHMARK] finished!");
+		logger.info("[BENCHMARK] finished!");
 	}
 
 	/**
@@ -266,130 +254,119 @@ public class Benchmark {
 	 * path (e.g. config/rain.config.sample.json).
 	 */
 	public static void main(String[] args) throws Exception {
-		StringBuffer configData = new StringBuffer();
-
-		if (args.length < 1) {
-			System.out.println("Unspecified name/path to configuration file!");
-			System.exit(1);
-		}
-
-		// If we got 2 arguments expect a zookeeper pointer as the second
-		// parameter
-		if (args.length == 2) {
-			String zkString = args[1];
-			String zkPrefix = "zk://";
-			int zkIndex = zkString.indexOf(zkPrefix);
-			int pathIndex = -1;
-
-			if (zkIndex == -1)
-				pathIndex = zkString.indexOf(ZK_PATH_SEPARATOR);
-			else
-				pathIndex = zkString.indexOf(ZK_PATH_SEPARATOR,
-						zkPrefix.length());
-
-			// Example ZK address
-			// zk://ec2-50-16-2-36.compute-1.amazonaws.com,ec2-174-129-105-138.compute-1.amazonaws.com/demo/apps/scadr/webServerList
-
-			if (zkIndex == -1) {
-				if (pathIndex == -1) {
-					RainConfig.getInstance()._zooKeeper = zkString;
-				} else {
-					RainConfig.getInstance()._zooKeeper = zkString.substring(0,
-							pathIndex);
-					RainConfig.getInstance()._zkPath = zkString
-							.substring(pathIndex);
-				}
-			} else {
-				if (pathIndex == -1) {
-					RainConfig.getInstance()._zooKeeper = zkString
-							.substring(zkIndex + zkPrefix.length());
-				} else {
-					RainConfig.getInstance()._zooKeeper = zkString.substring(
-							zkIndex + zkPrefix.length(), pathIndex);
-					RainConfig.getInstance()._zkPath = zkString
-							.substring(pathIndex);
-				}
-			}
-		}
-
-		String filename = args[0];
-		JSONObject jsonConfig = null;
-
 		try {
-			String fileContents = "";
-			// Try to load the config file as a resource first
-			InputStream in = ClassLoader.getSystemClassLoader()
-					.getResourceAsStream(filename);
-			if (in != null) {
-				System.out
-						.println("[BENCHMARK] Reading config file from resource stream.");
-				BufferedReader reader = new BufferedReader(
-						new InputStreamReader(in));
-				String line = "";
-				// Read in the entire file and append to the string buffer
-				while ((line = reader.readLine()) != null)
-					configData.append(line);
-				fileContents = configData.toString();
-			} else {
-				System.out
-						.println("[BENCHMARK] Reading config file from file system.");
-				fileContents = ConfigUtil.readFileAsString(filename);
+			StringBuffer configData = new StringBuffer();
+
+			if (args.length < 1) {
+				logger.info("Unspecified name/path to configuration file!");
+				System.exit(1);
 			}
 
-			jsonConfig = new JSONObject(fileContents);
-		} catch (IOException e) {
-			System.out.println("ERROR loading configuration file " + filename
-					+ ". Reason: " + e.toString());
-			System.exit(1);
-		} catch (JSONException e) {
-			System.out.println("ERROR parsing configuration file " + filename
-					+ " as JSON. Reason: " + e.toString());
-			System.exit(1);
+			// If we got 2 arguments expect a zookeeper pointer as the second
+			// parameter
+			if (args.length == 2) {
+				String zkString = args[1];
+				String zkPrefix = "zk://";
+				int zkIndex = zkString.indexOf(zkPrefix);
+				int pathIndex = -1;
+
+				if (zkIndex == -1)
+					pathIndex = zkString.indexOf(ZK_PATH_SEPARATOR);
+				else
+					pathIndex = zkString.indexOf(ZK_PATH_SEPARATOR, zkPrefix.length());
+
+				// Example ZK address
+				// zk://ec2-50-16-2-36.compute-1.amazonaws.com,ec2-174-129-105-138.compute-1.amazonaws.com/demo/apps/scadr/webServerList
+
+				if (zkIndex == -1) {
+					if (pathIndex == -1) {
+						RainConfig.getInstance()._zooKeeper = zkString;
+					} else {
+						RainConfig.getInstance()._zooKeeper = zkString.substring(0, pathIndex);
+						RainConfig.getInstance()._zkPath = zkString.substring(pathIndex);
+					}
+				} else {
+					if (pathIndex == -1) {
+						RainConfig.getInstance()._zooKeeper = zkString.substring(zkIndex + zkPrefix.length());
+					} else {
+						RainConfig.getInstance()._zooKeeper = zkString
+								.substring(zkIndex + zkPrefix.length(), pathIndex);
+						RainConfig.getInstance()._zkPath = zkString.substring(pathIndex);
+					}
+				}
+			}
+
+			String filename = args[0];
+			JSONObject jsonConfig = null;
+
+			try {
+				String fileContents = "";
+				// Try to load the config file as a resource first
+				InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream(filename);
+				if (in != null) {
+					logger.info("[BENCHMARK] Reading config file from resource stream.");
+					BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+					String line = "";
+					// Read in the entire file and append to the string buffer
+					while ((line = reader.readLine()) != null)
+						configData.append(line);
+					fileContents = configData.toString();
+				} else {
+					logger.info("[BENCHMARK] Reading config file from file system.");
+					fileContents = ConfigUtil.readFileAsString(filename);
+				}
+
+				jsonConfig = new JSONObject(fileContents);
+			} catch (IOException e) {
+				logger.info("ERROR loading configuration file " + filename + ". Reason: " + e.toString());
+				System.exit(1);
+			} catch (JSONException e) {
+				logger.info("ERROR parsing configuration file " + filename + " as JSON. Reason: " + e.toString());
+				System.exit(1);
+			}
+
+			// Create a scenario from the json config
+			Scenario scenario = new Scenario(jsonConfig);
+			// Set the global Scenario instance for the Driver
+			Benchmark.BenchmarkScenario = scenario;
+			Benchmark benchmark = Benchmark.getBenchmarkInstance();
+			benchmark.waitingForStartSignal = RainConfig.getInstance()._waitForStartSignal;
+
+			// Now that the Benchmark and Scenario singletons are set up
+
+			// Don't start up a RainPipe by default, the user needs to ask (via
+			// a
+			// setting in the config file)
+			if (RainConfig.getInstance()._usePipe) {
+				RainPipe pipe = RainPipe.getInstance();
+				logger.info("[BENCHMARK] Starting communication pipe! Using port: " + pipe.getPort() + " and running: "
+						+ pipe.getNumThreads() + " communication threads.");
+				pipe.start();
+			}
+
+			if (RainConfig.getInstance()._useThrift) {
+				ThriftService thrift = ThriftService.getInstance();
+				logger.info("[BENCHMARK] Starting thrift communication! Using port: " + thrift.getPort());
+				thrift.start();
+			}
+
+			if (benchmark.waitingForStartSignal)
+				logger.info("[BENCHMARK] Waiting for start signal...");
+
+			while (benchmark.waitingForStartSignal) {
+				logger.info("[BENCHMARK] Sleeping for 1sec...");
+				Thread.sleep(1000);
+				logger.info("[BENCHMARK] Checking for wakeup");
+			}
+
+			logger.info("[BENCHMARK] Starting...");
+
+			scenario.start();
+			benchmark.start(scenario);
+
+			scenario.end();
+		} finally {
+			LogManager.shutdown();
 		}
-
-		// Create a scenario from the json config
-		Scenario scenario = new Scenario(jsonConfig);
-		// Set the global Scenario instance for the Driver
-		Benchmark.BenchmarkScenario = scenario;
-		Benchmark benchmark = Benchmark.getBenchmarkInstance();
-		benchmark.waitingForStartSignal = RainConfig.getInstance()._waitForStartSignal;
-
-		// Now that the Benchmark and Scenario singletons are set up
-
-		// Don't start up a RainPipe by default, the user needs to ask (via a
-		// setting in the config file)
-		if (RainConfig.getInstance()._usePipe) {
-			RainPipe pipe = RainPipe.getInstance();
-			System.out
-					.println("[BENCHMARK] Starting communication pipe! Using port: "
-							+ pipe.getPort()
-							+ " and running: "
-							+ pipe.getNumThreads() + " communication threads.");
-			pipe.start();
-		}
-
-		if (RainConfig.getInstance()._useThrift) {
-			ThriftService thrift = ThriftService.getInstance();
-			System.out
-					.println("[BENCHMARK] Starting thrift communication! Using port: "
-							+ thrift.getPort());
-			thrift.start();
-		}
-
-		if (benchmark.waitingForStartSignal)
-			System.out.println("[BENCHMARK] Waiting for start signal...");
-
-		while (benchmark.waitingForStartSignal) {
-			System.out.println("[BENCHMARK] Sleeping for 1sec...");
-			Thread.sleep(1000);
-			System.out.println("[BENCHMARK] Checking for wakeup");
-		}
-
-		System.out.println("[BENCHMARK] Starting...");
-
-		scenario.start();
-		benchmark.start(scenario);
-
-		scenario.end();
 	}
 }

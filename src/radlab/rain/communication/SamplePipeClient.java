@@ -5,10 +5,15 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import radlab.rain.LoadProfile;
 
 public class SamplePipeClient 
 {
+	private static Logger logger = LoggerFactory.getLogger(SamplePipeClient.class);
+	
 	public static String DRIVER_PIPE_ADDRESS = "load1";
 	public static int DRIVER_PIPE_PORT = RainPipe.DEFAULT_PORT;
 	
@@ -34,12 +39,12 @@ public class SamplePipeClient
 		}
 		catch( IOException ioe )
 		{
-			System.out.println( "Error communicating with Driver pipe: " + ioe.toString() );
+			logger.error( "Error communicating with Driver pipe: " + ioe.toString() );
 			ioe.printStackTrace( System.out );
 		}
 		catch( ClassNotFoundException cne )
 		{
-			System.out.println( "Error reading reply from Driver pipe: " + cne.toString() );
+			logger.error( "Error reading reply from Driver pipe: " + cne.toString() );
 			cne.printStackTrace( System.out );
 		}
 		finally // Cleanup socket
@@ -52,7 +57,7 @@ public class SamplePipeClient
 				}
 				catch( IOException ioe )
 				{
-					System.out.println( "Error closing socket." );
+					logger.error( "Error closing socket." );
 					ioe.printStackTrace( System.out );
 				}
 			}
@@ -79,7 +84,7 @@ public class SamplePipeClient
 			// Expect a TrackListReplyMessage back
 			if( replyMessage == null || !( replyMessage instanceof TrackListReplyMessage ) )
 			{
-				System.out.println( "Received unexpected or null reply to track list request!" );
+				logger.error( "Received unexpected or null reply to track list request!" );
 				System.exit( -1 );
 			}
 			
@@ -87,7 +92,7 @@ public class SamplePipeClient
 			TrackListReplyMessage trackList = (TrackListReplyMessage) replyMessage;
 			if( trackList._trackNames.size() == 0 )
 			{
-				System.out.println( "Empty track list received!" );
+				logger.error( "Empty track list received!" );
 				System.exit( -1 );
 			}
 			
@@ -96,7 +101,7 @@ public class SamplePipeClient
 			// Expect a StatusMessage back
 			if( replyMessage == null || !( replyMessage instanceof StatusMessage ) )
 			{
-				System.out.println( "Received unexpected or null reply to benchmark start message!" );
+				logger.error( "Received unexpected or null reply to benchmark start message!" );
 				System.exit( -1 );
 			}
 			
@@ -110,16 +115,16 @@ public class SamplePipeClient
 				// Expect a status message back
 				if( replyMessage == null || !( replyMessage instanceof StatusMessage ) )
 				{
-					System.out.println( "Received unexpected or null reply to dynamic load profile message!" );
+					logger.error( "Received unexpected or null reply to dynamic load profile message!" );
 					//System.exit( -1 );
 				}
 				// Check on whether the submission succeeded or not
 				StatusMessage status = (StatusMessage) replyMessage;
 				if( status._statusCode == MessageHeader.OK )
 				{
-					System.out.println( "Dynamic load profile accepted by driver!" );
+					logger.info( "Dynamic load profile accepted by driver!" );
 				}
-				else System.out.println( "Dynamic load profile rejected by driver! Status code returned: " + status._statusCode );
+				else logger.info( "Dynamic load profile rejected by driver! Status code returned: " + status._statusCode );
 				
 				// Sleep for 40 seconds
 				Thread.sleep( 40000 );

@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Random;
 
 public class Multinomial implements IMultinomial {
+	
 	private ArrayList<Double> probabilities;
 	private ArrayList<Double> cdf;
 	private Random rnd = new Random();
@@ -143,7 +144,7 @@ public class Multinomial implements IMultinomial {
 		
 		while (!found) {
 			i = (i0+i1)/2;
-//			System.out.println(r+" "+i0+" "+i+" "+i1);
+//			logger.info(r+" "+i0+" "+i+" "+i1);
 			if ( (i==0&&r<=cdf.get(0)) || (i>0&&cdf.get(i-1)<r&&r<=cdf.get(i)) ) found = true;
 			else if (i>0&&r<=cdf.get(i-1)) i1=i;
 			else i0=i;			

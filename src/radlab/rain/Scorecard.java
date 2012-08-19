@@ -6,6 +6,9 @@ import java.text.NumberFormat;
 //import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.TreeMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 //import java.util.Hashtable;
 
 import radlab.rain.util.NullSamplingStrategy;
@@ -13,6 +16,8 @@ import radlab.rain.util.NullSamplingStrategy;
 // Not even going to try to make Scorecards thread-safe, the Scoreboard must do "the right thing"(tm)
 public class Scorecard 
 {
+	private static Logger logger = LoggerFactory.getLogger(Scorecard.class);
+	
 	// Eventually all stats reporting will be done using Scorecards. There will
 	// be per-interval Scorecards as well as a final Scorecard for the entire run.
 	// The Scoreboard will maintain/manage a hashtable of Scorecards.
@@ -189,7 +194,7 @@ public class Scorecard
 			}
 			catch( Exception e )
 			{
-				System.out.println( this + " Error printing operation summary. Reason: " + e.toString() );
+				logger.info( this + " Error printing operation summary. Reason: " + e.toString() );
 				e.printStackTrace();
 			}
 		}

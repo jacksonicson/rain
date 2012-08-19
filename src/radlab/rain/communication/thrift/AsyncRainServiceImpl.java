@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.thrift.TException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import radlab.rain.Benchmark;
 import radlab.rain.LoadProfile;
@@ -12,10 +14,12 @@ import de.tum.in.storm.rain.Profile;
 import de.tum.in.storm.rain.RainService;
 
 public class AsyncRainServiceImpl implements RainService.Iface {
+	
+	private static Logger logger = LoggerFactory.getLogger(AsyncRainServiceImpl.class);
 
 	@Override
 	public boolean startBenchmark(long controllerTimestamp) throws TException {
-		System.out.println(this + " Received benchmark start message.");
+		logger.info(this + " Received benchmark start message.");
 		Benchmark.getBenchmarkInstance().waitingForStartSignal = false;
 		return true;
 	}
@@ -27,7 +31,7 @@ public class AsyncRainServiceImpl implements RainService.Iface {
 		// Scenario ever (a Scenario holds one or more ScenarioTracks)
 		ScenarioTrack track = Benchmark.getBenchmarkScenario().getTracks().get(msg.getDestTrackName());
 		if (track != null) {
-			System.out.println(this + " Found target track");
+			logger.info(this + " Found target track");
 
 			LoadProfile profile = new LoadProfile(msg.getInterval(), (int) msg.getNumberOfUsers(), msg.getMixName(),
 					msg.getTransitionTime(), msg.getName());
@@ -35,30 +39,30 @@ public class AsyncRainServiceImpl implements RainService.Iface {
 			int validationResult = track.validateLoadProfile(profile);
 			// Try to validate and submit to the track's load scheduler
 			if (validationResult == ScenarioTrack.VALID_LOAD_PROFILE) {
-				System.out.println(this + " Profile validated");
+				logger.info(this + " Profile validated");
 				// Submit to load scheduler thread
 				track.submitDynamicLoadProfile(profile);
 
 				return true;
 			} else // Dynamic LoadProfile failed validation
 			{
-				System.out.println(this + " Profile validation failed!");
+				logger.info(this + " Profile validation failed!");
 				return false;
 			}
 		} else // Could not find track
 		{
-			System.out.println(this + " Target track not found: " + msg.getDestTrackName());
+			logger.info(this + " Target track not found: " + msg.getDestTrackName());
 			return false;
 		}
 	}
 
 	@Override
 	public List<String> getTrackNames() throws TException {
-		System.out.println(this + " Received track list request message.");
+		logger.info(this + " Received track list request message.");
 
 		List<String> trackNames = new ArrayList<String>();
 		for (ScenarioTrack track : Benchmark.BenchmarkScenario.getTracks().values()) {
-			System.out.println(this + " Adding track name: " + track.getName());
+			logger.info(this + " Adding track name: " + track.getName());
 			trackNames.add(track.getName());
 		}
 

@@ -37,9 +37,13 @@ import java.util.Random;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CDF<T> 
 {
+	private static Logger logger = LoggerFactory.getLogger(CDF.class);
+	
 	public static NumberFormat Formatter = new DecimalFormat( "#0.0000" );
 	
 	private Random _random 	= null;
@@ -152,7 +156,7 @@ public class CDF<T>
 		for( int i = 0; i < this._labels.size(); i++ )
 		{
 			double frequency = this._rawCounts[i]/this._sum;
-			System.out.println( this._labels.get(i).toString() + " [" + this._rawCounts[i] + "/" + this._sum + "] " + Formatter.format( frequency ) );
+			logger.info( this._labels.get(i).toString() + " [" + this._rawCounts[i] + "/" + this._sum + "] " + Formatter.format( frequency ) );
 		}
 	}
 	
@@ -179,19 +183,19 @@ public class CDF<T>
 				double lhsFrequency = lhsCount/this._sum; //this._cdf[i];
 				double rhsFrequency = rhsCount/rhsCdf._sum;//rhsCdf._cdf[i];
 				
-				System.out.println( "LHS: " + lhs.toString() + " RHS: " + rhs.toString() + "[" + Formatter.format(lhsFrequency) + " vs " + Formatter.format(rhsFrequency) + "]" );
+				logger.info( "LHS: " + lhs.toString() + " RHS: " + rhs.toString() + "[" + Formatter.format(lhsFrequency) + " vs " + Formatter.format(rhsFrequency) + "]" );
 								
 				double diff = Math.abs( lhsFrequency - rhsFrequency );
 				double discrepancy = diff/lhsFrequency; 
 				if( discrepancy > tolerance )
 				{
-					System.out.println( "CDF discrepancy at Object: " + lhs.toString() + " " + Formatter.format( discrepancy ) + " > tolerance: " + Formatter.format( tolerance ) );
+					logger.info( "CDF discrepancy at Object: " + lhs.toString() + " " + Formatter.format( discrepancy ) + " > tolerance: " + Formatter.format( tolerance ) );
 					return false;
 				}
 			}
 			else 
 			{
-				System.out.println( "Misaligned" );
+				logger.info( "Misaligned" );
 				// Mis-alignment
 				return false;
 			}

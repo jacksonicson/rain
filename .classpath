@@ -39,5 +39,6 @@
 	<classpathentry kind="lib" path="thirdparty/thrift/slf4j-api-1.5.8.jar"/>
 	<classpathentry kind="lib" path="thirdparty/thrift/slf4j-log4j12-1.5.8.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="thirdparty/junit-4.10.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

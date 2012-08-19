@@ -35,11 +35,15 @@ import java.util.Random;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import radlab.rain.util.Histogram;
 
 public class ZipfKeyGenerator extends KeyGenerator 
 {
+	private static Logger logger = LoggerFactory.getLogger(ZipfKeyGenerator.class);
+	
 	protected String name = "Zipf";
 
 	protected Random random = null;
@@ -111,23 +115,23 @@ public class ZipfKeyGenerator extends KeyGenerator
 		{
 			probabilities[i] = Math.pow( 1.0/(i+1), this.a );
 			sum += probabilities[i];
-			//System.out.println( "i: " + i + " p(i) raw: " + p_i[i] );
+			//logger.info( "i: " + i + " p(i) raw: " + p_i[i] );
 		}
 		
-		//System.out.println( "Normalizing" );
+		//logger.info( "Normalizing" );
 		
 		// Normalize the probabilities so they sum to 1, and compute the cdf using the normalized probabilities
 		for( int i = 0; i < keys; i++ )
 		{
 			probabilities[i] /= sum; // Normalized probability
 			
-			//System.out.println( Math.log( i+1 ) + "\t" + /*"i: " + i + " p(i) norm: " +*/ Math.log(probabilities[i]) );
+			//logger.info( Math.log( i+1 ) + "\t" + /*"i: " + i + " p(i) norm: " +*/ Math.log(probabilities[i]) );
 			
 			if( i == 0 )
 				cdf[i] = probabilities[i];
 			else cdf[i] = cdf[i-1] + probabilities[i];
 			
-			//System.out.println( (i+1) + " " + probabilities[i] + " " + cdf[i] );
+			//logger.info( (i+1) + " " + probabilities[i] + " " + cdf[i] );
 		}
 		return cdf;
 	}
@@ -175,12 +179,12 @@ public class ZipfKeyGenerator extends KeyGenerator
 		{
 			p_i[i] = Math.pow( 1.0/(i+1), 1.001 );
 			probSum += p_i[i];
-			//System.out.println( "i: " + i + " p(i) raw: " + p_i[i] );
+			//logger.info( "i: " + i + " p(i) raw: " + p_i[i] );
 		}
 		// Normalize
 		for( int i = 0; i < numItems; i++ )
 		{
-			System.out.println( Math.log( i+1 ) + "\t" + /*"i: " + i + " p(i) norm: " +*/ //Math.log(p_i[i]/probSum) );
+			logger.info( Math.log( i+1 ) + "\t" + /*"i: " + i + " p(i) norm: " +*/ //Math.log(p_i[i]/probSum) );
 		//}
 		
 		ZipfKeyGenerator g1 = new ZipfKeyGenerator( 1.001, 3.456, 1, 1000, 1 );
@@ -196,12 +200,12 @@ public class ZipfKeyGenerator extends KeyGenerator
 			int key2 = g2.generateKeyDirect();
 			h1.addObservation( key1 );
 			h2.addObservation( key2 );
-			//System.out.println( key1 + " " + key2 );
+			//logger.info( key1 + " " + key2 );
 		}
 		
-		System.out.println( h1.toString() );
-		System.out.println( "-----xxxxxxxxxxxx-----" );
-		System.out.println( h2.toString() );
+		logger.info( h1.toString() );
+		logger.info( "-----xxxxxxxxxxxx-----" );
+		logger.info( h2.toString() );
 				
 		//double[] p1 = h1.getKeyPopularity();
 		//double[] p2 = h2.getKeyPopularity();
@@ -210,21 +214,21 @@ public class ZipfKeyGenerator extends KeyGenerator
 		/*
 		for( int i = 0; i < p1.length; i++ )
 		{
-			System.out.println( Math.log( i+1 ) + "\t" + Math.log( p1[i] ) );
+			logger.info( Math.log( i+1 ) + "\t" + Math.log( p1[i] ) );
 		}
 		
-		System.out.println( "-----xxxxxxxxxxxx-----" );
+		logger.info( "-----xxxxxxxxxxxx-----" );
 		
 		for( int i = 0; i < p2.length; i++ )
 		{
-			System.out.println( Math.log( i+1 ) + "\t" + Math.log( p2[i] ) );
+			logger.info( Math.log( i+1 ) + "\t" + Math.log( p2[i] ) );
 		}
 		*/
 		
 		/*
 		for( int i = 0; i < keys; i++ )
 		{
-			System.out.println( Math.log( i+1 ) + "\t" + Math.log( p1[i] ) + "\t" + Math.log( p2[i] ) );		
+			logger.info( Math.log( i+1 ) + "\t" + Math.log( p1[i] ) + "\t" + Math.log( p2[i] ) );		
 		}
 		*/
 	}

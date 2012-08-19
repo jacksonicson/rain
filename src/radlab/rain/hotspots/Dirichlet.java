@@ -2,10 +2,15 @@ package radlab.rain.hotspots;
 
 import java.util.ArrayList;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import cern.jet.random.Gamma;
 import cern.jet.random.engine.MersenneTwister;
 
 public class Dirichlet {
+	
+	private static Logger logger = LoggerFactory.getLogger(Dirichlet.class);
 
 	private static Gamma gamma = new Gamma(1, 1, new MersenneTwister()); 
 		
@@ -14,11 +19,11 @@ public class Dirichlet {
 		Double sum = 0.0;
 		for (Integer i=0; i<n; i++) {
 			Double g = gamma.nextDouble(alpha.get(i),1.0);
-			//System.out.println( "g: " + g );
+			//logger.info( "g: " + g );
 			sum += g;
 			samples.add(g);
 		}
-		//System.out.println( sum );
+		//logger.info( sum );
 		for (Integer i=0; i<n; i++) samples.set(i, samples.get(i)/sum);
 		return(samples);
 	}
@@ -38,7 +43,7 @@ public class Dirichlet {
 		double alpha_i = (N - 1 - (variance * Math.pow(N,2.0)) ) / (variance * Math.pow(N, 3.0));
 		while( alpha_i <= 0 )
 		{
-			System.out.println( "Adjusting nominator" );
+			logger.info( "Adjusting nominator" );
 			variance /= 100.0;
 			alpha_i = (N - 1 - (variance * Math.pow(N,2.0)) ) / (variance * Math.pow(N, 3.0));
 		}
@@ -46,11 +51,11 @@ public class Dirichlet {
 		// alpha_i can't be <= 0
 		/*if( alpha_i < 0 )
 		{
-			System.out.println( "Compensating for negative alpha_i" );
+			logger.info( "Compensating for negative alpha_i" );
 			alpha_i = Math.abs( alpha_i );
 		}*/
 		
-		System.out.println( "Alpha_i: " + alpha_i );
+		logger.info( "Alpha_i: " + alpha_i );
 		
 		for( int i = 0; i < N; i++ )
 		{
@@ -73,14 +78,14 @@ public class Dirichlet {
 			
 			sampleSum += d;
 		}
-		System.out.println( "" );
+		logger.info( "" );
 		
 		entropySum *= -1;
 		double entropy = entropySum/(Math.log10(N)/Math.log10(2));
 		// Quick debugging
-		System.out.println( "Sample sum   : " + sampleSum );
-		System.out.println( "Entropy sum  : " + entropySum );
-		System.out.println( "Entropy (H_0): " + entropy );
+		logger.info( "Sample sum   : " + sampleSum );
+		logger.info( "Entropy sum  : " + entropySum );
+		logger.info( "Entropy (H_0): " + entropy );
 		
 		// Create a multinomial using these probabilities, sample from it and check the actual distribution
 		
@@ -97,7 +102,7 @@ public class Dirichlet {
 		{
 			System.out.print( d + " " );
 		}
-		System.out.println( "" );
+		logger.info( "" );
 		*/
 	}
 }

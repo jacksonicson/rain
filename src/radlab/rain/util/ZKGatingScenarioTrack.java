@@ -40,6 +40,8 @@ import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.data.Stat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import radlab.rain.Scenario;
 import radlab.rain.DefaultScenarioTrack;
@@ -57,6 +59,7 @@ import radlab.rain.util.ZKAppServerWatcher;
  */
 public abstract class ZKGatingScenarioTrack extends DefaultScenarioTrack 
 {
+	private static Logger logger = LoggerFactory.getLogger(ZKGatingScenarioTrack.class);
 	public static final int DEFAULT_ZOOKEEPER_SESSION_TIMEOUT 	= 30000;
 	public static final String APP_SERVER_LIST_SEPARATOR 		= "\n";
 	public static int DEFAULT_RETRIES							= 3;
@@ -154,7 +157,7 @@ public abstract class ZKGatingScenarioTrack extends DefaultScenarioTrack
 	public void setAppServerListChanged( boolean val )
 	{ 
 		if( val )
-			System.out.println( this + " app server list changed." );
+			logger.info( this + " app server list changed." );
 		
 		this._appServerListChanged = val; 
 	}
@@ -179,11 +182,11 @@ public abstract class ZKGatingScenarioTrack extends DefaultScenarioTrack
 				
 		if( !res )
 		{
-			System.out.println( this + " Error contacting zookeeper. Conn: " + zkConnString + " path: " + zkPath );
+			logger.info( this + " Error contacting zookeeper. Conn: " + zkConnString + " path: " + zkPath );
 		}
 		else
 		{
-			System.out.println( this + " Successfully contacted zookeeper. Conn: " + zkConnString + " path: " + zkPath );
+			logger.info( this + " Successfully contacted zookeeper. Conn: " + zkConnString + " path: " + zkPath );
 			this._isConfigured = true;
 		}
 		
@@ -209,12 +212,12 @@ public abstract class ZKGatingScenarioTrack extends DefaultScenarioTrack
 			if( list.trim().length() > 0 )
 			{
 				this._appServers = list.split( APP_SERVER_LIST_SEPARATOR );
-				//System.out.println( this + " Appserver list initialized, " + this._appServers.length + " app servers found." );
+				//logger.info( this + " Appserver list initialized, " + this._appServers.length + " app servers found." );
 				for( String s : this._appServers )
 				{
 					// Set up empty stats
 					this._appServerTraffic.put( s, new AppServerStats( s, 0L ) );
-					//System.out.println( this + " Appserver: " + s );
+					//logger.info( this + " Appserver: " + s );
 				}
 				return true; // Signal that we've initialized the app server list
 			}
@@ -222,7 +225,7 @@ public abstract class ZKGatingScenarioTrack extends DefaultScenarioTrack
 		}
 		catch( Exception e )
 		{
-			System.out.println( this + " Error initializing app server list. Reason: " + e.toString() );
+			logger.info( this + " Error initializing app server list. Reason: " + e.toString() );
 			e.printStackTrace();
 			return false;
 		}
@@ -244,7 +247,7 @@ public abstract class ZKGatingScenarioTrack extends DefaultScenarioTrack
 			if( list.trim().length() > 0 )
 			{
 				this._appServers = list.split( APP_SERVER_LIST_SEPARATOR );
-				//System.out.println( this + " Appserver list updated, " + this._appServers.length + " app servers found." );
+				//logger.info( this + " Appserver list updated, " + this._appServers.length + " app servers found." );
 								
 				// Here's where we'd want to purge the traffic table of entries that are not in
 				// this list - we need to purge so that non-existent servers don't get
@@ -253,7 +256,7 @@ public abstract class ZKGatingScenarioTrack extends DefaultScenarioTrack
 				Hashtable<String,AppServerStats> newTrafficSnapshot = new Hashtable<String,AppServerStats>();
 				for( String s : this._appServers )
 				{
-					//System.out.println( this + " Appserver: " + s );
+					//logger.info( this + " Appserver: " + s );
 					// Create a stats snapshot with just the server names, 
 					// but null stats values
 					newTrafficSnapshot.put( s, new AppServerStats( s, 0L ) );
@@ -287,7 +290,7 @@ public abstract class ZKGatingScenarioTrack extends DefaultScenarioTrack
 		}
 		catch( Exception e )
 		{
-			System.out.println( this + " Error updating app server list. Reason: " + e.toString() );
+			logger.info( this + " Error updating app server list. Reason: " + e.toString() );
 			e.printStackTrace();
 			return false;
 		}
@@ -352,11 +355,11 @@ public abstract class ZKGatingScenarioTrack extends DefaultScenarioTrack
 	{
 		// Dump traffic lock stats
 		if( this._totalTrafficLockRequestCount > 0 )
-			System.out.println( this + " Gating stats - Average traffic lock wait time (ms) : " + this._formatter.format( (double) this._totalTrafficLockWaitTime / (double) this._totalTrafficLockRequestCount ) );
-		else System.out.println( this + " Gating stats - Average traffic lock wait time (ms) : " + this._formatter.format( 0.0 ) );
+			logger.info( this + " Gating stats - Average traffic lock wait time (ms) : " + this._formatter.format( (double) this._totalTrafficLockWaitTime / (double) this._totalTrafficLockRequestCount ) );
+		else logger.info( this + " Gating stats - Average traffic lock wait time (ms) : " + this._formatter.format( 0.0 ) );
 		
-		System.out.println( this + " Gating stats - Total traffic lock requests         : " + this._totalTrafficLockRequestCount );
-		System.out.println( this + " Gating stats - Max traffic lock wait time (ms)     : " + this._formatter.format( this._maxTrafficLockWaitTime ) );
+		logger.info( this + " Gating stats - Total traffic lock requests         : " + this._totalTrafficLockRequestCount );
+		logger.info( this + " Gating stats - Max traffic lock wait time (ms)     : " + this._formatter.format( this._maxTrafficLockWaitTime ) );
 		// Let the base class finish its regular cleanup
 		super.end();
 	}

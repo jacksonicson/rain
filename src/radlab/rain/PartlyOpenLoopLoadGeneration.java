@@ -37,6 +37,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The PartlyOpenLoopLoadGeneration class is a thread that supports partly
@@ -44,6 +46,9 @@ import org.json.JSONObject;
  */
 public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy 
 {
+	
+	private static Logger logger = LoggerFactory.getLogger(PartlyOpenLoopLoadGeneration.class);
+	
 	/** Minimum increments of intervals of inactivity in seconds. */
 	public static int INACTIVE_DURATION = 1000;
 	
@@ -163,11 +168,11 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy
 		}
 		catch( InterruptedException ie )
 		{
-			System.out.println( "[" + threadName + "] load generation thread interrupted exiting!" );
+			logger.info( "[" + threadName + "] load generation thread interrupted exiting!" );
 		}
 		catch( Exception e )
 		{
-			System.out.println( "[" + threadName + "] load generation thread died by exception! Reason: " + e.toString() );
+			logger.info( "[" + threadName + "] load generation thread died by exception! Reason: " + e.toString() );
 			e.printStackTrace();
 		}
 		finally
@@ -199,13 +204,13 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy
 		{
 			if( now < this._startSteadyState )
 			{
-				//System.out.println( "[" + this.getName() + "] In rampUp attempt to sleep past end of run! Adjusting." );
+				//logger.info( "[" + this.getName() + "] In rampUp attempt to sleep past end of run! Adjusting." );
 				cycleTime = this._startSteadyState - now;
 				this.sleepUntil( this._startSteadyState );
 			}
 			else
 			{
-				//System.out.println( "[" + this.getName() + "] Attempt to sleep past end of run! Adjusting." );
+				//logger.info( "[" + this.getName() + "] Attempt to sleep past end of run! Adjusting." );
 				// Revise the cycle time
 				cycleTime = this._timeToQuit - now;
 				this.sleepUntil( this._timeToQuit );
@@ -233,7 +238,7 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy
 		this.doOperation( operation );
 		
 		long thinkTime = this._generator.getThinkTime();
-		//System.out.println( "[" + this.getName() + "] Think time: " + thinkTime );
+		//logger.info( "[" + this.getName() + "] Think time: " + thinkTime );
 		
 		long now = System.currentTimeMillis();
 		if( (now + thinkTime) > this._timeToQuit )
@@ -242,13 +247,13 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy
 			// steady state 
 			if( now < this._startSteadyState )
 			{
-				//System.out.println( "[" + this.getName() + "] In rampUp attempt to sleep past end of run! Adjusting." );
+				//logger.info( "[" + this.getName() + "] In rampUp attempt to sleep past end of run! Adjusting." );
 				thinkTime = this._startSteadyState - now;
 				this.sleepUntil( this._startSteadyState );
 			}
 			else // we're in the steadystate or rampdown
 			{
-				//System.out.println( "[" + this.getName() + "] Attempt to sleep past end of run! Adjusting." );
+				//logger.info( "[" + this.getName() + "] Attempt to sleep past end of run! Adjusting." );
 				// Revise the think time
 				thinkTime = this._timeToQuit - now;
 				this.sleepUntil( this._timeToQuit );
@@ -310,7 +315,7 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy
 		}
 		catch( IOException ioe )
 		{
-			System.out.println( "[" + threadName + "] could not create trace log. Reason: " + ioe.toString() );
+			logger.info( "[" + threadName + "] could not create trace log. Reason: " + ioe.toString() );
 		}
 	}
 	
@@ -335,7 +340,7 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy
 				}
 				catch( IOException ioe )
 				{
-					System.out.println( "[" + threadName + "] failed to close trace log Reason: " + ioe.toString() );
+					logger.info( "[" + threadName + "] failed to close trace log Reason: " + ioe.toString() );
 				}
 			}
 		}
@@ -353,7 +358,7 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy
 				}
 				catch( IOException ioe )
 				{
-					System.out.println( "[" + threadName + "] failed to close error trace log Reason: " + ioe.toString() );
+					logger.info( "[" + threadName + "] failed to close error trace log Reason: " + ioe.toString() );
 				}
 			}
 		}

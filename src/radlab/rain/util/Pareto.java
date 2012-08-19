@@ -33,8 +33,12 @@ package radlab.rain.util;
 
 import java.util.Random;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Pareto 
 {
+	private static Logger logger = LoggerFactory.getLogger(Pareto.class);
 	private double _alpha = 0.0;
 	private double _beta = 0.0;
 	private Random _random = new Random();
@@ -78,11 +82,11 @@ public class Pareto
 			if( val > max )
 				max = val;
 			total += val;
-			//System.out.println( val );
+			//logger.info( val );
 		}
 		
-		System.out.println( "Avg: " + (total/(double)iterations) );
-		System.out.println( "Min: " + min );
-		System.out.println( "Max: " + max );
+		logger.info( "Avg: " + (total/(double)iterations) );
+		logger.info( "Min: " + min );
+		logger.info( "Max: " + max );
 	}
 }

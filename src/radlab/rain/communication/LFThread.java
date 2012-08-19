@@ -1,21 +1,26 @@
 package radlab.rain.communication;
 
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
 
-//import radlab.rain.Benchmark;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import radlab.rain.Benchmark;
 import radlab.rain.LoadProfile;
 import radlab.rain.ScenarioTrack;
+//import radlab.rain.Benchmark;
 
 /*
  * Socket handling threadpool based on the leader-followers pattern
  * */
 public class LFThread extends Thread 
 {
+	private static Logger logger = LoggerFactory.getLogger(LFThread.class);
+	
 	public enum ThreadState
 	{
 		Leading,
@@ -97,8 +102,8 @@ public class LFThread extends Thread
 			{
 				// Debugging: print out the message header received
 				if( this._rawMessage._rainMessage._header != null )
-					System.out.println( this + " Received message header: " + this._rawMessage._rainMessage._header.toString() );
-				else System.out.println( this + " Received headerless message: " + this._rawMessage._rainMessage.toString() );
+					logger.info( this + " Received message header: " + this._rawMessage._rainMessage._header.toString() );
+				else logger.info( this + " Received headerless message: " + this._rawMessage._rainMessage.toString() );
 				
 				ObjectOutputStream clientOutput = null;
 				try
@@ -114,13 +119,13 @@ public class LFThread extends Thread
 						ScenarioTrack track = Benchmark.getBenchmarkScenario().getTracks().get( msg._destTrackName );
 						if( track != null )
 						{
-							System.out.println( this + " Found target track" );
+							logger.info( this + " Found target track" );
 							LoadProfile profile = msg.convertToLoadProfile();
 							int validationResult = track.validateLoadProfile( profile ); 
 							// Try to validate and submit to the track's load scheduler
 							if( validationResult == ScenarioTrack.VALID_LOAD_PROFILE )
 							{
-								System.out.println( this + " Profile validated" );
+								logger.info( this + " Profile validated" );
 								// Submit to load scheduler thread
 								track.submitDynamicLoadProfile( profile );
 								
@@ -130,7 +135,7 @@ public class LFThread extends Thread
 							}
 							else // Dynamic LoadProfile failed validation
 							{
-								System.out.println( this + " Profile validation failed!" );
+								logger.info( this + " Profile validation failed!" );
 								StatusMessage reply = new StatusMessage();
 								reply._statusCode = validationResult;
 								clientOutput.writeObject( reply );
@@ -138,7 +143,7 @@ public class LFThread extends Thread
 						}
 						else // Could not find track
 						{
-							System.out.println( this + " Target track not found: " + msg._destTrackName );
+							logger.info( this + " Target track not found: " + msg._destTrackName );
 							StatusMessage reply = new StatusMessage();
 							reply._statusCode = ScenarioTrack.ERROR_TRACK_NOT_FOUND;
 							clientOutput.writeObject( reply );
@@ -146,7 +151,7 @@ public class LFThread extends Thread
 					}
 					else if( this._rawMessage._rainMessage instanceof BenchmarkStartMessage )
 					{
-						System.out.println( this + " Received benchmark start message." );
+						logger.info( this + " Received benchmark start message." );
 						// Extract message
 						Benchmark.getBenchmarkInstance().waitingForStartSignal = false;
 						// Send an OK message back to the client
@@ -156,18 +161,18 @@ public class LFThread extends Thread
 					}
 					else if( this._rawMessage._rainMessage instanceof TrackListRequestMessage )
 					{
-						System.out.println( this + " Received track list request message." );
+						logger.info( this + " Received track list request message." );
 						TrackListReplyMessage reply = new TrackListReplyMessage();
 						
 						for( ScenarioTrack track : Benchmark.BenchmarkScenario.getTracks().values() )
 						{
-							System.out.println( this + " Adding track name: " + track.getName() );
+							logger.info( this + " Adding track name: " + track.getName() );
 							reply._trackNames.add( track.getName() );
 						}
 						
-						System.out.println( this + " Sending track list reply message." );
+						logger.info( this + " Sending track list reply message." );
 						clientOutput.writeObject( reply );
-						System.out.println( this + " Sent track list reply message." );
+						logger.info( this + " Sent track list reply message." );
 					}
 					else
 					{
@@ -190,7 +195,7 @@ public class LFThread extends Thread
 					// Send an error message back to client
 					StatusMessage reply = new StatusMessage();
 					reply._statusCode = MessageHeader.ERROR;
-					System.out.println( this + " Error processing message" );
+					logger.error( this + " Error processing message" );
 					e.printStackTrace( System.out );
 					try
 					{
@@ -198,7 +203,7 @@ public class LFThread extends Thread
 					}
 					catch( Exception ex )
 					{
-						System.out.println( this + " Error sending failure message to client" );
+						logger.error( this + " Error sending failure message to client" );
 						ex.printStackTrace( System.out );
 					}
 				}
@@ -214,7 +219,7 @@ public class LFThread extends Thread
 						}
 						catch( IOException ioe )
 						{
-							System.out.println( this + " Error closing client socket " );
+							logger.error( this + " Error closing client socket " );
 							ioe.printStackTrace( System.out );
 						}
 					}

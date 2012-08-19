@@ -31,11 +31,16 @@
 
 package radlab.rain.util;
 
-import java.util.TreeMap;
 import java.util.Random;
+import java.util.TreeMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EmpiricalCDF 
 {
+	private static Logger logger = LoggerFactory.getLogger(EmpiricalCDF.class);
+	
 	// <cdf summary> = [<pctilemark,value>,...,<pctilemark,value>]
 	private TreeMap<Double,Double> _cdfSummary = null;
 	private double[] _rawCdf = null;
@@ -115,7 +120,7 @@ public class EmpiricalCDF
 		EmpiricalCDF dist = new EmpiricalCDF( cdfSummary );
 		int iterations = 10000;
 		
-		System.out.println( "Start" );
+		logger.info( "Start" );
 		for( int i = 0; i < iterations; i ++ )
 		{
 			double val = dist.nextDouble();
@@ -124,12 +129,12 @@ public class EmpiricalCDF
 			if( val > max )
 				max = val;
 			total += val;
-			System.out.println( val );
+			logger.info( Double.toString(val));
 		}
 		
-		System.out.println( "Avg: " + (total/(double)iterations) );
-		System.out.println( "Min: " + min );
-		System.out.println( "Max: " + max );
+		logger.info( "Avg: " + (total/(double)iterations) );
+		logger.info( "Min: " + min );
+		logger.info( "Max: " + max );
 	}
 
 }
