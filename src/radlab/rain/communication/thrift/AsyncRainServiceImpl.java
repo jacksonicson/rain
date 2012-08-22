@@ -9,12 +9,13 @@ import org.slf4j.LoggerFactory;
 
 import radlab.rain.Benchmark;
 import radlab.rain.LoadProfile;
+import radlab.rain.Scenario;
 import radlab.rain.ScenarioTrack;
 import de.tum.in.storm.rain.Profile;
 import de.tum.in.storm.rain.RainService;
 
 public class AsyncRainServiceImpl implements RainService.Iface {
-	
+
 	private static Logger logger = LoggerFactory.getLogger(AsyncRainServiceImpl.class);
 
 	@Override
@@ -72,5 +73,11 @@ public class AsyncRainServiceImpl implements RainService.Iface {
 	@Override
 	public String toString() {
 		return "[AsyncRainServiceImpl]";
+	}
+
+	@Override
+	public long getRampUpTime() throws TException {
+		Scenario scenario = Benchmark.getBenchmarkScenario();
+		return scenario.getRampDown();
 	}
 }
