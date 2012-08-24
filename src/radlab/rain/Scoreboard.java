@@ -835,11 +835,11 @@ public class Scoreboard implements Runnable, IScoreboard
 				//	this._workerThread.interrupt();
 				//}
 				// If not give it time to exit; if it takes too long interrupt it.
-				log.info( this + " waiting " + WORKER_EXIT_TIMEOUT + " seconds for worker thread to exit!" );
+				log.debug( this + " waiting " + WORKER_EXIT_TIMEOUT + " seconds for worker thread to exit!" );
 				this._workerThread.join( WORKER_EXIT_TIMEOUT * 1000 );
 				if ( this._workerThread.isAlive() )
 				{
-					log.info( this + " interrupting worker thread." );
+					log.debug( this + " interrupting worker thread." );
 					this._workerThread.interrupt();
 				}
 				
