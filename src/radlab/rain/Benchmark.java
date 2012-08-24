@@ -32,9 +32,11 @@
 package radlab.rain;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
@@ -211,11 +213,21 @@ public class Benchmark {
 		if (scenario.getAggregateStats()) {
 			// Print aggregated stats
 			if (aggStats.size() > 0)
-				logger.debug("Aggregated stats");
+				logger.info("# aggregated stats: " + aggStats.size());
 
 			for (String generatorName : aggStats.keySet()) {
 				Scorecard card = aggStats.get(generatorName);
-				card.printStatistics(System.out);
+
+				ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+				PrintStream stream = new PrintStream(buffer);
+				card.printStatistics(stream);
+
+				// If needed
+				// System.out.write(buffer.toByteArray());
+
+				// Sonar output
+				logger.info(buffer.toString());
+
 			}
 		}
 
