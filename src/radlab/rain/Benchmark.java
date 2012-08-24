@@ -233,16 +233,16 @@ public class Benchmark {
 
 		// Close down the pipe
 		if (RainConfig.getInstance()._usePipe) {
-			logger.info("Shutting down the communication pipe!");
+			logger.debug("Shutting down the communication pipe!");
 			RainPipe.getInstance().stop();
 		}
 
 		if (RainConfig.getInstance()._useThrift) {
-			logger.info("Shutting down the thrift communication!");
+			logger.debug("Shutting down the thrift communication!");
 			ThriftService.getInstance().stop();
 		}
 
-		logger.info("finished!");
+		logger.info("load end");
 	}
 
 	/**
