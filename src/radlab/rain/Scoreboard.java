@@ -890,7 +890,7 @@ public class Scoreboard implements Runnable, IScoreboard
 	 */
 	public void run()
 	{
-		log.info( this + " worker thread started." );
+		log.debug( this + " worker thread started." );
 		while ( !this._done || this._dropOffQ.size() > 0 )
 		{
 			if ( this._dropOffQ.size() > 0 )
@@ -934,9 +934,9 @@ public class Scoreboard implements Runnable, IScoreboard
 				}
 			}
 		}
-		log.info( this + " drop off queue size: " + this._dropOffQ.size());
-		log.info( this + " processing queue size: " + this._processingQ.size());
-		log.info( this + " worker thread finished!" );
+		log.debug( this + " drop off queue size: " + this._dropOffQ.size());
+		log.debug( this + " processing queue size: " + this._processingQ.size());
+		log.debug( this + " worker thread finished!" );
 	}
 	
 	/**

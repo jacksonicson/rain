@@ -254,7 +254,7 @@ public class DefaultScenarioTrack extends ScenarioTrack
 			return;
 		}
 		
-		logger.info( this + " starting load scheduler" );
+		logger.debug( this + " starting load scheduler" );
 		this._loadManager.start();
 	}
 	
@@ -267,7 +267,7 @@ public class DefaultScenarioTrack extends ScenarioTrack
 		
 		try
 		{
-			logger.info(  this + " stopping load scheduler" );
+			logger.debug(  this + " stopping load scheduler" );
 			this._loadManager.setDone( true );
 			this._loadManager.interrupt();
 			this._loadManager.join();
@@ -353,7 +353,7 @@ public class DefaultScenarioTrack extends ScenarioTrack
 			try {
 				Thread.sleep( rampUp );
 			} catch (InterruptedException e1) {
-				logger.info( this + " interrupted during ramp up... exiting." );
+				logger.debug( this + " interrupted during ramp up... exiting." );
 				this._done = true;
 				return;
 			}
@@ -362,7 +362,7 @@ public class DefaultScenarioTrack extends ScenarioTrack
 			System.out.flush();
 			
 			cal.setTimeInMillis(now);
-			logger.info( this + " current time: " + formatter.format(cal.getTime()) + " (" +  now + ") " + this._track._currentLoadProfile.toString() );
+			logger.debug( this + " current time: " + formatter.format(cal.getTime()) + " (" +  now + ") " + this._track._currentLoadProfile.toString() );
 			
 			while( !this.getDone() )
 			{
@@ -439,7 +439,7 @@ public class DefaultScenarioTrack extends ScenarioTrack
 					this._done = true;
 				}
 			}
-			logger.info( this + " finished!" );
+			logger.debug( this + " finished!" );
 		}
 		
 		/**
@@ -460,7 +460,7 @@ public class DefaultScenarioTrack extends ScenarioTrack
 			// Update the track's reference of the current load profile.
 			if ( loadScheduleIndex < this._track._loadSchedule.size() )
 			{
-				logger.info( this + " advancing load schedule" );
+				logger.debug( this + " advancing load schedule" );
 				
 				now = System.currentTimeMillis();
 				
@@ -471,7 +471,7 @@ public class DefaultScenarioTrack extends ScenarioTrack
 				this._track._currentLoadProfile.setTimeStarted( now );
 				
 				cal.setTimeInMillis(now);
-				logger.info( this + " current time: " + formatter.format(cal.getTime()) + " (" +  now + ") " + this._track._currentLoadProfile.toString() );
+				logger.debug( this + " current time: " + formatter.format(cal.getTime()) + " (" +  now + ") " + this._track._currentLoadProfile.toString() );
 				return true;
 			}
 			else 
@@ -484,7 +484,7 @@ public class DefaultScenarioTrack extends ScenarioTrack
 		
 		public String toString()
 		{
-			return "[LOAD SCHEDULER TRACK: " + this._track._name + "]";
+			return "[TRACK: " + this._track._name + "]";
 		}
 	}
 }

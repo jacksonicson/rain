@@ -52,8 +52,7 @@ import radlab.rain.communication.thrift.ThriftService;
 import radlab.rain.util.ConfigUtil;
 
 /**
- * The Benchmark class provides a framework to initialize and run a benchmark
- * specified by a provided scenario.
+ * The Benchmark class provides a framework to initialize and run a benchmark specified by a provided scenario.
  */
 public class Benchmark {
 
@@ -66,8 +65,8 @@ public class Benchmark {
 	/** Name of the main benchmark thread. */
 	public String threadName = "Benchmark-thread";
 	/**
-	 * Amount of time (in milliseconds) to wait before threads start issuing
-	 * requests. This allows all of the threads to start synchronously.
+	 * Amount of time (in milliseconds) to wait before threads start issuing requests. This allows all of the threads to start
+	 * synchronously.
 	 */
 	public long timeToStart = 5000;
 
@@ -85,9 +84,8 @@ public class Benchmark {
 	}
 
 	/**
-	 * Initializes the benchmark as specified by the provided scenario. This
-	 * includes creating the n-threads needed, giving them the scenario, and
-	 * starting them.
+	 * Initializes the benchmark as specified by the provided scenario. This includes creating the n-threads needed, giving them
+	 * the scenario, and starting them.
 	 * 
 	 * @param scenario
 	 *            The scenario specifying parameters for the benchmark.
@@ -102,7 +100,7 @@ public class Benchmark {
 
 		int sharedThreads = scenario.getMaxSharedThreads();
 		ExecutorService pool = Executors.newFixedThreadPool(sharedThreads);
-		logger.info("[BENCHMARK] Creating " + sharedThreads + " shared threads.");
+		logger.debug("Creating " + sharedThreads + " shared threads.");
 
 		LinkedList<LoadGenerationStrategy> threads = new LinkedList<LoadGenerationStrategy>();
 
@@ -113,7 +111,7 @@ public class Benchmark {
 		long startSteadyState = start + (scenario.getRampUp() * 1000);
 		long endSteadyState = startSteadyState + (scenario.getDuration() * 1000);
 
-		logger.info("[BENCHMARK] Initializing " + scenario.getTracks().size() + " track(s).");
+		logger.info("Initializing " + scenario.getTracks().size() + " track(s).");
 		for (ScenarioTrack track : scenario.getTracks().values()) {
 			// Start the scoreboard. It needs to know the timings because we
 			// only
@@ -135,18 +133,16 @@ public class Benchmark {
 			// 2) whether to forge ahead
 
 			long maxUsers = track.getMaxUsers();
-			logger.info("[BENCHMARK] Creating " + maxUsers + " threads for track.");
+			logger.info("Creating " + maxUsers + " threads for track.");
 			// Create enough threads for maximum users needed by the scenario.
 			for (int i = 0; i < maxUsers; i++) {
-				Generator generator = track.createWorkloadGenerator(track.getGeneratorClassName(),
-						track.getGeneratorParams());
+				Generator generator = track.createWorkloadGenerator(track.getGeneratorClassName(), track.getGeneratorParams());
 				generator.setScoreboard(scoreboard);
 				generator.setMeanCycleTime((long) (track.getMeanCycleTime() * 1000));
 				generator.setMeanThinkTime((long) (track.getMeanThinkTime() * 1000));
 				// Allow the load generation strategy to be configurable
-				LoadGenerationStrategy lgThread = track.createLoadGenerationStrategy(
-						track.getLoadGenerationStrategyClassName(), track.getLoadGenerationStrategyParams(), generator,
-						i);
+				LoadGenerationStrategy lgThread = track.createLoadGenerationStrategy(track.getLoadGenerationStrategyClassName(),
+						track.getLoadGenerationStrategyParams(), generator, i);
 				generator.setName(lgThread.getName());
 				generator.initialize();
 				lgThread.setInteractive(track.getInteractive());
@@ -164,14 +160,14 @@ public class Benchmark {
 			try {
 				lgThread.join();
 			} catch (InterruptedException ie) {
-				logger.error("[BENCHMARK] Main thread interrupted... exiting!");
+				logger.error("Main thread interrupted... exiting!");
 			} finally {
 				lgThread.dispose();
 			}
 		}
 
 		// Purge threads.
-		logger.info("[BENCHMARK] Purging threads and shutting down... exiting!");
+		logger.info("Purging threads and shutting down... exiting!");
 		threads.clear();
 
 		// Set up for stats aggregation across tracks based on the generators
@@ -215,7 +211,7 @@ public class Benchmark {
 		if (scenario.getAggregateStats()) {
 			// Print aggregated stats
 			if (aggStats.size() > 0)
-				logger.info("");
+				logger.debug("Aggregated stats");
 
 			for (String generatorName : aggStats.keySet()) {
 				Scorecard card = aggStats.get(generatorName);
@@ -226,32 +222,31 @@ public class Benchmark {
 		// Shutdown the shared threadpool.
 		pool.shutdown();
 		try {
-			logger.info("[BENCHMARK] waiting up to 10 seconds for shared threadpool to shutdown!");
+			logger.debug("waiting up to 10 seconds for shared threadpool to shutdown!");
 			pool.awaitTermination(10000, TimeUnit.MILLISECONDS);
 			if (!pool.isTerminated()) {
 				pool.shutdownNow();
 			}
 		} catch (InterruptedException ie) {
-			logger.info("[BENCHMARK] INTERRUPTED while waiting for shared threadpool to shutdown!");
+			logger.debug("INTERRUPTED while waiting for shared threadpool to shutdown!");
 		}
 
 		// Close down the pipe
 		if (RainConfig.getInstance()._usePipe) {
-			logger.info("[BENCHMARK] Shutting down the communication pipe!");
+			logger.info("Shutting down the communication pipe!");
 			RainPipe.getInstance().stop();
 		}
 
 		if (RainConfig.getInstance()._useThrift) {
-			logger.info("[BENCHMARK] Shutting down the thrift communication!");
+			logger.info("Shutting down the thrift communication!");
 			ThriftService.getInstance().stop();
 		}
 
-		logger.info("[BENCHMARK] finished!");
+		logger.info("finished!");
 	}
 
 	/**
-	 * Runs the benchmark. The only required argument is the configuration file
-	 * path (e.g. config/rain.config.sample.json).
+	 * Runs the benchmark. The only required argument is the configuration file path (e.g. config/rain.config.sample.json).
 	 */
 	public static void main(String[] args) throws Exception {
 		try {
@@ -289,8 +284,7 @@ public class Benchmark {
 					if (pathIndex == -1) {
 						RainConfig.getInstance()._zooKeeper = zkString.substring(zkIndex + zkPrefix.length());
 					} else {
-						RainConfig.getInstance()._zooKeeper = zkString
-								.substring(zkIndex + zkPrefix.length(), pathIndex);
+						RainConfig.getInstance()._zooKeeper = zkString.substring(zkIndex + zkPrefix.length(), pathIndex);
 						RainConfig.getInstance()._zkPath = zkString.substring(pathIndex);
 					}
 				}
@@ -304,7 +298,7 @@ public class Benchmark {
 				// Try to load the config file as a resource first
 				InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream(filename);
 				if (in != null) {
-					logger.info("[BENCHMARK] Reading config file from resource stream.");
+					logger.info("Reading config file from resource stream.");
 					BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 					String line = "";
 					// Read in the entire file and append to the string buffer
@@ -312,7 +306,7 @@ public class Benchmark {
 						configData.append(line);
 					fileContents = configData.toString();
 				} else {
-					logger.info("[BENCHMARK] Reading config file from file system.");
+					logger.info("Reading config file from file system.");
 					fileContents = ConfigUtil.readFileAsString(filename);
 				}
 
@@ -339,27 +333,27 @@ public class Benchmark {
 			// setting in the config file)
 			if (RainConfig.getInstance()._usePipe) {
 				RainPipe pipe = RainPipe.getInstance();
-				logger.info("[BENCHMARK] Starting communication pipe! Using port: " + pipe.getPort() + " and running: "
+				logger.info("Starting communication pipe! Using port: " + pipe.getPort() + " and running: "
 						+ pipe.getNumThreads() + " communication threads.");
 				pipe.start();
 			}
 
 			if (RainConfig.getInstance()._useThrift) {
 				ThriftService thrift = ThriftService.getInstance();
-				logger.info("[BENCHMARK] Starting thrift communication! Using port: " + thrift.getPort());
+				logger.info("Starting thrift communication! Using port: " + thrift.getPort());
 				thrift.start();
 			}
 
 			if (benchmark.waitingForStartSignal)
-				logger.info("[BENCHMARK] Waiting for start signal...");
+				logger.info("Waiting for start signal...");
 
 			while (benchmark.waitingForStartSignal) {
-				logger.info("[BENCHMARK] Sleeping for 1sec...");
+				logger.trace("Sleeping for 1sec...");
 				Thread.sleep(1000);
-				logger.info("[BENCHMARK] Checking for wakeup");
+				logger.trace("Checking for wakeup");
 			}
 
-			logger.info("[BENCHMARK] Starting...");
+			logger.info("Starting...");
 
 			scenario.start();
 			benchmark.start(scenario);

@@ -20,7 +20,7 @@ public class AsyncRainServiceImpl implements RainService.Iface {
 
 	@Override
 	public boolean startBenchmark(long controllerTimestamp) throws TException {
-		logger.info(this + " Received benchmark start message.");
+		logger.debug(this + " Received benchmark start message.");
 		Benchmark.getBenchmarkInstance().waitingForStartSignal = false;
 		return true;
 	}
