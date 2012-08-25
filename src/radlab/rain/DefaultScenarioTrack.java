@@ -384,14 +384,15 @@ public class DefaultScenarioTrack extends ScenarioTrack {
 						}
 					}// End-selecting next load profile the regular way
 				} catch (InterruptedException ie) {
+					// Thread is intentionally called for interruption
 					logger.debug(this + " interrupted... exiting.");
 					this._done = true;
 				} catch (Exception e) {
-					logger.warn(this + " died... exiting. Reason: " + e.toString());
+					logger.error(this + " died... exiting. Reason: " + e.toString());
 					this._done = true;
 				}
 			}
-			logger.debug(this + " finished!");
+			logger.info(this + " finished!");
 		}
 
 		/**

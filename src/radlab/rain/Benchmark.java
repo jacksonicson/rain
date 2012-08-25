@@ -324,10 +324,10 @@ public class Benchmark {
 
 				jsonConfig = new JSONObject(fileContents);
 			} catch (IOException e) {
-				logger.info("ERROR loading configuration file " + filename + ". Reason: " + e.toString());
+				logger.error("ERROR loading configuration file " + filename + ". Reason: " + e.toString());
 				System.exit(1);
 			} catch (JSONException e) {
-				logger.info("ERROR parsing configuration file " + filename + " as JSON. Reason: " + e.toString());
+				logger.error("ERROR parsing configuration file " + filename + " as JSON. Reason: " + e.toString());
 				System.exit(1);
 			}
 
@@ -371,6 +371,8 @@ public class Benchmark {
 			benchmark.start(scenario);
 
 			scenario.end();
+		} catch (Exception e) {
+			logger.error("error in benchmark", e);
 		} finally {
 			LogManager.shutdown();
 		}

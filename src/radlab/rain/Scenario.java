@@ -162,6 +162,7 @@ public class Scenario {
 	 * Ask each scenario track to end.
 	 */
 	public void end() {
+		logger.info("# tracks to end: " + this._tracks.values());
 		for (ScenarioTrack track : this._tracks.values()) {
 			track.end();
 		}
