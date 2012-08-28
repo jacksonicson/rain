@@ -108,16 +108,6 @@ public class Scoreboard implements Runnable, IScoreboard
 	LinkedList<ResponseTimeStat> _responseTimeQ = new LinkedList<ResponseTimeStat>();
 	Object _responseTimeQLock 					= new Object();
 	
-	/* Other aggregate counters for steady state. */
-	/*private long _totalOpsSuccessful     = 0;
-	private long _totalOpsFailed         = 0;
-	private long _totalActionsSuccessful = 0;
-	private long _totalOpsAsync          = 0;
-	private long _totalOpsSync           = 0;
-	private long _totalOpsInitiated      = 0;
-	private long _totalOpsLate			 = 0;
-	private long _totalOpResponseTime	 = 0;
-	*/
 	/* Log (trace) sampling probability */
 	private double _logSamplingProbability = 1.0;
 	
