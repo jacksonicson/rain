@@ -248,8 +248,6 @@ public class Benchmark {
 			logger.debug("Shutting down the thrift communication!");
 			ThriftService.getInstance().stop();
 		}
-
-		logger.info("load end");
 	}
 
 	/**
@@ -263,6 +261,9 @@ public class Benchmark {
 				logger.info("Unspecified name/path to configuration file!");
 				System.exit(1);
 			}
+
+			// Log startup
+			logger.info("Starting Rain driver");
 
 			// If we got 2 arguments expect a zookeeper pointer as the second
 			// parameter
@@ -340,8 +341,8 @@ public class Benchmark {
 			// setting in the config file)
 			if (RainConfig.getInstance()._usePipe) {
 				RainPipe pipe = RainPipe.getInstance();
-				logger.info("Starting communication pipe! Using port: " + pipe.getPort() + " and running: "
-						+ pipe.getNumThreads() + " communication threads.");
+				logger.info("Starting communication pipe! Using port: " + pipe.getPort() + " and running: " + pipe.getNumThreads()
+						+ " communication threads.");
 				pipe.start();
 			}
 
@@ -364,11 +365,12 @@ public class Benchmark {
 
 			scenario.start();
 			benchmark.start(scenario);
-
 			scenario.end();
+
 		} catch (Exception e) {
 			logger.error("error in benchmark", e);
 		} finally {
+			logger.info("Rain stopped");
 			LogManager.shutdown();
 		}
 	}

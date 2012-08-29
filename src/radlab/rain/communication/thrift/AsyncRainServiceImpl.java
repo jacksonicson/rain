@@ -80,4 +80,16 @@ public class AsyncRainServiceImpl implements RainService.Iface {
 		Scenario scenario = Benchmark.getBenchmarkScenario();
 		return scenario.getRampUp();
 	}
+
+	@Override
+	public long getRampDownTime() throws TException {
+		Scenario scenario = Benchmark.getBenchmarkScenario();
+		return scenario.getRampDown();
+	}
+
+	@Override
+	public long getDurationTime() throws TException {
+		Scenario scenario = Benchmark.getBenchmarkScenario();
+		return scenario.getDuration();
+	}
 }
