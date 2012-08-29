@@ -32,7 +32,6 @@
 package radlab.rain;
 
 import java.io.PrintStream;
-import java.lang.Thread.State;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Iterator;
@@ -63,6 +62,7 @@ import radlab.rain.util.PoissonSamplingStrategy;
 public class Scoreboard implements Runnable, IScoreboard {
 	private static Logger log = LoggerFactory.getLogger(Scoreboard.class);
 
+	// Labels used for the results
 	public static String NO_TRACE_LABEL = "[NONE]";
 	public static String STEADY_STATE_TRACE_LABEL = "[STEADY-STATE]";
 	public static String LATE_LABEL = "[LATE]";
@@ -72,62 +72,55 @@ public class Scoreboard implements Runnable, IScoreboard {
 	// Time in seconds to wait for worker thread to exit before interrupt
 	public static int WORKER_EXIT_TIMEOUT = 60;
 
+	// Who owns this scoreboard
+	private String _trackName;
+	private String _trackTargetHost;
+	private ScenarioTrack _owner = null;
+
+	// If true, this scoreboard will refuse any new results.
+	private boolean _closed = false;
+
 	// Random number generator
 	private Random _random = new Random();
 
 	// Response time sampling interval
 	private long _meanResponseTimeSamplingInterval = 500;
-	private static String NEWLINE = System.getProperty("line.separator");
-
-	// Time markers
-	private long _startTime = 0;
-	private long _endTime = 0;
-	private long _totalDropOffWaitTime = 0;
-	private long _maxDropOffWaitTime = 0;
-	private long _totalDropoffs = 0;
-	private boolean _usingMetricSnapshots = false;
-	private MetricWriter _metricWriter = null;
-
-	// Scorecards - per-interval scorecards plus the final scorecard
-	private TreeMap<String, Scorecard> _profileScorecards = new TreeMap<String, Scorecard>();
-	Scorecard finalCard = null;
-
-	// Interim stats support
-	ObjectPoolGeneric _statsObjPool = null;
-	LinkedList<ResponseTimeStat> _responseTimeQ = new LinkedList<ResponseTimeStat>();
-	Object _responseTimeQLock = new Object();
 
 	// Log (trace) sampling probability
 	private double _logSamplingProbability = 1.0;
 
-	// Track information
-	String _trackName;
-	String _trackTargetHost;
-	ScenarioTrack _owner = null;
+	// Time markers
+	private long _startTime = 0;
+	private long _endTime = 0;
 
-	// If true, this scoreboard will refuse any new results.
-	private boolean _done = false;
+	// Counters for dropoffs and dropoff time (time waited for the lock to
+	// write a result to a processing queue)
+	private long _totalDropOffWaitTime = 0;
+	private long _maxDropOffWaitTime = 0;
+	private long _totalDropoffs = 0;
 
-	// Queue that contains all results that have been dropped off.
+	// Write metrics to the metric writer
+	private boolean _usingMetricSnapshots = false;
+	private MetricWriter _metricWriter = null;
+
+	// Scorecards: For each profile there is one scorecard
+	private TreeMap<String, Scorecard> _profileScorecards = new TreeMap<String, Scorecard>();
+
+	// Summary reports for each operation
+	private TreeMap<String, ErrorSummary> _errorMap = new TreeMap<String, ErrorSummary>();
+	private TreeMap<String, WaitTimeSummary> _waitTimeMap = new TreeMap<String, WaitTimeSummary>();
+
+	// Final scorecard (aggregates all stat counters)
+	Scorecard finalCard = null;
+
+	// Dropoff and processing queues
 	private LinkedList<OperationExecution> _dropOffQ = new LinkedList<OperationExecution>();
-
-	// Queue that contains all results that need to be processed
 	private LinkedList<OperationExecution> _processingQ = new LinkedList<OperationExecution>();
 
-	// Lock for access to _dropOffQ
+	// Lock objects
 	private Object _swapDropoffQueueLock = new Object();
-
-	// Lock for access to waitTime table
 	private Object _waitTimeDropOffLock = new Object();
-
-	// Lock for error summary table
 	private Object _errorSummaryDropOffLock = new Object();
-
-	// TreeMap that contains all the error summaries of failed operations
-	private TreeMap<String, ErrorSummary> _errorMap = new TreeMap<String, ErrorSummary>();
-
-	// A mapping of each operation with its wait/cycle time
-	private TreeMap<String, WaitTimeSummary> _waitTimeMap = new TreeMap<String, WaitTimeSummary>();
 
 	// Threads for the queue processing
 	private Thread _workerThread = null;
@@ -145,10 +138,6 @@ public class Scoreboard implements Runnable, IScoreboard {
 	 */
 	public Scoreboard(String trackName) {
 		this._trackName = trackName;
-
-		// Initialize objectpools
-		this._statsObjPool = new ObjectPoolGeneric(80000);
-		this._statsObjPool.setTrackName(trackName);
 	}
 
 	public void initialize(long startTime, long endTime) {
@@ -260,7 +249,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 	}
 
 	private final boolean isDone() {
-		return this._done;
+		return this._closed;
 	}
 
 	private final boolean isSteadyState(long time) {
@@ -277,7 +266,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 	public void start() {
 		if (!this.isRunning()) {
-			this._done = false;
+			this._closed = false;
 
 			// Start worker thread
 			this._workerThread = new Thread(this);
@@ -286,7 +275,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 			// Start snapshot thread
 			if (this._usingMetricSnapshots) {
-				this._snapshotThread = new SnapshotWriterThread(this);
+				this._snapshotThread = new SnapshotWriterThread(this._trackName);
 
 				if (this._metricWriter == null)
 					log.warn(this + " Metric snapshots disabled - No metric writer instance provided");
@@ -302,7 +291,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 	public void stop() {
 		if (this.isRunning()) {
 			// Set the finished flag
-			this._done = true;
+			this._closed = true;
 
 			try {
 				// Stop worker thread
@@ -321,10 +310,6 @@ public class Scoreboard implements Runnable, IScoreboard {
 					// Set stop flag
 					this._snapshotThread.set_done(true);
 
-					// Interrupt from waiting state
-					if (this._snapshotThread.getState() == State.TIMED_WAITING)
-						this._snapshotThread.interrupt();
-
 					// Wait to join
 					log.debug(this + " waiting " + WORKER_EXIT_TIMEOUT + " seconds for snapshot thread to exit!");
 					this._snapshotThread.join(WORKER_EXIT_TIMEOUT * 1000);
@@ -335,10 +320,6 @@ public class Scoreboard implements Runnable, IScoreboard {
 						this._snapshotThread.interrupt();
 					}
 				}
-
-				// Shutdown object pool
-				if (this._statsObjPool.isActive())
-					this._statsObjPool.shutdown();
 
 			} catch (InterruptedException ie) {
 				log.info(this + " Interrupted waiting on worker thread exit!");
@@ -533,7 +514,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 				// Only save response times if we're doing metric snapshots
 				// This reduces memory leakage
 				if (this._usingMetricSnapshots) {
-					ResponseTimeStat responseTimeStat = (ResponseTimeStat) this._statsObjPool.rentObject(ResponseTimeStat.NAME);
+					ResponseTimeStat responseTimeStat = this._snapshotThread.provisionRTSObject();
 					if (responseTimeStat == null)
 						responseTimeStat = new ResponseTimeStat();
 
@@ -549,9 +530,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 						responseTimeStat._generatedDuring = result._generatedDuring._name;
 
 					// Push this stat onto a Queue for the snapshot thread
-					synchronized (this._responseTimeQLock) {
-						this._responseTimeQ.add(responseTimeStat);
-					}
+					this._snapshotThread.accept(responseTimeStat);
 				}
 			}
 		}
@@ -848,11 +827,11 @@ public class Scoreboard implements Runnable, IScoreboard {
 	}
 
 	public boolean getDone() {
-		return this._done;
+		return this._closed;
 	}
 
 	public void setDone(boolean val) {
-		this._done = val;
+		this._closed = val;
 	}
 
 	public void setLogSamplingProbability(double val) {
