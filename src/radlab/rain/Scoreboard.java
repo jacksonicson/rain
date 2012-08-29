@@ -159,17 +159,10 @@ public class Scoreboard implements Runnable, IScoreboard {
 	 */
 	public Scoreboard(String trackName) {
 		this._trackName = trackName;
-		// Create a small object pool for stats objects
+
+		// Initialize objectpools
 		this._statsObjPool = new ObjectPoolGeneric(80000);
 		this._statsObjPool.setTrackName(trackName);
-	}
-
-	public ScenarioTrack getScenarioTrack() {
-		return this._owner;
-	}
-
-	public void setScenarioTrack(ScenarioTrack owner) {
-		this._owner = owner;
 	}
 
 	public void initialize(long startTime, long endTime) {
@@ -182,6 +175,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 		this.reset();
 	}
 
+	@Override
 	public void reset() {
 		// Clear the operation map
 		this.finalCard._operationMap.clear();
@@ -189,12 +183,9 @@ public class Scoreboard implements Runnable, IScoreboard {
 			this._dropOffQ.clear();
 		}
 		this._processingQ.clear();
-
-		// Clear the wait/cycle time map
 		synchronized (this._waitTimeDropOffLock) {
 			this._waitTimeMap.clear();
 		}
-
 		this.finalCard._totalActionsSuccessful = 0;
 		this._totalDropoffs = 0;
 		this._totalDropOffWaitTime = 0;
@@ -208,31 +199,39 @@ public class Scoreboard implements Runnable, IScoreboard {
 		this.finalCard._totalOpResponseTime = 0;
 	}
 
-	public void dropOffWaitTime(long time, String opName, long waitTime) {
-		if (this._done)
-			return;
+	private final boolean isDone() {
+		return this._done;
+	}
 
+	public void dropOffWaitTime(long time, String opName, long waitTime) {
+		if (isDone())
+			return;
 		if (!this.isSteadyState(time))
 			return;
 
 		synchronized (this._waitTimeDropOffLock) {
 			WaitTimeSummary waitTimeSummary = this._waitTimeMap.get(opName);
+
+			// Create wait time summary if it does not exist
 			if (waitTimeSummary == null) {
 				waitTimeSummary = new WaitTimeSummary(new PoissonSamplingStrategy(this._meanResponseTimeSamplingInterval));
 				this._waitTimeMap.put(opName, waitTimeSummary);
 			}
 
+			// Update wait time summary for this operation
 			waitTimeSummary.count++;
 			waitTimeSummary.totalWaitTime += waitTime;
 			if (waitTime < waitTimeSummary.minWaitTime)
 				waitTimeSummary.minWaitTime = waitTime;
 			if (waitTime > waitTimeSummary.maxWaitTime)
 				waitTimeSummary.maxWaitTime = waitTime;
+			
+			// Drop sample
 			waitTimeSummary.acceptSample(waitTime);
 		}
 	}
 
-	public void dropOff(OperationExecution result) {
+	public void dropOffOperation(OperationExecution result) {
 		if (this._done) {
 			return;
 		}
@@ -1199,5 +1198,13 @@ public class Scoreboard implements Runnable, IScoreboard {
 		synchronized (this._logHandleMap) {
 			this._logHandleMap.remove(owner);
 		}
+	}
+
+	public ScenarioTrack getScenarioTrack() {
+		return this._owner;
+	}
+
+	public void setScenarioTrack(ScenarioTrack owner) {
+		this._owner = owner;
 	}
 }

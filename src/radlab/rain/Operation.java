@@ -215,7 +215,7 @@ public abstract class Operation implements Runnable
 			if ( this._scoreboard != null )
 			{
 				OperationExecution result = new OperationExecution(this);
-				this._scoreboard.dropOff(result);
+				this._scoreboard.dropOffOperation(result);
 			}
 		}
 	}

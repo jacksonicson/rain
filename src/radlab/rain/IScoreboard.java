@@ -97,7 +97,7 @@ public interface IScoreboard
 	 * 
 	 * @param result    The result to record.
 	 */
-	void dropOff( OperationExecution result );
+	void dropOffOperation( OperationExecution result );
 
 	void dropOffWaitTime( long time, String opName, long waitTime );
 	
