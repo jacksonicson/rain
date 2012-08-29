@@ -31,130 +31,143 @@
 
 package radlab.rain;
 
-import java.io.FileWriter;
 import java.io.PrintStream;
 
 import radlab.rain.util.MetricWriter;
 
 /**
- * The IScoreboard interface allows an implemented scoreboard to interface
- * with the benchmark architecture.<br />
+ * The IScoreboard interface allows an implemented scoreboard to interface with the benchmark architecture.<br />
  * <br />
- * The interface requires that the scoreboard be able to start, stop, receive
- * results, show statistics, and register log handles, among other things.
+ * The interface requires that the scoreboard be able to start, stop, receive results, show statistics, and register log handles,
+ * among other things.
  */
-public interface IScoreboard
-{
+public interface IScoreboard {
 	/**
 	 * Gets the time when this scoreboard starts recording results.
 	 */
 	long getStartTimestamp();
-	
+
 	/**
 	 * Sets the time when this scoreboard starts recording results.
 	 * 
-	 * @param val   The time to use as the start time.
+	 * @param val
+	 *            The time to use as the start time.
 	 */
-	void setStartTimestamp( long val );
-	
+	void setStartTimestamp(long val);
+
 	/**
 	 * Gets the time when this scoreboard stops recording results.
 	 */
 	long getEndTimestamp();
-	
+
 	/**
 	 * Sets the time when this scoreboard stops recording results.
 	 * 
-	 * @param val   The time to use as the end time.
+	 * @param val
+	 *            The time to use as the end time.
 	 */
-	void setEndTimestamp( long val );
-	
+	void setEndTimestamp(long val);
+
 	/**
 	 * Initializes the start and end times and resets the results.
 	 * 
-	 * @param startTime     The time to start receiving results.
-	 * @param endTime       The time to stop receiving results.
+	 * @param startTime
+	 *            The time to start receiving results.
+	 * @param endTime
+	 *            The time to stop receiving results.
 	 */
-	void initialize( long startTime, long endTime );
-	
+	void initialize(long startTime, long endTime);
+
 	/**
 	 * Resets the results recorded by this scoreboard.
 	 */
 	void reset();
-	
+
 	/**
 	 * Starts this scoreboard for recording results.
 	 */
 	void start();
-	
+
 	/**
 	 * Stops this scoreboard from recording any more results.
 	 */
 	void stop();
-	
+
 	/**
 	 * Receives the results of an operation execution.
 	 * 
-	 * @param result    The result to record.
+	 * @param result
+	 *            The result to record.
 	 */
-	void dropOffOperation( OperationExecution result );
+	void dropOffOperation(OperationExecution result);
 
-	void dropOffWaitTime( long time, String opName, long waitTime );
-	
+	void dropOffWaitTime(long time, String opName, long waitTime);
+
 	/**
 	 * Prints the statistics processed by this scoreboard.
 	 */
-	void printStatistics( PrintStream out );
-	
+	void printStatistics(PrintStream out);
+
 	/**
 	 * Registers a log handler for a string identifier.
 	 * 
-	 * @param owner         The string to identify this log handler by.
-	 * @param logHandle     The log handler to register.
+	 * @param owner
+	 *            The string to identify this log handler by.
+	 * @param logHandle
+	 *            The log handler to register.
 	 */
 	// void registerLogHandle( String owner, FileWriter logHandle );
-	
+
 	/**
 	 * Deregisters a log handler identified by the given string.
 	 * 
-	 * @param owner         The string identifying the log handler.
+	 * @param owner
+	 *            The string identifying the log handler.
 	 */
 	// void deRegisterLogHandle( String owner );
 
 	/**
 	 * Registers an error log handler for a string identifier.
 	 * 
-	 * @param owner         The string to identify this error log handler by.
-	 * @param logHandle     The error log handler to register.
+	 * @param owner
+	 *            The string to identify this error log handler by.
+	 * @param logHandle
+	 *            The error log handler to register.
 	 */
 	// void registerErrorLogHandle( String owner, FileWriter logHandle );
 
 	/**
 	 * Deregisters an error log handler identified by the given string.
 	 * 
-	 * @param owner         The string identifying the error log handler.
+	 * @param owner
+	 *            The string identifying the error log handler.
 	 */
 	// void deRegisterErrorLogHandle( String owner );
-	
-	void setLogSamplingProbability( double val );
-	
-	void setMetricSnapshotInterval( long val );
-	
+
+	void setLogSamplingProbability(double val);
+
+	void setMetricSnapshotInterval(long val);
+
 	boolean getUsingMetricSnapshots();
-	void setUsingMetricSnapshots( boolean val );
-	
+
+	void setUsingMetricSnapshots(boolean val);
+
 	ScenarioTrack getScenarioTrack();
-	void setScenarioTrack( ScenarioTrack val );
-	
+
+	void setScenarioTrack(ScenarioTrack val);
+
 	long getMeanResponseTimeSamplingInterval();
-	void setMeanResponseTimeSamplingInterval( long val );
+
+	void setMeanResponseTimeSamplingInterval(long val);
 
 	String getTargetHost();
-	void setTargetHost( String val );
-	
+
+	void setTargetHost(String val);
+
 	Scorecard getFinalScorecard();
-	
+
 	MetricWriter getMetricWriter();
-	void setMetricWriter( MetricWriter val );
-	
+
+	void setMetricWriter(MetricWriter val);
+
 }
