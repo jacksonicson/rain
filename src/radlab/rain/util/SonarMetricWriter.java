@@ -25,6 +25,9 @@ public class SonarMetricWriter extends MetricWriter {
 
 	public SonarMetricWriter(JSONObject config) throws Exception {
 		super(config);
+
+		System.out.println("Start SonarMetricWriter");
+
 		// Read configuration
 		String sonarServer = config.getString("sonarServer");
 		logger.debug("sonar server: " + sonarServer);
@@ -50,15 +53,22 @@ public class SonarMetricWriter extends MetricWriter {
 
 	@Override
 	public boolean write(ResponseTimeStat stat) throws Exception {
-		logger.debug("response_time " + stat._responseTime + " " + HOSTNAME + " " + stat._timestamp);
+		System.out.println("...");
+		return false;
+	}
+
+	@Override
+	public boolean writeSnapshot(ResponseTimeStat stat) throws Exception {
+		double avgResponseTime = stat._totalResponseTime / stat._numObservations;
+		System.out.println("response_time " + avgResponseTime + " " + HOSTNAME + " " + stat._timestamp);
 
 		Identifier id = new Identifier();
 		id.setHostname(HOSTNAME);
-		id.setSensor("specj.rtime");
+		id.setSensor("rain.rtime." + stat._trackName);
 		id.setTimestamp(stat._timestamp / 1000);
 
 		MetricReading value = new MetricReading();
-		value.setValue(stat._responseTime);
+		value.setValue(avgResponseTime);
 
 		client.logMetric(id, value);
 

@@ -14,6 +14,7 @@ public class ResponseTimeStat extends Poolable implements Serializable
 	public String _operationName = "";
 	public String _operationRequest = "";
 	public String _generatedDuring = "";
+	public String _trackName = "";
 	
 	public ResponseTimeStat()
 	{

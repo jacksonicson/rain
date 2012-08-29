@@ -524,6 +524,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 					responseTimeStat._totalResponseTime = this.finalCard._totalOpResponseTime;
 					responseTimeStat._numObservations = this.finalCard._totalOpsSuccessful;
 					responseTimeStat._operationName = result._operationName;
+					responseTimeStat._trackName = this._trackName; 
 					responseTimeStat._operationRequest = result._operationRequest;
 
 					if (result._generatedDuring != null)

@@ -51,12 +51,17 @@ class SnapshotWriterThread extends Thread {
 				}
 
 				// Write everything out
+				ResponseTimeStat stat = null;
 				while (!this._processingQ.isEmpty()) {
-					ResponseTimeStat stat = this._processingQ.removeFirst();
+					stat = this._processingQ.removeFirst();
 
 					try {
 						if (this._metricWriter != null)
 							this._metricWriter.write(stat);
+
+						if (this._processingQ.isEmpty())
+							this._metricWriter.writeSnapshot(stat);
+
 					} catch (Exception e) {
 					} finally {
 						// Important
@@ -65,6 +70,7 @@ class SnapshotWriterThread extends Thread {
 							this._statsObjPool.returnObject(stat);
 					}
 				}
+
 			} else {
 				try {
 					Thread.sleep(1000);
