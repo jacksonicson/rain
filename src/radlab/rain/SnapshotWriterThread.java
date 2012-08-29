@@ -59,9 +59,6 @@ class SnapshotWriterThread extends Thread {
 						if (this._metricWriter != null)
 							this._metricWriter.write(stat);
 
-						if (this._processingQ.isEmpty())
-							this._metricWriter.writeSnapshot(stat);
-
 					} catch (Exception e) {
 					} finally {
 						// Important

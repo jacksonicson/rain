@@ -50,9 +50,4 @@ public class SocketMetricWriter extends MetricWriter
 		buf.append( "SOCKET [string writer]" ).append( this._ipAddress ).append( ":" ).append( this._port );
 		return buf.toString();
 	}
-
-	@Override
-	public boolean writeSnapshot(ResponseTimeStat stat) throws Exception {
-		return false;
-	}
 }

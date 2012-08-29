@@ -20,7 +20,5 @@ public abstract class MetricWriter {
 
 	public abstract boolean write(ResponseTimeStat stat) throws Exception;
 
-	public abstract boolean writeSnapshot(ResponseTimeStat stat) throws Exception;
-
 	public abstract void close() throws Exception;
 }

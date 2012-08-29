@@ -49,8 +49,4 @@ public class FileMetricWriter extends MetricWriter
 		return buf.toString();
 	}
 
-	@Override
-	public boolean writeSnapshot(ResponseTimeStat stat) throws Exception {
-		return false;
-	}
 }

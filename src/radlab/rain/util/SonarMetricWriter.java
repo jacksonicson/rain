@@ -23,6 +23,10 @@ public class SonarMetricWriter extends MetricWriter {
 	private CollectService.Client client;
 	private TTransport transport;
 
+	private long lastSnapshotLog = 0;
+	private long lastTotalResponseTime = 0;
+	private long lastNumObservations = 0;
+
 	public SonarMetricWriter(JSONObject config) throws Exception {
 		super(config);
 
@@ -53,26 +57,39 @@ public class SonarMetricWriter extends MetricWriter {
 
 	@Override
 	public boolean write(ResponseTimeStat stat) throws Exception {
-		System.out.println("...");
+
+		if (lastSnapshotLog == 0) {
+			lastSnapshotLog = System.currentTimeMillis();
+			lastTotalResponseTime = stat._totalResponseTime;
+			lastNumObservations = stat._numObservations;
+		}
+
+		long delta = (System.currentTimeMillis() - lastSnapshotLog);
+		if (delta > 3000) {
+
+			double avgResponseTime = stat._totalResponseTime / stat._numObservations;
+			double davgResponseTime = (stat._totalResponseTime - lastTotalResponseTime) / (stat._numObservations - lastNumObservations);
+
+			System.out.println("response_time " + avgResponseTime + " " + HOSTNAME + " " + stat._timestamp);
+
+			Identifier id = new Identifier();
+			id.setHostname(HOSTNAME);
+			id.setSensor("rain.avgrtime." + stat._trackName);
+			id.setTimestamp(stat._timestamp / 1000);
+			MetricReading value = new MetricReading();
+			value.setValue(avgResponseTime);
+			client.logMetric(id, value);
+
+			id.setSensor("rain.rtime." + stat._trackName);
+			value.setValue(davgResponseTime);
+			client.logMetric(id, value);
+
+			lastSnapshotLog = System.currentTimeMillis();
+			lastTotalResponseTime = stat._totalResponseTime;
+			lastNumObservations = stat._numObservations;
+		}
+
 		return false;
-	}
-
-	@Override
-	public boolean writeSnapshot(ResponseTimeStat stat) throws Exception {
-		double avgResponseTime = stat._totalResponseTime / stat._numObservations;
-		System.out.println("response_time " + avgResponseTime + " " + HOSTNAME + " " + stat._timestamp);
-
-		Identifier id = new Identifier();
-		id.setHostname(HOSTNAME);
-		id.setSensor("rain.rtime." + stat._trackName);
-		id.setTimestamp(stat._timestamp / 1000);
-
-		MetricReading value = new MetricReading();
-		value.setValue(avgResponseTime);
-
-		client.logMetric(id, value);
-
-		return true;
 	}
 
 	@Override
