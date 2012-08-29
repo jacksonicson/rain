@@ -68,7 +68,7 @@ public class Benchmark {
 	 * Amount of time (in milliseconds) to wait before threads start issuing requests. This allows all of the threads to start
 	 * synchronously.
 	 */
-	public long timeToStart = 5000;
+	public long timeToStart = 10000;
 
 	public boolean waitingForStartSignal = false;
 
@@ -110,6 +110,13 @@ public class Benchmark {
 		long start = System.currentTimeMillis() + timeToStart;
 		long startSteadyState = start + (scenario.getRampUp() * 1000);
 		long endSteadyState = startSteadyState + (scenario.getDuration() * 1000);
+
+		// Log benchmark schedule
+		JSONObject schedule = new JSONObject();
+		schedule.put("start", start);
+		schedule.put("startSteadyState", startSteadyState);
+		schedule.put("endSteadyState", endSteadyState);
+		logger.info(schedule.toString());
 
 		logger.info("Initializing " + scenario.getTracks().size() + " track(s).");
 		for (ScenarioTrack track : scenario.getTracks().values()) {
