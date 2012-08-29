@@ -225,106 +225,40 @@ public class Scoreboard implements Runnable, IScoreboard {
 				waitTimeSummary.minWaitTime = waitTime;
 			if (waitTime > waitTimeSummary.maxWaitTime)
 				waitTimeSummary.maxWaitTime = waitTime;
-			
+
 			// Drop sample
 			waitTimeSummary.acceptSample(waitTime);
 		}
 	}
 
 	public void dropOffOperation(OperationExecution result) {
-		if (this._done) {
+		if (isDone())
 			return;
-		}
 
-		/*
-		 * Everything goes into the dropOffQ. Offered Load: Number of requests initiated during steady state. Not all of them may
-		 * complete within steady state. Effective Load: Number of operations that complete successfully within the steady state
-		 * period.
-		 */
-		long qStart = System.currentTimeMillis();
+		// Put all results into the dropoff queue
+		long lockStart = System.currentTimeMillis();
 		synchronized (this._dropOffQLock) {
-			long qEnd = System.currentTimeMillis();
-			long qTime = (qEnd - qStart);
+			long dropOffWaitTime = (System.currentTimeMillis() - lockStart);
 
-			this._totalDropOffWaitTime += qTime;
+			// Update statistics
+			this._totalDropOffWaitTime += dropOffWaitTime;
 			this._totalDropoffs++;
+			if (dropOffWaitTime > this._maxDropOffWaitTime)
+				this._maxDropOffWaitTime = dropOffWaitTime;
 
-			if (qTime > this._maxDropOffWaitTime) {
-				this._maxDropOffWaitTime = qTime;
-			}
-
+			// Put this result into the dropoff queue
 			this._dropOffQ.add(result);
 		}
 
-		boolean isSteadyState = false;
-
-		// Set the trace label accordingly.
-		if (this.isRampUp(result.getTimeStarted())) // Initiated during ramp up
-		{
+		// Set result label
+		if (this.isRampUp(result.getTimeStarted()))
 			result.setTraceLabel(Scoreboard.RAMP_UP_LABEL);
-		} else if (this.isSteadyState(result.getTimeFinished())) // Finished in steady state
-		{
+		else if (this.isSteadyState(result.getTimeFinished()))
 			result.setTraceLabel(Scoreboard.STEADY_STATE_TRACE_LABEL);
-			isSteadyState = true;
-		} else if (this.isSteadyState(result.getTimeStarted())) // Initiated in steady state BUT did not complete until after
-																// steady state
-		{
+		else if (this.isSteadyState(result.getTimeStarted()))
 			result.setTraceLabel(Scoreboard.LATE_LABEL);
-		}
-		/*
-		 * else if ( this.isRampUp( result.getTimeStarted() ) ) // Initiated during ramp up { result.setTraceLabel(
-		 * Scoreboard.RAMP_UP_LABEL ); }
-		 */
-		else if (this.isRampDown(result.getTimeStarted())) // Initiated during ramp down
-		{
+		else if (this.isRampDown(result.getTimeStarted()))
 			result.setTraceLabel(Scoreboard.RAMP_DOWN_LABEL);
-		}
-
-		String generatedBy = result.getOperation().getGeneratedBy();
-
-		// If this operation failed, write out the error information.
-		if (isSteadyState && result.getOperation().isFailed()) {
-			// Keep track of why the operation failed so we can report it at the end
-			synchronized (this._errorSummaryDropOffLock) {
-				Throwable failure = result.getOperation().getFailureReason();
-				if (failure != null) {
-					StringBuffer failureKey = new StringBuffer();
-					failureKey.append(failure.getMessage()).append(" (").append(failure.getClass().toString()).append(")");
-					String failureClass = failureKey.toString();
-					ErrorSummary errors = this._errorMap.get(failureClass);
-					if (errors == null) {
-						errors = new ErrorSummary(failureClass);
-						this._errorMap.put(failureClass, errors);
-					}
-					errors._errorCount++;
-				}
-			}
-
-			FileWriter errorLogger = null;
-			synchronized (this._errorLogHandleMap) {
-				errorLogger = this._errorLogHandleMap.get(generatedBy);
-			}
-
-			if (errorLogger != null) {
-				synchronized (errorLogger) {
-					try {
-						Throwable failureReason = result.getOperation().getFailureReason();
-						if (failureReason != null) {
-							errorLogger.write("[" + generatedBy + "] " + failureReason.toString() + Scoreboard.NEWLINE);
-							RainConfig config = RainConfig.getInstance();
-							if (config._verboseErrors) {
-								// If we're doing verbose error reporting then dump the stack trace
-								for (StackTraceElement frame : failureReason.getStackTrace())
-									errorLogger.write("at [" + generatedBy + "] " + frame.toString() + Scoreboard.NEWLINE);
-							}
-							errorLogger.write(Scoreboard.NEWLINE);
-						}
-					} catch (IOException ioe) {
-						log.info(this + " Error writing error record: Thread name: " + Thread.currentThread().getName()
-								+ " on behalf of: " + result.getOperation().getGeneratedBy() + " Reason: " + ioe.toString());
-					}
-				}
-			}
 		}
 
 		// Flip a coin to determine whether we log or not?
@@ -374,20 +308,6 @@ public class Scoreboard implements Runnable, IScoreboard {
 	public boolean isRampDown(long time) {
 		return (time > this._endTime);
 	}
-
-	/*
-	 * public boolean isCompletedDuringSteadyState( OperationExecution e ) { long finishTime = e.getTimeFinished(); return (
-	 * finishTime >= this._startTime && finishTime <= this._endTime ); }
-	 * 
-	 * public boolean isInitiatedDuringSteadyState( OperationExecution e ) { long startTime = e.getTimeStarted(); return (
-	 * startTime >= this._startTime && startTime <= this._endTime ); }
-	 * 
-	 * public boolean isInitiatedDuringRampUp( OperationExecution e ) { long startTime = e.getTimeStarted(); return ( startTime <
-	 * this._startTime ); }
-	 * 
-	 * public boolean isInitiatedDuringRampDown( OperationExecution e ) { long startTime = e.getTimeStarted(); return ( startTime
-	 * > this._endTime ); }
-	 */
 
 	public void printStatistics(PrintStream out) {
 		double runDuration = (double) (this._endTime - this._startTime) / 1000.0;
