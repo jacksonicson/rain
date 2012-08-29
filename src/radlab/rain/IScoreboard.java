@@ -112,14 +112,14 @@ public interface IScoreboard
 	 * @param owner         The string to identify this log handler by.
 	 * @param logHandle     The log handler to register.
 	 */
-	void registerLogHandle( String owner, FileWriter logHandle );
+	// void registerLogHandle( String owner, FileWriter logHandle );
 	
 	/**
 	 * Deregisters a log handler identified by the given string.
 	 * 
 	 * @param owner         The string identifying the log handler.
 	 */
-	void deRegisterLogHandle( String owner );
+	// void deRegisterLogHandle( String owner );
 
 	/**
 	 * Registers an error log handler for a string identifier.
@@ -127,14 +127,14 @@ public interface IScoreboard
 	 * @param owner         The string to identify this error log handler by.
 	 * @param logHandle     The error log handler to register.
 	 */
-	void registerErrorLogHandle( String owner, FileWriter logHandle );
+	// void registerErrorLogHandle( String owner, FileWriter logHandle );
 
 	/**
 	 * Deregisters an error log handler identified by the given string.
 	 * 
 	 * @param owner         The string identifying the error log handler.
 	 */
-	void deRegisterErrorLogHandle( String owner );
+	// void deRegisterErrorLogHandle( String owner );
 	
 	void setLogSamplingProbability( double val );
 	
