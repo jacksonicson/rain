@@ -122,7 +122,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 	private Object _waitTimeDropOffLock = new Object();
 	private Object _errorSummaryDropOffLock = new Object();
 
-	// Threads for the queue processing
+	// Threads used to process the queues
 	private Thread _workerThread = null;
 	private SnapshotWriterThread _snapshotThread = null;
 
@@ -538,32 +538,20 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 	public void printStatistics(PrintStream out) {
 		double runDuration = (double) (this._endTime - this._startTime) / 1000.0;
-
 		long totalOperations = this.finalCard._totalOpsSuccessful + this.finalCard._totalOpsFailed;
-
-		double offeredLoadOps = 0.0;
-		if (totalOperations > 0) {
-			offeredLoadOps = (double) this.finalCard._totalOpsInitiated / runDuration;
-		}
-
-		double effectiveLoadOps = 0.0;
-		if (this.finalCard._totalOpsSuccessful > 0) {
-			effectiveLoadOps = (double) this.finalCard._totalOpsSuccessful / runDuration;
-		}
-
-		double effectiveLoadRequests = 0.0;
-		if (this.finalCard._totalActionsSuccessful > 0) {
-			effectiveLoadRequests = (double) this.finalCard._totalActionsSuccessful / runDuration;
-		}
+		double offeredLoadOps = (double) this.finalCard._totalOpsInitiated / runDuration;
+		double effectiveLoadOps = (double) this.finalCard._totalOpsSuccessful / runDuration;
+		double effectiveLoadRequests = (double) this.finalCard._totalActionsSuccessful / runDuration;
 
 		double totalUsers = 0.0;
 		double totalIntervalActivations = 0.0;
+
 		out.println(this + " Interval results-------------------: ");
-		// Print out per-interval stats?
+
+		// Print all scorecard stats
 		for (Scorecard card : this._profileScorecards.values()) {
-			// Let's look at the load schedule to find the profile that
-			// matches the current score card
 			for (LoadProfile profile : this._owner._loadSchedule) {
+				// Skip profile if name does not match
 				if (!card._name.equals(profile._name))
 					continue;
 
@@ -573,11 +561,11 @@ public class Scoreboard implements Runnable, IScoreboard {
 					// Decrease activation count
 					double intervalSpillOver = (this._endTime - profile.getTimeStarted())
 							/ ((profile._interval * 1000) + (profile._transitionTime * 1000));
-					log.info(this + " Need to decrease activation count for: " + profile._name + " spillover: "
-							+ intervalSpillOver);
+					log.info(this + " Need to decrease activation count for: " + profile._name + " spillover: " + intervalSpillOver);
 					card._activeCount -= intervalSpillOver;
 					continue;
 				}
+
 				// Look at the diff between the last activation
 				// and the end of steady state
 				long intervalEndTime = profile.getTimeStarted() + (profile._interval * 1000) + (profile._transitionTime * 1000);
@@ -624,6 +612,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 		out.println(this + " Average number of users            : " + this._formatter.format(averageNumberOfUsers));
 		out.println(this + " Offered load (ops/sec)             : " + this._formatter.format(offeredLoadOps));
 		out.println(this + " Effective load (ops/sec)           : " + this._formatter.format(effectiveLoadOps));
+
 		// Still a rough estimate, need to compute the bounds on this estimate
 		if (averageOpResponseTimeSecs > 0.0) {
 			// double opsPerUser = averageNumberOfUsers / this.finalCard._totalOpsSuccessful;
@@ -647,9 +636,9 @@ public class Scoreboard implements Runnable, IScoreboard {
 		out.println(this + " Sync Ops                           : " + this.finalCard._totalOpsSync + " "
 				+ this._formatter.format((((double) this.finalCard._totalOpsSync / (double) totalOperations) * 100)) + "%");
 
-		out.println(this + " Mean response time sample interval : " + this._meanResponseTimeSamplingInterval
-				+ " (using Poisson sampling)");
+		out.println(this + " Mean response time sample interval : " + this._meanResponseTimeSamplingInterval + " (using Poisson sampling)");
 
+		// Print other statistics
 		this.printOperationStatistics(out, false);
 		out.println("");
 		this.printErrorSummaryStatistics(out, false);
@@ -677,9 +666,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 				// Make this thing "prettier", using fixed width columns
 				String outputFormatSpec = "|%20s|%12s|%12s|%12s|%10s|%10s|%50s|";
 
-				out.println(this
-						+ String.format(outputFormatSpec, "operation", "avg wait", "min wait", "max wait", "90th (s)",
-								"99th (s)", "pctile"));
+				out.println(this + String.format(outputFormatSpec, "operation", "avg wait", "min wait", "max wait", "90th (s)", "99th (s)", "pctile"));
 				out.println(this + String.format(outputFormatSpec, "", "time (s)", "time (s)", "time (s)", "", "", "samples"));
 
 				// Show operation proportions, response time: avg, max, min, stdev (op1 = x%, op2 = y%...)
@@ -707,13 +694,11 @@ public class Scoreboard implements Runnable, IScoreboard {
 									// summary.succeeded,
 									// summary.failed,
 									this._formatter.format(summary.getAverageWaitTime() / 1000.0),
-									this._formatter.format(summary.minWaitTime / 1000.0),
-									this._formatter.format(summary.maxWaitTime / 1000.0),
+									this._formatter.format(summary.minWaitTime / 1000.0), this._formatter.format(summary.maxWaitTime / 1000.0),
 									this._formatter.format(summary.getNthPercentileResponseTime(90) / 1000.0),
-									this._formatter.format(summary.getNthPercentileResponseTime(99) / 1000.0),
-									summary.getSamplesCollected() + "/" + summary.getSamplesSeen() + " (mu: "
-											+ this._formatter.format(summary.getSampleMean() / 1000.0) + ", sd: "
-											+ this._formatter.format(summary.getSampleStandardDeviation() / 1000.0) + " t: "
+									this._formatter.format(summary.getNthPercentileResponseTime(99) / 1000.0), summary.getSamplesCollected() + "/"
+											+ summary.getSamplesSeen() + " (mu: " + this._formatter.format(summary.getSampleMean() / 1000.0)
+											+ ", sd: " + this._formatter.format(summary.getSampleStandardDeviation() / 1000.0) + " t: "
 											+ this._formatter.format(summary.getTvalue(summary.getAverageWaitTime())) + ")"));
 
 					if (purgePercentileData)
@@ -739,10 +724,9 @@ public class Scoreboard implements Runnable, IScoreboard {
 				String outputFormatSpec = "|%20s|%10s|%10s|%10s|%12s|%12s|%12s|%10s|%10s|%50s|";
 
 				out.println(this
-						+ String.format(outputFormatSpec, "operation", "proportion", "successes", "failures", "avg response",
-								"min response", "max response", "90th (s)", "99th (s)", "pctile"));
-				out.println(this
-						+ String.format(outputFormatSpec, "", "", "", "", "time (s)", "time (s)", "time(s)", "", "", "samples"));
+						+ String.format(outputFormatSpec, "operation", "proportion", "successes", "failures", "avg response", "min response",
+								"max response", "90th (s)", "99th (s)", "pctile"));
+				out.println(this + String.format(outputFormatSpec, "", "", "", "", "time (s)", "time (s)", "time(s)", "", "", "samples"));
 
 				// Show operation proportions, response time: avg, max, min, stdev (op1 = x%, op2 = y%...)
 				// Enumeration<String> keys = this.finalCard._operationMap.keys();
@@ -767,19 +751,14 @@ public class Scoreboard implements Runnable, IScoreboard {
 							+ String.format(
 									outputFormatSpec,
 									opName,
-									this._formatter
-											.format((((double) (summary.succeeded + summary.failed) / (double) totalOperations) * 100))
-											+ "% ",
-									summary.succeeded,
-									summary.failed,
-									this._formatter.format(summary.getAverageResponseTime() / 1000.0),
+									this._formatter.format((((double) (summary.succeeded + summary.failed) / (double) totalOperations) * 100)) + "% ",
+									summary.succeeded, summary.failed, this._formatter.format(summary.getAverageResponseTime() / 1000.0),
 									this._formatter.format(summary.minResponseTime / 1000.0),
 									this._formatter.format(summary.maxResponseTime / 1000.0),
 									this._formatter.format(summary.getNthPercentileResponseTime(90) / 1000.0),
-									this._formatter.format(summary.getNthPercentileResponseTime(99) / 1000.0),
-									summary.getSamplesCollected() + "/" + summary.getSamplesSeen() + " (mu: "
-											+ this._formatter.format(summary.getSampleMean() / 1000.0) + ", sd: "
-											+ this._formatter.format(summary.getSampleStandardDeviation() / 1000.0) + " t: "
+									this._formatter.format(summary.getNthPercentileResponseTime(99) / 1000.0), summary.getSamplesCollected() + "/"
+											+ summary.getSamplesSeen() + " (mu: " + this._formatter.format(summary.getSampleMean() / 1000.0)
+											+ ", sd: " + this._formatter.format(summary.getSampleStandardDeviation() / 1000.0) + " t: "
 											+ this._formatter.format(summary.getTvalue(summary.getAverageResponseTime())) + ")"));
 
 					if (purgePercentileData)

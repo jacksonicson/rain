@@ -204,6 +204,7 @@ public class Benchmark {
 			aggStats.put(generatorClassName, aggCard);
 			// Collect scoreboard results
 			// Collect object pool results
+
 			track.getObjectPool().shutdown();
 		}
 

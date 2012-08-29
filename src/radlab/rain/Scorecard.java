@@ -210,14 +210,14 @@ public class Scorecard {
 
 					operation.put("opname", opName);
 					operation.put("proportion",
-							(((double) (summary.succeeded + summary.failed) / (double) totalOperations) * 100d));
+							(((double) (summary.succeeded + summary.failed) / (double) totalOperations) * 100.0));
 					operation.put("success", summary.succeeded);
 					operation.put("failures", summary.failed);
-					operation.put("avg_response", summary.getAverageResponseTime() / 1000d);
-					operation.put("min_response", summary.minResponseTime / 1000d);
-					operation.put("max_response", summary.maxResponseTime / 1000d);
-					operation.put("90th (s)", summary.getNthPercentileResponseTime(90) / 1000d);
-					operation.put("99th (s)", summary.getNthPercentileResponseTime(99) / 1000d);
+					operation.put("avg_response", summary.getAverageResponseTime() / 1000.0);
+					operation.put("min_response", summary.minResponseTime / 1000.0);
+					operation.put("max_response", summary.maxResponseTime / 1000.0);
+					operation.put("90th (s)", summary.getNthPercentileResponseTime(90) / 1000.0);
+					operation.put("99th (s)", summary.getNthPercentileResponseTime(99) / 1000.0);
 					operation.put("sample_collected", summary.getSamplesCollected());
 					operation.put("samples_seen", summary.getSamplesSeen());
 
