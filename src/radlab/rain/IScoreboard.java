@@ -136,10 +136,8 @@ public interface IScoreboard
 	 */
 	void deRegisterErrorLogHandle( String owner );
 	
-	double getLogSamplingProbability();
 	void setLogSamplingProbability( double val );
 	
-	long getMetricSnapshotInterval();
 	void setMetricSnapshotInterval( long val );
 	
 	boolean getUsingMetricSnapshots();

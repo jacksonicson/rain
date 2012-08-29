@@ -32,29 +32,29 @@
 package radlab.rain;
 
 //import java.lang.Thread.State;
-import java.util.LinkedList;
-import java.util.Hashtable;
-import java.util.TreeMap;
-import java.util.Iterator;
-//import java.util.Enumeration;
-import java.util.Random;
-import java.io.PrintStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.lang.Thread.State;
-import java.text.NumberFormat;
-import java.text.DecimalFormat;
-
-import radlab.rain.util.MetricWriter;
-import radlab.rain.util.PoissonSamplingStrategy;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Random;
+import java.util.TreeMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import radlab.rain.util.MetricWriter;
+import radlab.rain.util.PoissonSamplingStrategy;
+
+//import java.util.Enumeration;
 
 /**
  * The Scoreboard class implements the IScoreboard interface. Each Scoreboard is specific to a single instantiation of a track
@@ -195,16 +195,8 @@ public class Scoreboard implements Runnable, IScoreboard {
 		this._done = val;
 	}
 
-	public double getLogSamplingProbability() {
-		return this._logSamplingProbability;
-	}
-
 	public void setLogSamplingProbability(double val) {
 		this._logSamplingProbability = val;
-	}
-
-	public long getMetricSnapshotInterval() {
-		return this._metricSnapshotInterval;
 	}
 
 	public void setMetricSnapshotInterval(long val) {
