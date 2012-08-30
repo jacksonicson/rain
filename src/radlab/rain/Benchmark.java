@@ -119,7 +119,7 @@ public class Benchmark {
 		schedule.put("startSteadyState", startSteadyState);
 		schedule.put("endSteadyState", endSteadyState);
 		schedule.put("endRun", endRun);
-		logger.info(schedule.toString());
+		logger.info("Schedule: " + schedule.toString());
 
 		logger.info("Initializing " + scenario.getTracks().size() + " tracks");
 		for (ScenarioTrack track : scenario.getTracks().values()) {
@@ -234,7 +234,7 @@ public class Benchmark {
 				// Sonar output
 				JSONObject stats = card.getJsonStatistics();
 				String strStats = stats.toString();
-				logger.info(strStats);
+				logger.info("Rain metrics: " + strStats);
 			}
 		}
 
