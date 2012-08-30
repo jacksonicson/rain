@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
  * profiles that specify the interval, number of users, mix behavior, and any transitions.
  */
 public class DefaultScenarioTrack extends ScenarioTrack {
-	private static Logger logger = LoggerFactory.getLogger(DefaultScenarioTrack.class);
+	private Logger logger = LoggerFactory.getLogger(DefaultScenarioTrack.class.getName() + " " + this);
 
 	private LoadManagerThread _loadManager;
 	private Random _random = new Random();
@@ -60,6 +60,9 @@ public class DefaultScenarioTrack extends ScenarioTrack {
 		super(scenario);
 		this._name = name;
 		this._loadManager = new LoadManagerThread(this);
+
+		// logger relays on _name
+		this.logger = LoggerFactory.getLogger(DefaultScenarioTrack.class.getName() + " " + this);
 	}
 
 	/**
@@ -308,7 +311,7 @@ public class DefaultScenarioTrack extends ScenarioTrack {
 			this._track._currentLoadProfile = this._currentProfile;
 			this._track._currentLoadProfile.setTimeStarted(now + rampUp);
 			this._track._currentLoadProfile._activeCount++;
-			logger.info(this + " ramping up for " + rampUp + "ms.");
+			logger.info("Ramping up for " + rampUp + "ms.");
 
 			this.formatter = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss.SSS");
 			this.cal = Calendar.getInstance();
@@ -321,18 +324,16 @@ public class DefaultScenarioTrack extends ScenarioTrack {
 				return;
 			}
 
-			logger.info(this + " Ramp up finished!");
+			logger.info("Ramp up finished");
 			System.out.flush();
 
 			cal.setTimeInMillis(now);
-			logger.debug(this + " current time: " + formatter.format(cal.getTime()) + " (" + now + ") "
-					+ this._track._currentLoadProfile.toString());
+			logger.debug(this + " current time: " + formatter.format(cal.getTime()) + " (" + now + ") " + this._track._currentLoadProfile.toString());
 
 			while (!this.getDone()) {
 				try {
 					// Sleep until the next load/behavior change.
-					Thread.sleep(this._track._currentLoadProfile.getInterval()
-							+ this._track._currentLoadProfile.getTransitionTime());
+					Thread.sleep(this._track._currentLoadProfile.getInterval() + this._track._currentLoadProfile.getTransitionTime());
 
 					// If time reading is even then push on a dynamic load profile.
 					// Simple integration testing
@@ -392,7 +393,7 @@ public class DefaultScenarioTrack extends ScenarioTrack {
 					this._done = true;
 				}
 			}
-			logger.info(this + " finished!");
+			logger.info("finished");
 		}
 
 		/**
@@ -433,7 +434,7 @@ public class DefaultScenarioTrack extends ScenarioTrack {
 		}
 
 		public String toString() {
-			return "[TRACK: " + this._track._name + "]";
+			return "[" + this._track._name + "]";
 		}
 	}
 }

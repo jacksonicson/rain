@@ -121,7 +121,7 @@ public class Benchmark {
 		schedule.put("endRun", endRun);
 		logger.info(schedule.toString());
 
-		logger.info("Initializing " + scenario.getTracks().size() + " track(s).");
+		logger.info("Initializing " + scenario.getTracks().size() + " tracks");
 		for (ScenarioTrack track : scenario.getTracks().values()) {
 			// Start the scoreboard. It needs to know the timings because we only
 			// want to retain metrics generated during the steady state interval.
@@ -141,7 +141,7 @@ public class Benchmark {
 			// 2) whether to forge ahead
 
 			long maxUsers = track.getMaxUsers();
-			logger.info("Creating " + maxUsers + " threads for track.");
+			logger.info("Creating " + maxUsers + " threads for " + track);
 
 			// Create enough threads for maximum users needed by the scenario.
 			for (int i = 0; i < maxUsers; i++) {
@@ -180,7 +180,7 @@ public class Benchmark {
 		}
 
 		// Purge threads.
-		logger.info("Purging threads and shutting down... exiting!");
+		logger.debug("Purging threads and shutting down... exiting!");
 		threads.clear();
 
 		// Set up for stats aggregation across tracks based on the generators used
@@ -204,7 +204,7 @@ public class Benchmark {
 			Scorecard finalScorecard = track.getScoreboard().getFinalScorecard();
 			if (!aggStats.containsKey(generatorClassName)) {
 				StringBuffer buf = new StringBuffer();
-				buf.append(generatorClassName).append(" (agg)");
+				buf.append(generatorClassName).append(track);
 				Scorecard aggCard = new Scorecard("aggregated", finalScorecard._intervalDuration, buf.toString());
 				aggStats.put(generatorClassName, aggCard);
 			}
@@ -275,7 +275,7 @@ public class Benchmark {
 			}
 
 			// Log startup
-			logger.info("Starting Rain driver");
+			logger.info("Rain started");
 
 			// If we got 2 arguments expect a zookeeper pointer as the second
 			// parameter
@@ -318,7 +318,7 @@ public class Benchmark {
 				// Try to load the config file as a resource first
 				InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream(filename);
 				if (in != null) {
-					logger.info("Reading config file from resource stream.");
+					logger.debug("Reading config file from resource stream.");
 					BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 					String line = "";
 					// Read in the entire file and append to the string buffer
@@ -326,7 +326,7 @@ public class Benchmark {
 						configData.append(line);
 					fileContents = configData.toString();
 				} else {
-					logger.info("Reading config file from file system.");
+					logger.debug("Reading config file from file system.");
 					fileContents = ConfigUtil.readFileAsString(filename);
 				}
 
@@ -373,7 +373,7 @@ public class Benchmark {
 				logger.trace("Checking for wakeup");
 			}
 
-			logger.info("Starting...");
+			logger.info("Starting scenario (threads)");
 
 			scenario.start();
 			benchmark.start(scenario);

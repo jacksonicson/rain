@@ -519,6 +519,6 @@ public abstract class ScenarioTrack {
 	}
 
 	public String toString() {
-		return "[TRACK: " + this._name + "]";
+		return "[" + this._name + "]";
 	}
 }

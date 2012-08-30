@@ -92,6 +92,7 @@ public class Scorecard {
 		}
 
 		JSONObject object = new JSONObject();
+		object.put("track", this._trackName);
 		object.put("interval_name", this._name);
 		object.put("active_users", this._formatter.format(this._numberOfUsers));
 		object.put("activation_count", this._formatter.format(this._activeCount));
@@ -144,12 +145,9 @@ public class Scorecard {
 		out.println(this + " Interval name                      : " + this._name);
 		out.println(this + " Active users                       : " + this._formatter.format(this._numberOfUsers));
 		out.println(this + " Activation count                   : " + this._formatter.format(this._activeCount));
-		out.println(this + " Offered load (ops/sec)             : "
-				+ this._formatter.format(offeredLoadOps / (double) this._activeCount));
-		out.println(this + " Effective load (ops/sec)           : "
-				+ this._formatter.format(effectiveLoadOps / (double) this._activeCount));
-		out.println(this + " Effective load (requests/sec)      : "
-				+ this._formatter.format(effectiveLoadRequests / (double) this._activeCount));
+		out.println(this + " Offered load (ops/sec)             : " + this._formatter.format(offeredLoadOps / (double) this._activeCount));
+		out.println(this + " Effective load (ops/sec)           : " + this._formatter.format(effectiveLoadOps / (double) this._activeCount));
+		out.println(this + " Effective load (requests/sec)      : " + this._formatter.format(effectiveLoadRequests / (double) this._activeCount));
 		out.println(this + " Operations initiated               : " + this._totalOpsInitiated);
 		out.println(this + " Operations successfully completed  : " + this._totalOpsSuccessful);
 		// Avg response time per operation
@@ -209,8 +207,7 @@ public class Scorecard {
 					operationArr.put(operation);
 
 					operation.put("opname", opName);
-					operation.put("proportion",
-							(((double) (summary.succeeded + summary.failed) / (double) totalOperations) * 100.0));
+					operation.put("proportion", (((double) (summary.succeeded + summary.failed) / (double) totalOperations) * 100.0));
 					operation.put("success", summary.succeeded);
 					operation.put("failures", summary.failed);
 					operation.put("avg_response", summary.getAverageResponseTime() / 1000.0);
@@ -252,10 +249,9 @@ public class Scorecard {
 				String outputFormatSpec = "|%20s|%10s|%10s|%10s|%12s|%12s|%12s|%10s|%10s|%10s|";
 
 				out.println(this
-						+ String.format(outputFormatSpec, "operation", "proportion", "successes", "failures", "avg response",
-								"min response", "max response", "90th (s)", "99th (s)", "pctile"));
-				out.println(this
-						+ String.format(outputFormatSpec, "", "", "", "", "time (s)", "time (s)", "time(s)", "", "", "samples"));
+						+ String.format(outputFormatSpec, "operation", "proportion", "successes", "failures", "avg response", "min response",
+								"max response", "90th (s)", "99th (s)", "pctile"));
+				out.println(this + String.format(outputFormatSpec, "", "", "", "", "time (s)", "time (s)", "time(s)", "", "", "samples"));
 				// out.println( this +
 				// "| operation | proportion | successes | failures | avg response | min response | max response | 90th (s) | 99th (s) | pctile  |"
 				// );
@@ -286,14 +282,12 @@ public class Scorecard {
 							+ String.format(
 									outputFormatSpec,
 									opName,
-									this._formatter
-											.format((((double) (summary.succeeded + summary.failed) / (double) totalOperations) * 100))
-											+ "% ", summary.succeeded, summary.failed, this._formatter.format(summary
-											.getAverageResponseTime() / 1000.0), this._formatter
-											.format(summary.minResponseTime / 1000.0), this._formatter
-											.format(summary.maxResponseTime / 1000.0), this._formatter.format(summary
-											.getNthPercentileResponseTime(90) / 1000.0), this._formatter.format(summary
-											.getNthPercentileResponseTime(99) / 1000.0), summary.getSamplesCollected() + "/"
+									this._formatter.format((((double) (summary.succeeded + summary.failed) / (double) totalOperations) * 100)) + "% ",
+									summary.succeeded, summary.failed, this._formatter.format(summary.getAverageResponseTime() / 1000.0),
+									this._formatter.format(summary.minResponseTime / 1000.0),
+									this._formatter.format(summary.maxResponseTime / 1000.0),
+									this._formatter.format(summary.getNthPercentileResponseTime(90) / 1000.0),
+									this._formatter.format(summary.getNthPercentileResponseTime(99) / 1000.0), summary.getSamplesCollected() + "/"
 											+ summary.getSamplesSeen()));
 
 					if (purgePercentileData)
