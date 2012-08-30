@@ -102,6 +102,7 @@ public class Benchmark {
 		ExecutorService pool = Executors.newFixedThreadPool(sharedThreads);
 		logger.debug("Creating " + sharedThreads + " shared threads.");
 
+		// List of all user threads
 		LinkedList<LoadGenerationStrategy> threads = new LinkedList<LoadGenerationStrategy>();
 
 		// Calculate the run timings that will be used for all threads.
@@ -110,20 +111,20 @@ public class Benchmark {
 		long start = System.currentTimeMillis() + timeToStart;
 		long startSteadyState = start + (scenario.getRampUp() * 1000);
 		long endSteadyState = startSteadyState + (scenario.getDuration() * 1000);
+		long endRun = endSteadyState + (scenario.getRampDown() * 1000);
 
 		// Log benchmark schedule
 		JSONObject schedule = new JSONObject();
 		schedule.put("start", start);
 		schedule.put("startSteadyState", startSteadyState);
 		schedule.put("endSteadyState", endSteadyState);
+		schedule.put("endRun", endRun);
 		logger.info(schedule.toString());
 
 		logger.info("Initializing " + scenario.getTracks().size() + " track(s).");
 		for (ScenarioTrack track : scenario.getTracks().values()) {
-			// Start the scoreboard. It needs to know the timings because we
-			// only
-			// want to retain metrics generated during the steady state
-			// interval.
+			// Start the scoreboard. It needs to know the timings because we only
+			// want to retain metrics generated during the steady state interval.
 			IScoreboard scoreboard = track.createScoreboard(null);
 			if (scoreboard != null) {
 				scoreboard.initialize(startSteadyState, endSteadyState);
@@ -141,28 +142,33 @@ public class Benchmark {
 
 			long maxUsers = track.getMaxUsers();
 			logger.info("Creating " + maxUsers + " threads for track.");
+
 			// Create enough threads for maximum users needed by the scenario.
 			for (int i = 0; i < maxUsers; i++) {
 				Generator generator = track.createWorkloadGenerator(track.getGeneratorClassName(), track.getGeneratorParams());
 				generator.setScoreboard(scoreboard);
+
 				generator.setMeanCycleTime((long) (track.getMeanCycleTime() * 1000));
 				generator.setMeanThinkTime((long) (track.getMeanThinkTime() * 1000));
+
 				// Allow the load generation strategy to be configurable
 				LoadGenerationStrategy lgThread = track.createLoadGenerationStrategy(track.getLoadGenerationStrategyClassName(),
 						track.getLoadGenerationStrategyParams(), generator, i);
+
 				generator.setName(lgThread.getName());
 				generator.initialize();
+
 				lgThread.setInteractive(track.getInteractive());
 				lgThread.setSharedWorkPool(pool);
 				lgThread.setTimeStarted(start);
 
+				// Add thread to thread list and start the thread
 				threads.add(lgThread);
-
 				lgThread.start();
 			}
 		}
 
-		// Wait for all of the threads to finish.
+		// Wait for all user threads to finish
 		for (LoadGenerationStrategy lgThread : threads) {
 			try {
 				lgThread.join();
@@ -177,8 +183,7 @@ public class Benchmark {
 		logger.info("Purging threads and shutting down... exiting!");
 		threads.clear();
 
-		// Set up for stats aggregation across tracks based on the generators
-		// used
+		// Set up for stats aggregation across tracks based on the generators used
 		TreeMap<String, Scorecard> aggStats = new TreeMap<String, Scorecard>();
 
 		// Shutdown the scoreboards and tally up the results.
@@ -233,14 +238,13 @@ public class Benchmark {
 			}
 		}
 
-		// Shutdown the shared threadpool.
+		// Shutdown the shared threadpool
 		pool.shutdown();
 		try {
 			logger.debug("waiting up to 10 seconds for shared threadpool to shutdown!");
 			pool.awaitTermination(10000, TimeUnit.MILLISECONDS);
-			if (!pool.isTerminated()) {
+			if (!pool.isTerminated())
 				pool.shutdownNow();
-			}
 		} catch (InterruptedException ie) {
 			logger.debug("INTERRUPTED while waiting for shared threadpool to shutdown!");
 		}
@@ -251,6 +255,7 @@ public class Benchmark {
 			RainPipe.getInstance().stop();
 		}
 
+		// Close thrift server
 		if (RainConfig.getInstance()._useThrift) {
 			logger.debug("Shutting down the thrift communication!");
 			ThriftService.getInstance().stop();

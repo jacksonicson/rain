@@ -117,19 +117,22 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy {
 	public void run() {
 		String threadName = this.getName();
 		this.resetStatistics();
-		this.createLogWriters();
 
+		// Calculates all benchmark times
 		this.loadTrackConfiguration(this._generator.getTrack());
 
 		try {
+			// Sleep until its time to start
 			this.sleepUntil(this._timeStarted);
 
+			// loop is active until after the ramp down phase
 			int lastOperationIndex = NO_OPERATION_INDEX;
 			while (System.currentTimeMillis() <= this._timeToQuit) {
+				// If the user is inactive
 				if (!this.isActive()) {
 					this._lgState = LGState.Inactive;
 					Thread.sleep(INACTIVE_DURATION);
-				} else {
+				} else { // user is active
 					this._lgState = LGState.Active;
 					Operation nextOperation = this._generator.nextRequest(lastOperationIndex);
 					// This will let generators do no-ops by returning null.
@@ -157,8 +160,6 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy {
 		} catch (Exception e) {
 			logger.info("[" + threadName + "] load generation thread died by exception! Reason: " + e.toString());
 			e.printStackTrace();
-		} finally {
-			this.closeLogWriters();
 		}
 	}
 
@@ -247,9 +248,9 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy {
 	protected void loadTrackConfiguration(ScenarioTrack track) {
 		this._openLoopProbability = this._generator.getTrack().getOpenLoopProbability();
 
-		if (this._timeStarted == TIME_NOT_SET) {
+		// This value gets set by Benchmark
+		if (this._timeStarted == TIME_NOT_SET)
 			this._timeStarted = System.currentTimeMillis();
-		}
 
 		// Configuration is specified in seconds; convert to milliseconds.
 		long rampUp = track.getRampUp() * 1000;
@@ -259,20 +260,6 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy {
 		this._startSteadyState = this._timeStarted + rampUp;
 		this._endSteadyState = this._startSteadyState + duration;
 		this._timeToQuit = this._endSteadyState + rampDown;
-	}
-
-	/**
-	 * Creates log and error writers and registers them with the scoreboard.
-	 */
-	protected void createLogWriters() {
-		// not supported any more
-	}
-
-	/**
-	 * Closes the log writer and ensures that no other thread can write to it.
-	 */
-	protected void closeLogWriters() {
-		// not supported any more
 	}
 
 	/**

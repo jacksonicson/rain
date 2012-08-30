@@ -45,15 +45,4 @@ public class SonarOpenLoopLoadGeneration extends PartlyOpenLoopLoadGeneration {
 	public SonarOpenLoopLoadGeneration(Generator generator, long id, JSONObject params) {
 		super(generator, id, params);
 	}
-
-	@Override
-	protected void createLogWriters() {
-		// Do nothing
-	}
-
-	@Override
-	protected void closeLogWriters() {
-		// Do nothing
-	}
-
 }
