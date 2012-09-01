@@ -357,7 +357,7 @@ public abstract class ScenarioTrack {
 				loadSchedulerParams = config.getJSONObject(CFG_LOAD_SCHEDULE_CREATOR_PARAMS_KEY);
 
 			if (loadScheduler != null)
-				this._loadSchedule = loadScheduler.createSchedule(loadSchedulerParams);
+				this._loadSchedule = loadScheduler.createSchedule(this._name, loadSchedulerParams);
 			else
 				throw new Exception("Error creating load scheduler class: " + loadSchedulerClass);
 		} else {

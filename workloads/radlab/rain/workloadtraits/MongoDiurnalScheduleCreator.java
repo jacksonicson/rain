@@ -16,10 +16,10 @@ public class MongoDiurnalScheduleCreator extends DiurnalScheduleCreator
 	{}
 
 	@Override
-	public LinkedList<LoadProfile> createSchedule(JSONObject config) throws JSONException 
+	public LinkedList<LoadProfile> createSchedule(String target, JSONObject config) throws JSONException 
 	{
 		// Let the superclass create a generic schedule of StorageLoadProfiles
-		LinkedList<LoadProfile> genericSchedule = super.createSchedule( config );
+		LinkedList<LoadProfile> genericSchedule = super.createSchedule(target, config );
 		
 		LinkedList<LoadProfile> mongoSchedule = new LinkedList<LoadProfile>();		
 		// Make a pass through the generic list, converting each StorageLoadProfile to a

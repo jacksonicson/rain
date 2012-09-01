@@ -91,7 +91,7 @@ public class ScadrDemoScheduleCreator extends LoadScheduleCreator
 	public void setIncrementsPerInterval( int val ){ this._incrementsPerInterval = val; }
 		
 	@Override
-	public LinkedList<LoadProfile> createSchedule(JSONObject config) throws JSONException 
+	public LinkedList<LoadProfile> createSchedule(String track, JSONObject config) throws JSONException 
 	{
 		// Pull out the base offset
 		if( config.has( CFG_INITIAL ) )
@@ -135,7 +135,7 @@ public class ScadrDemoScheduleCreator extends LoadScheduleCreator
 		creator.setInitialWorkload( 10 );
 		
 		// Would like to give a duration and have the workload stretched/compressed into that
-		LinkedList<LoadProfile> profiles = creator.createSchedule( new JSONObject() );
+		LinkedList<LoadProfile> profiles = creator.createSchedule(null,  new JSONObject() );
 		for( LoadProfile p : profiles )
 			System.out.println( p.getNumberOfUsers() );
 	}

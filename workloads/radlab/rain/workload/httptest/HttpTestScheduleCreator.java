@@ -42,7 +42,7 @@ import radlab.rain.LoadScheduleCreator;
 public class HttpTestScheduleCreator extends LoadScheduleCreator 
 {
 	//@Override
-	public LinkedList<LoadProfile> createSchedule( JSONObject params ) throws JSONException  
+	public LinkedList<LoadProfile> createSchedule(String track, JSONObject params ) throws JSONException  
 	{
 		LinkedList<LoadProfile> loadSchedule = new LinkedList<LoadProfile>();
 		
