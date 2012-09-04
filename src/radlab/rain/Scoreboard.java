@@ -820,7 +820,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 			JSONArray operations = new JSONArray();
 			result.put("operations", operations);
 
-			for (Iterator<String> keys = finalCard._operationMap.keySet().iterator();; keys.hasNext()) {
+			for (Iterator<String> keys = finalCard._operationMap.keySet().iterator(); keys.hasNext();) {
 				String opName = keys.next();
 				OperationSummary operationSummary = finalCard._operationMap.get(opName);
 
