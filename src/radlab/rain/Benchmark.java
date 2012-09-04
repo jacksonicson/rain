@@ -32,11 +32,9 @@
 package radlab.rain;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
@@ -201,16 +199,11 @@ public class Benchmark {
 			// Print out the stats for this track
 			track.getScoreboard().printStatistics(System.out);
 
-			// Dump everything in rain
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			PrintStream pout = new PrintStream(out);
-			track.getScoreboard().printStatistics(pout);
-			logger.info("Track metrics (writer): " + out.toString());
-
 			// Write detailed statistics to sonar
-			JSONObject stats = track.getScoreboard().getFinalScorecard().getJsonStatistics();
+			JSONObject stats = track.getScoreboard().getJSONStatistics();
 			String strStats = stats.toString();
 			logger.info("Track metrics: " + strStats);
+			logger.info("Track scorecard: " + track.getScoreboard().getFinalScorecard().getJsonStatistics().toString());
 
 			// Get the name of the generator active for this track
 			String generatorClassName = track.getGeneratorClassName();

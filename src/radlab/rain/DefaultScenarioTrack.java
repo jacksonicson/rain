@@ -393,6 +393,7 @@ public class DefaultScenarioTrack extends ScenarioTrack {
 					this._done = true;
 				}
 			}
+			
 			logger.info("finished");
 		}
 

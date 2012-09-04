@@ -33,6 +33,9 @@ package radlab.rain;
 
 import java.io.PrintStream;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import radlab.rain.util.MetricWriter;
 
 /**
@@ -169,5 +172,7 @@ public interface IScoreboard {
 	MetricWriter getMetricWriter();
 
 	void setMetricWriter(MetricWriter val);
+
+	JSONObject getJSONStatistics() throws JSONException;
 
 }

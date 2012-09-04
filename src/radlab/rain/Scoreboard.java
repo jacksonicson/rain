@@ -39,6 +39,8 @@ import java.util.LinkedList;
 import java.util.Random;
 import java.util.TreeMap;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -524,7 +526,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 					responseTimeStat._totalResponseTime = this.finalCard._totalOpResponseTime;
 					responseTimeStat._numObservations = this.finalCard._totalOpsSuccessful;
 					responseTimeStat._operationName = result._operationName;
-					responseTimeStat._trackName = this._trackName; 
+					responseTimeStat._trackName = this._trackName;
 					responseTimeStat._operationRequest = result._operationRequest;
 
 					if (result._generatedDuring != null)
@@ -535,6 +537,75 @@ public class Scoreboard implements Runnable, IScoreboard {
 				}
 			}
 		}
+	}
+
+	public JSONObject getJSONStatistics() throws JSONException {
+		double runDuration = (double) (this._endTime - this._startTime) / 1000.0;
+		long totalOperations = this.finalCard._totalOpsSuccessful + this.finalCard._totalOpsFailed;
+		double offeredLoadOps = (double) this.finalCard._totalOpsInitiated / runDuration;
+		double effectiveLoadOps = (double) this.finalCard._totalOpsSuccessful / runDuration;
+		double effectiveLoadRequests = (double) this.finalCard._totalActionsSuccessful / runDuration;
+
+		double totalUsers = 0.0;
+		double totalIntervalActivations = 0.0;
+
+		// For SPECj we won't activate per interval statistics (this will not be logged here)
+
+		double averageOpResponseTimeSecs = 0.0;
+
+		if (this.finalCard._totalOpsSuccessful > 0)
+			averageOpResponseTimeSecs = ((double) this.finalCard._totalOpResponseTime / (double) this.finalCard._totalOpsSuccessful) / 1000.0;
+
+		ScenarioTrack track = this.getScenarioTrack();
+		// Rough averaging of the additional time spent in the system due to think times/cycle times.
+		// Look at the proportion of time we would have waited based on think times and the proportion of times we would have
+		// waited based on cycle times
+		double thinkTimeDeltaSecs = ((1 - track._openLoopProbability) * track.getMeanThinkTime())
+				+ (track._openLoopProbability * track.getMeanCycleTime());
+
+		double averageNumberOfUsers = 0.0;
+		if (totalIntervalActivations != 0)
+			averageNumberOfUsers = totalUsers / totalIntervalActivations;
+		finalCard._numberOfUsers = averageNumberOfUsers;
+
+		JSONObject result = new JSONObject();
+		result.put("target_host", this._trackTargetHost);
+		result.put("total_drop_offs", this._totalDropoffs);
+		result.put("average_drop_off_q_time(ms)", (double) this._totalDropOffWaitTime / (double) this._totalDropoffs);
+		result.put("max_drop_off_q_time(ms)", this._maxDropOffWaitTime);
+		result.put("total_interval_activations", this._formatter.format(totalIntervalActivations));
+		result.put("average_number_of_users", this._formatter.format(averageNumberOfUsers));
+		result.put("offered_load(ops/sec)", this._formatter.format(offeredLoadOps));
+		result.put("effective_load(ops/sec)", this._formatter.format(effectiveLoadOps));
+
+		// Still a rough estimate, need to compute the bounds on this estimate
+//		if (averageOpResponseTimeSecs > 0.0) {
+//			double littlesEstimate = averageNumberOfUsers / (averageOpResponseTimeSecs + thinkTimeDeltaSecs);
+//			double littlesDelta = Math.abs((effectiveLoadOps - littlesEstimate) / littlesEstimate) * 100;
+//
+//			result.put("littles_law_estimate(ops/sec)", littlesEstimate);
+//			result.put("variation_from_littles_law(%)", littlesDelta);
+//		} else
+//			result.put("littles_law_estimate(ops/sec)", 0);
+
+		result.put("effective_load(req/sec)", effectiveLoadRequests);
+		result.put("operations_initiated", this.finalCard._totalOpsInitiated);
+		result.put("operations_successfully_complaeted", this.finalCard._totalOpsSuccessful);
+
+		// Avg response time per operation
+		result.put("average_operation_response_time(s)", averageOpResponseTimeSecs);
+		result.put("operations_late", this.finalCard._totalOpsLate);
+		result.put("operations_failed", this.finalCard._totalOpsFailed);
+		result.put("async_ops", this.finalCard._totalOpsAsync);
+		result.put("sycn_ops", this.finalCard._totalOpsSync);
+
+		result.put("mean_response_time_sample_interval", this._meanResponseTimeSamplingInterval);
+
+		// Print other statistics
+		result.put("operation_stats", getJSONOperationStatistics(false));
+		result.put("wait_stats", getJSONWaitTimeStatistics(false));
+
+		return result;
 	}
 
 	public void printStatistics(PrintStream out) {
@@ -661,6 +732,51 @@ public class Scoreboard implements Runnable, IScoreboard {
 		}
 	}
 
+	private JSONObject getJSONWaitTimeStatistics(boolean purgePercentileData) {
+		JSONObject result = new JSONObject();
+
+		synchronized (this.finalCard._operationMap) {
+			try {
+				// Show operation proportions, response time: avg, max, min, stdev (op1 = x%, op2 = y%...)
+				// Enumeration<String> keys = this.finalCard._operationMap.keys();
+				Iterator<String> keys = this.finalCard._operationMap.keySet().iterator();
+				while (keys.hasNext()) {
+					String opName = keys.next();
+					WaitTimeSummary summary = this._waitTimeMap.get(opName);
+
+					// If there were no values, then the min and max wait times would not have been set
+					// so make them to 0
+					if (summary.minWaitTime == Long.MAX_VALUE)
+						summary.minWaitTime = 0;
+
+					if (summary.maxWaitTime == Long.MIN_VALUE)
+						summary.maxWaitTime = 0;
+
+					// Print out the operation summary.
+					result.put("operation", opName);
+					result.put("avg_wait", summary.getAverageWaitTime() / 1000.0);
+					result.put("min_wait", summary.minWaitTime / 1000.0);
+					result.put("max_wait", summary.maxWaitTime / 1000.0);
+					result.put("90th(s)", summary.getNthPercentileResponseTime(90) / 1000.0);
+					result.put("99th(s)", summary.getNthPercentileResponseTime(99) / 1000.0);
+					result.put("samples_collected", summary.getSamplesCollected());
+					result.put("samples_seen", summary.getSamplesSeen()); 
+					result.put("sample_mean", summary.getSampleMean() / 1000.0);
+					result.put("std_dev", summary.getSampleStandardDeviation() / 1000.0);
+					result.put("t_val", summary.getTvalue(summary.getAverageWaitTime()));
+					
+					if (purgePercentileData)
+						summary.resetSamples();
+				}
+			} catch (Exception e) {
+				log.info(this + " Error printing think/cycle time summary. Reason: " + e.toString());
+				e.printStackTrace();
+			}
+		}
+		
+		return result;
+	}
+
 	private void printWaitTimeStatistics(PrintStream out, boolean purgePercentileData) {
 		synchronized (this.finalCard._operationMap) {
 			try {
@@ -710,6 +826,66 @@ public class Scoreboard implements Runnable, IScoreboard {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	private JSONObject getJSONOperationStatistics(boolean purgePercentileData) {
+		long totalOperations = this.finalCard._totalOpsSuccessful + this.finalCard._totalOpsFailed;
+		double totalAvgResponseTime = 0.0;
+		double totalResponseTime = 0.0;
+		long totalSuccesses = 0;
+
+		JSONObject result = new JSONObject();
+
+		synchronized (this.finalCard._operationMap) {
+			try {
+				// Make this thing "prettier", using fixed width columns
+				String outputFormatSpec = "|%20s|%10s|%10s|%10s|%12s|%12s|%12s|%10s|%10s|%50s|";
+
+				// Show operation proportions, response time: avg, max, min, stdev (op1 = x%, op2 = y%...)
+				// Enumeration<String> keys = this.finalCard._operationMap.keys();
+				Iterator<String> keys = this.finalCard._operationMap.keySet().iterator();
+				while (keys.hasNext()) {
+					String opName = keys.next();
+					OperationSummary summary = this.finalCard._operationMap.get(opName);
+
+					totalAvgResponseTime += summary.getAverageResponseTime();
+					totalResponseTime += summary.totalResponseTime;
+					totalSuccesses += summary.succeeded;
+					// If there were no successes, then the min and max response times would not have been set
+					// so make them to 0
+					if (summary.minResponseTime == Long.MAX_VALUE)
+						summary.minResponseTime = 0;
+
+					if (summary.maxResponseTime == Long.MIN_VALUE)
+						summary.maxResponseTime = 0;
+
+					// Print out the operation summary.
+					result.put("operation", opName);
+					result.put("proportion", ((double) (summary.succeeded + summary.failed) / (double) totalOperations) * 100d);
+					result.put("successes", summary.succeeded);
+					result.put("failures", summary.failed);
+					result.put("avg_response", summary.getAverageResponseTime() / 1000.0);
+					result.put("min_response", summary.minResponseTime / 1000.0);
+					result.put("max_response", summary.maxResponseTime / 1000.0);
+					result.put("90th(s)", summary.getNthPercentileResponseTime(90) / 1000.0);
+					result.put("99th(s)", summary.getNthPercentileResponseTime(99) / 1000.0);
+					result.put("samples_collected", summary.getSamplesCollected());
+					result.put("samples_seen", summary.getSamplesSeen());
+					result.put("sample_mean", summary.getSampleMean() / 1000.0);
+					result.put("sample_stdev", summary.getSampleStandardDeviation() / 1000.0);
+					result.put("avg_resp_time", summary.getTvalue(summary.getAverageResponseTime()));
+
+					if (purgePercentileData)
+						summary.resetSamples();
+				}
+
+			} catch (Exception e) {
+				log.info(this + " Error printing operation summary. Reason: " + e.toString());
+				e.printStackTrace();
+			}
+		}
+
+		return result;
 	}
 
 	@SuppressWarnings("unused")

@@ -40,7 +40,7 @@ public class Scorecard {
 
 	public double _intervalDuration = 0;
 	public double _numberOfUsers = 0.0;
-	public double _activeCount = 0.0;
+	public double _activeCount = 1.0;
 
 	/** A mapping of each operation with its summary. */
 	public TreeMap<String, OperationSummary> _operationMap = new TreeMap<String, OperationSummary>();
@@ -94,17 +94,16 @@ public class Scorecard {
 		JSONObject object = new JSONObject();
 		object.put("track", this._trackName);
 		object.put("interval_name", this._name);
-		object.put("active_users", this._formatter.format(this._numberOfUsers));
-		object.put("activation_count", this._formatter.format(this._activeCount));
-		object.put("offered_load(ops/sec)", this._formatter.format(offeredLoadOps / (double) this._activeCount));
-		object.put("effective_load(ops/sec)", this._formatter.format(effectiveLoadOps / (double) this._activeCount));
-		object.put("effective_load(req/sec)", this._formatter.format(effectiveLoadRequests / (double) this._activeCount));
+		object.put("active_users", this._numberOfUsers);
+		object.put("activation_count", this._activeCount);
+		object.put("offered_load(ops/sec)", (offeredLoadOps / (double) this._activeCount));
+		object.put("effective_load(ops/sec)", (effectiveLoadOps / (double) this._activeCount));
+		object.put("effective_load(req/sec)", (effectiveLoadRequests / (double) this._activeCount));
 		object.put("operations_initiated", this._totalOpsInitiated);
 		object.put("operations_successfully_completed", this._totalOpsSuccessful);
 
 		if (this._totalOpsSuccessful > 0)
-			object.put("average_operation_response_time(s)",
-					this._formatter.format(((double) this._totalOpResponseTime / (double) this._totalOpsSuccessful) / 1000.0));
+			object.put("average_operation_response_time(s)", (((double) this._totalOpResponseTime / (double) this._totalOpsSuccessful) / 1000.0));
 		else
 			object.put("average_operation_response_time(s)", 0d);
 
