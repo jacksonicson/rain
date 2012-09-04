@@ -77,44 +77,38 @@ public class Scorecard {
 		long totalOperations = this._totalOpsSuccessful + this._totalOpsFailed;
 
 		double offeredLoadOps = 0.0;
-		if (totalOperations > 0) {
-			offeredLoadOps = (double) this._totalOpsInitiated / this._intervalDuration;
-		}
-
 		double effectiveLoadOps = 0.0;
-		if (this._totalOpsSuccessful > 0) {
-			effectiveLoadOps = (double) this._totalOpsSuccessful / this._intervalDuration;
-		}
-
 		double effectiveLoadRequests = 0.0;
-		if (this._totalActionsSuccessful > 0) {
+		if (this._intervalDuration > 0) {
+			offeredLoadOps = (double) this._totalOpsInitiated / this._intervalDuration;
+			effectiveLoadOps = (double) this._totalOpsSuccessful / this._intervalDuration;
 			effectiveLoadRequests = (double) this._totalActionsSuccessful / this._intervalDuration;
 		}
 
 		JSONObject object = new JSONObject();
-		object.put("track", this._trackName);
-		object.put("interval_name", this._name);
-		object.put("active_users", this._numberOfUsers);
-		object.put("activation_count", this._activeCount);
-		object.put("offered_load(ops/sec)", (offeredLoadOps / (double) this._activeCount));
-		object.put("effective_load(ops/sec)", (effectiveLoadOps / (double) this._activeCount));
-		object.put("effective_load(req/sec)", (effectiveLoadRequests / (double) this._activeCount));
-		object.put("operations_initiated", this._totalOpsInitiated);
-		object.put("operations_successfully_completed", this._totalOpsSuccessful);
+		object.put("track", _trackName);
+		object.put("interval_name", _name);
+		object.put("active_users", _numberOfUsers);
+		object.put("activation_count", _activeCount);
+		object.put("offered_load(ops/sec)", (offeredLoadOps / (double) _activeCount));
+		object.put("effective_load(ops/sec)", (effectiveLoadOps / (double) _activeCount));
+		object.put("effective_load(req/sec)", (effectiveLoadRequests / (double) _activeCount));
+		object.put("operations_initiated", _totalOpsInitiated);
+		object.put("operations_successfully_completed", _totalOpsSuccessful);
 
 		if (this._totalOpsSuccessful > 0)
-			object.put("average_operation_response_time(s)", (((double) this._totalOpResponseTime / (double) this._totalOpsSuccessful) / 1000.0));
+			object.put("average_operation_response_time(s)", (((double) _totalOpResponseTime / (double) _totalOpsSuccessful) / 1000.0));
 		else
 			object.put("average_operation_response_time(s)", 0d);
 
-		object.put("operations_late", this._totalOpsLate);
-		object.put("oeprations_failed", this._totalOpsFailed);
-		object.put("async_ops", this._totalOpsAsync);
-		object.put("async_ops(%)", (((double) this._totalOpsAsync / (double) totalOperations) * 100d));
-		object.put("sync_ops", this._totalOpsSync);
-		object.put("sync_ops(%)", (((double) this._totalOpsSync / (double) totalOperations) * 100));
+		object.put("operations_late", _totalOpsLate);
+		object.put("oeprations_failed", _totalOpsFailed);
+		object.put("async_ops", _totalOpsAsync);
+		object.put("async_ops(%)", (((double) _totalOpsAsync / (double) totalOperations) * 100d));
+		object.put("sync_ops", _totalOpsSync);
+		object.put("sync_ops(%)", (((double) _totalOpsSync / (double) totalOperations) * 100));
 
-		object.put("operational", getOperationalStatistics(true));
+		object.put("operational", getOperationalStatistics(false));
 
 		return object;
 	}
@@ -181,49 +175,42 @@ public class Scorecard {
 		double totalResponseTime = 0.0;
 		long totalSuccesses = 0;
 
-		synchronized (this._operationMap) {
-			try {
-				// Show operation proportions, response time: avg, max, min, stdev (op1 = x%, op2 = y%...)
-				// Enumeration<String> keys = this._operationMap.keys();
-				Iterator<String> keys = this._operationMap.keySet().iterator();
-				while (keys.hasNext()) {
-					String opName = keys.next();
-					OperationSummary summary = this._operationMap.get(opName);
+		synchronized (_operationMap) {
+			// Show operation proportions, response time: avg, max, min, stdev (op1 = x%, op2 = y%...)
+			for (Iterator<String> keys = _operationMap.keySet().iterator(); keys.hasNext();) {
+				String opName = keys.next();
+				OperationSummary summary = _operationMap.get(opName);
 
-					totalAvgResponseTime += summary.getAverageResponseTime();
-					totalResponseTime += summary.totalResponseTime;
-					totalSuccesses += summary.succeeded;
-					// If there were no successes, then the min and max response times would not have been set
-					// so make them to 0
-					if (summary.minResponseTime == Long.MAX_VALUE)
-						summary.minResponseTime = 0;
+				totalAvgResponseTime += summary.getAverageResponseTime();
+				totalResponseTime += summary.totalResponseTime;
+				totalSuccesses += summary.succeeded;
 
-					if (summary.maxResponseTime == Long.MIN_VALUE)
-						summary.maxResponseTime = 0;
+				// If there were no successes, then the min and max response times would not have been set
+				// so make them to 0
+				if (summary.minResponseTime == Long.MAX_VALUE)
+					summary.minResponseTime = 0;
 
-					// Print out the operation summary.
-					JSONObject operation = new JSONObject();
-					operationArr.put(operation);
+				if (summary.maxResponseTime == Long.MIN_VALUE)
+					summary.maxResponseTime = 0;
 
-					operation.put("opname", opName);
-					operation.put("proportion", (((double) (summary.succeeded + summary.failed) / (double) totalOperations) * 100.0));
-					operation.put("success", summary.succeeded);
-					operation.put("failures", summary.failed);
-					operation.put("avg_response", summary.getAverageResponseTime() / 1000.0);
-					operation.put("min_response", summary.minResponseTime / 1000.0);
-					operation.put("max_response", summary.maxResponseTime / 1000.0);
-					operation.put("90th (s)", summary.getNthPercentileResponseTime(90) / 1000.0);
-					operation.put("99th (s)", summary.getNthPercentileResponseTime(99) / 1000.0);
-					operation.put("sample_collected", summary.getSamplesCollected());
-					operation.put("samples_seen", summary.getSamplesSeen());
+				// Print out the operation summary.
+				JSONObject operation = new JSONObject();
+				operationArr.put(operation);
 
-					if (purgePercentileData)
-						summary.resetSamples();
-				}
+				operation.put("opname", opName);
+				operation.put("proportion", (((double) (summary.succeeded + summary.failed) / (double) totalOperations) * 100.0));
+				operation.put("success", summary.succeeded);
+				operation.put("failures", summary.failed);
+				operation.put("avg_response", summary.getAverageResponseTime() / 1000.0);
+				operation.put("min_response", summary.minResponseTime / 1000.0);
+				operation.put("max_response", summary.maxResponseTime / 1000.0);
+				operation.put("90th (s)", summary.getNthPercentileResponseTime(90) / 1000.0);
+				operation.put("99th (s)", summary.getNthPercentileResponseTime(99) / 1000.0);
+				operation.put("sample_collected", summary.getSamplesCollected());
+				operation.put("samples_seen", summary.getSamplesSeen());
 
-			} catch (Exception e) {
-				logger.info(this + " Error printing operation summary. Reason: " + e.toString());
-				e.printStackTrace();
+				if (purgePercentileData)
+					summary.resetSamples();
 			}
 		}
 
