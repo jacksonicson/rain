@@ -205,7 +205,7 @@ public class Benchmark {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			PrintStream pout = new PrintStream(out);
 			track.getScoreboard().printStatistics(pout);
-			logger.info("Trakc metrics (writer): " + out.toString());
+			logger.info("Track metrics (writer): " + out.toString());
 
 			// Write detailed statistics to sonar
 			JSONObject stats = track.getScoreboard().getFinalScorecard().getJsonStatistics();
