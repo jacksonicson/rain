@@ -37,6 +37,7 @@ import radlab.rain.util.ISamplingStrategy;
 
 public class OperationSummary 
 {
+	// Information recorded about one operation type
 	public long succeeded 					= 0;
 	public long failed 						= 0;
 	public long totalActions				= 0;
@@ -45,6 +46,7 @@ public class OperationSummary
 	public long totalSyncInvocations		= 0;
 	public long minResponseTime				= Long.MAX_VALUE;
 	public long maxResponseTime				= Long.MIN_VALUE;
+	
 	// Sample the response times so that we can give a "reasonable" 
 	// estimate of the 90th and 99th percentiles.	
 	private ISamplingStrategy responseTimeSampler; 

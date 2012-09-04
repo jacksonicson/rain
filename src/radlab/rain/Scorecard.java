@@ -24,7 +24,9 @@ public class Scorecard {
 	// be per-interval Scorecards as well as a final Scorecard for the entire run.
 	// The Scoreboard will maintain/manage a hashtable of Scorecards.
 
-	public String _name = ""; // All scorecards are named with the interval they are generated in
+	// All scorecards are named with the interval they are generated in
+	public String _name = "";
+
 	// What track does this scorecard belong to
 	public String _trackName = "";
 
@@ -42,12 +44,10 @@ public class Scorecard {
 	public double _numberOfUsers = 0.0;
 	public double _activeCount = 1.0;
 
-	/** A mapping of each operation with its summary. */
+	// A mapping of each operation with its summary
 	public TreeMap<String, OperationSummary> _operationMap = new TreeMap<String, OperationSummary>();
 
-	/** A mapping of each operation with its wait/cycle time. */
-	// public Hashtable<String,WaitTimeSummary> _waitTimeMap = new Hashtable<String,WaitTimeSummary>();
-
+	// Format numbers
 	private NumberFormat _formatter = new DecimalFormat("#0.0000");
 
 	public Scorecard(String name, double intervalDurationInSecs, String trackName) {
