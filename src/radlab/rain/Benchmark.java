@@ -32,9 +32,11 @@
 package radlab.rain;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
@@ -195,8 +197,20 @@ public class Benchmark {
 			// based on the mix matrix used (if any)
 			// Stop the scoreboard
 			track.getScoreboard().stop();
+
 			// Print out the stats for this track
 			track.getScoreboard().printStatistics(System.out);
+
+			// Dump everything in rain
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			PrintStream pout = new PrintStream(out);
+			track.getScoreboard().printStatistics(pout);
+			logger.info("Trakc metrics (writer): " + out.toString());
+
+			// Write detailed statistics to sonar
+			JSONObject stats = track.getScoreboard().getFinalScorecard().getJsonStatistics();
+			String strStats = stats.toString();
+			logger.info("Track metrics: " + strStats);
 
 			// Get the name of the generator active for this track
 			String generatorClassName = track.getGeneratorClassName();
