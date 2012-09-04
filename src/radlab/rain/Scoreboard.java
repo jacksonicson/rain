@@ -712,45 +712,40 @@ public class Scoreboard implements Runnable, IScoreboard {
 		}
 	}
 
-	private JSONObject getJSONWaitTimeStatistics(boolean purgePercentileData) {
+	private JSONObject getJSONWaitTimeStatistics(boolean purgePercentileData) throws JSONException {
 		JSONObject result = new JSONObject();
 
 		synchronized (this.finalCard._operationMap) {
-			try {
-				// Show operation proportions, response time: avg, max, min, stdev (op1 = x%, op2 = y%...)
-				// Enumeration<String> keys = this.finalCard._operationMap.keys();
-				Iterator<String> keys = this.finalCard._operationMap.keySet().iterator();
-				while (keys.hasNext()) {
-					String opName = keys.next();
-					WaitTimeSummary summary = this._waitTimeMap.get(opName);
+			JSONArray waits = new JSONArray();
+			result.put("waits", waits);
 
-					// If there were no values, then the min and max wait times would not have been set
-					// so make them to 0
-					if (summary.minWaitTime == Long.MAX_VALUE)
-						summary.minWaitTime = 0;
+			for (Iterator<String> keys = finalCard._operationMap.keySet().iterator(); keys.hasNext();) {
+				String opName = keys.next();
+				WaitTimeSummary summary = _waitTimeMap.get(opName);
 
-					if (summary.maxWaitTime == Long.MIN_VALUE)
-						summary.maxWaitTime = 0;
+				// If there were no values, then the min and max wait times would not have been set so make them to 0
+				if (summary.minWaitTime == Long.MAX_VALUE)
+					summary.minWaitTime = 0;
 
-					// Print out the operation summary.
-					result.put("operation", opName);
-					result.put("avg_wait", summary.getAverageWaitTime() / 1000.0);
-					result.put("min_wait", summary.minWaitTime / 1000.0);
-					result.put("max_wait", summary.maxWaitTime / 1000.0);
-					result.put("90th(s)", summary.getNthPercentileResponseTime(90) / 1000.0);
-					result.put("99th(s)", summary.getNthPercentileResponseTime(99) / 1000.0);
-					result.put("samples_collected", summary.getSamplesCollected());
-					result.put("samples_seen", summary.getSamplesSeen());
-					result.put("sample_mean", summary.getSampleMean() / 1000.0);
-					result.put("std_dev", summary.getSampleStandardDeviation() / 1000.0);
-					result.put("t_val", summary.getTvalue(summary.getAverageWaitTime()));
+				if (summary.maxWaitTime == Long.MIN_VALUE)
+					summary.maxWaitTime = 0;
 
-					if (purgePercentileData)
-						summary.resetSamples();
-				}
-			} catch (Exception e) {
-				log.info(this + " Error printing think/cycle time summary. Reason: " + e.toString());
-				e.printStackTrace();
+				// Print out the operation summary.
+				JSONObject wait = new JSONObject();
+				wait.put("operation", opName);
+				wait.put("avg_wait", summary.getAverageWaitTime() / 1000.0);
+				wait.put("min_wait", summary.minWaitTime / 1000.0);
+				wait.put("max_wait", summary.maxWaitTime / 1000.0);
+				wait.put("90th(s)", summary.getNthPercentileResponseTime(90) / 1000.0);
+				wait.put("99th(s)", summary.getNthPercentileResponseTime(99) / 1000.0);
+				wait.put("samples_collected", summary.getSamplesCollected());
+				wait.put("samples_seen", summary.getSamplesSeen());
+				wait.put("sample_mean", summary.getSampleMean() / 1000.0);
+				wait.put("std_dev", summary.getSampleStandardDeviation() / 1000.0);
+				wait.put("t_val", summary.getTvalue(summary.getAverageWaitTime()));
+
+				if (purgePercentileData)
+					summary.resetSamples();
 			}
 		}
 
