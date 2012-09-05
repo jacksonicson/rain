@@ -1,4 +1,4 @@
-package radlab.rain;
+package radlab.rain.scoreboard;
 
 import java.util.Iterator;
 import java.util.TreeMap;
@@ -9,6 +9,8 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import radlab.rain.LoadProfile;
+import radlab.rain.OperationExecution;
 import radlab.rain.util.NullSamplingStrategy;
 import radlab.rain.util.PoissonSamplingStrategy;
 
@@ -272,6 +274,10 @@ public class Scorecard {
 			lhsOpSummary.merge(rhsOpSummary);
 			this.operationMap.put(opName, lhsOpSummary);
 		}
+	}
+
+	public long getIntervalDuration() {
+		return intervalDuration;
 	}
 
 	public String toString() {

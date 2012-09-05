@@ -29,7 +29,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package radlab.rain;
+package radlab.rain.scoreboard;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -42,6 +42,13 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import radlab.rain.ErrorSummary;
+import radlab.rain.IScoreboard;
+import radlab.rain.LoadProfile;
+import radlab.rain.OperationExecution;
+import radlab.rain.ResponseTimeStat;
+import radlab.rain.ScenarioTrack;
+import radlab.rain.TraceLabels;
 import radlab.rain.util.MetricWriter;
 import radlab.rain.util.PoissonSamplingStrategy;
 

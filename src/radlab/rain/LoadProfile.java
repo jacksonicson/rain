@@ -45,11 +45,11 @@ public class LoadProfile
 	// Allow LoadProfile intervals to have names (no getter/setter)
 	public String _name = "";
 	
-	protected long   _interval;
+	public long   _interval;
 	protected long   _transitionTime;
-	protected int    _numberOfUsers;
+	public int    _numberOfUsers;
 	protected String _mixName = "";
-	protected long _activeCount = 0; // How often has this interval become active, the load scheduler updates this
+	public long _activeCount = 0; // How often has this interval become active, the load scheduler updates this
 	protected int _openLoopMaxOpsPerSec	= 0; // Rate limit on async operations. A value of 0 means no rate limiting.
 	protected JSONObject _config = null; // Save the original configuration object if its passed
 	

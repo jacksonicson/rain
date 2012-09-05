@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 
 import radlab.rain.communication.RainPipe;
 import radlab.rain.communication.thrift.ThriftService;
+import radlab.rain.scoreboard.Scorecard;
 import radlab.rain.util.ConfigUtil;
 
 /**
@@ -209,7 +210,7 @@ public class Benchmark {
 			if (!aggStats.containsKey(generatorClassName)) {
 				StringBuffer buf = new StringBuffer();
 				buf.append(generatorClassName).append(track);
-				Scorecard aggCard = new Scorecard("aggregated", finalScorecard.intervalDuration, buf.toString());
+				Scorecard aggCard = new Scorecard("aggregated", finalScorecard.getIntervalDuration(), buf.toString());
 				aggStats.put(generatorClassName, aggCard);
 			}
 			// Get the current aggregated scorecard for this generator

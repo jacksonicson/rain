@@ -1,10 +1,12 @@
-package radlab.rain;
+package radlab.rain.scoreboard;
 
 import java.util.LinkedList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import radlab.rain.ObjectPoolGeneric;
+import radlab.rain.ResponseTimeStat;
 import radlab.rain.util.MetricWriter;
 
 class SnapshotWriterThread extends Thread {
