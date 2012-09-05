@@ -440,7 +440,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 		this.snapshotThread.accept(responseTimeStat);
 	}
 
-	public JSONObject getJSONStatistics() throws JSONException {
+	public JSONObject getStatistics() throws JSONException {
 		// Run duration in seconds
 		double runDuration = (double) (this.endTime - this.startTime);
 

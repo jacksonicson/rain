@@ -123,6 +123,6 @@ public interface IScoreboard {
 
 	void setMetricWriter(MetricWriter val);
 
-	JSONObject getJSONStatistics() throws JSONException;
+	JSONObject getStatistics() throws JSONException;
 
 }

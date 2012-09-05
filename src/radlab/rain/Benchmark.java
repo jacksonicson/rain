@@ -198,7 +198,7 @@ public class Benchmark {
 			track.getScoreboard().stop();
 
 			// Write detailed statistics to sonar
-			JSONObject stats = track.getScoreboard().getJSONStatistics();
+			JSONObject stats = track.getScoreboard().getStatistics();
 			String strStats = stats.toString();
 			logger.info("Track metrics: " + strStats);
 			logger.info("Track scorecard: " + track.getScoreboard().getFinalScorecard().getIntervalStatistics().toString());
