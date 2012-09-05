@@ -129,7 +129,7 @@ public class Benchmark {
 			// want to retain metrics generated during the steady state interval.
 			IScoreboard scoreboard = track.createScoreboard(null);
 			if (scoreboard != null) {
-				scoreboard.initialize(startSteadyState, endSteadyState);
+				scoreboard.initialize(startSteadyState, endSteadyState, track.getMaxUsers());
 				scoreboard.setMetricSnapshotInterval((long) (track.getMetricSnapshotInterval() * 1000));
 				scoreboard.setMetricWriter(track.getMetricWriter());
 				scoreboard.start();
@@ -209,9 +209,7 @@ public class Benchmark {
 			// Get the final scorecard for this track
 			Scorecard finalScorecard = track.getScoreboard().getFinalScorecard();
 			if (!aggStats.containsKey(generatorClassName)) {
-				StringBuffer buf = new StringBuffer();
-				buf.append(generatorClassName).append(track);
-				Scorecard aggCard = new Scorecard("aggregated", buf.toString(), finalScorecard.getIntervalDuration());
+				Scorecard aggCard = new Scorecard("aggregated", generatorClassName, finalScorecard.getIntervalDuration());
 				aggStats.put(generatorClassName, aggCard);
 			}
 			// Get the current aggregated scorecard for this generator

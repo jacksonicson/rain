@@ -139,14 +139,19 @@ public class Scoreboard implements Runnable, IScoreboard {
 		this.trackName = trackName;
 	}
 
-	public void initialize(long startTime, long endTime) {
+	public void initialize(long startTime, long endTime, long maxUsers) {
 		this.startTime = startTime;
 		this.endTime = endTime;
 
 		long runDuration = this.endTime - this.startTime;
-		finalCard = new Scorecard("final", trackName, runDuration);
+		log.debug("run duration: " + runDuration);
 
+		finalCard = new Scorecard("final", trackName, maxUsers);
 		reset();
+	}
+
+	public void initialize(long startTime, long endTime) {
+		initialize(startTime, endTime, 0);
 	}
 
 	@Override

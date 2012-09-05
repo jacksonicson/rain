@@ -50,6 +50,8 @@ public interface IScoreboard {
 	 * Bootstrapping and initialization
 	 */
 	void initialize(long startRecordingTime, long endRecordingTime);
+	
+	void initialize(long startRecordingTime, long endRecordingTime, long maxUsers);
 
 	void setScenarioTrack(ScenarioTrack val);
 

@@ -36,9 +36,9 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.util.MetricWriter;
@@ -102,7 +102,7 @@ public abstract class ScenarioTrack {
 	public volatile LoadProfile _currentLoadProfile = null;
 	protected LinkedList<LoadProfile> _loadSchedule = new LinkedList<LoadProfile>();
 	protected Hashtable<String, MixMatrix> _mixMap = new Hashtable<String, MixMatrix>();
-	protected String _scoreboardClassName = "radlab.rain.Scoreboard";
+	protected String _scoreboardClassName = "radlab.rain.scoreboard.Scoreboard";
 	protected String _generatorClassName = "";
 	protected JSONObject _generatorParams = null;
 	protected String _loadProfileClassName = "";

@@ -42,8 +42,8 @@ public class Scorecard {
 	private long intervalDuration = 0;
 	private double numberOfUsers = 0.0;
 	private double activeCount = 1.0;
-	private long maxResponseTime = 0;
 	private long minResponseTime = Long.MAX_VALUE;
+	private long maxResponseTime = 0;
 
 	// A mapping of each operation with its summary
 	private TreeMap<String, OperationSummary> operationMap = new TreeMap<String, OperationSummary>();
@@ -54,8 +54,8 @@ public class Scorecard {
 
 	public Scorecard(String name, String trackName, long intervalDurationInSecs, long numberOfUsers) {
 		this.name = name;
-		this.intervalDuration = intervalDurationInSecs;
 		this.trackName = trackName;
+		this.intervalDuration = intervalDurationInSecs;
 		this.numberOfUsers = numberOfUsers;
 	}
 
@@ -72,7 +72,6 @@ public class Scorecard {
 		this.totalOpsSync = 0;
 		this.totalOpsLate = 0;
 		this.totalOpResponseTime = 0;
-		this.intervalDuration = 0;
 		this.activeCount = 0.0;
 		this.numberOfUsers = 0.0;
 		this.maxResponseTime = 0;
@@ -166,7 +165,7 @@ public class Scorecard {
 
 		result.put("total_ops_successful", totalOpsSuccessful);
 		result.put("total_operations_failed", totalOpsFailed);
-		result.put("total_actions_successfulo", totalActionsSuccessful);
+		result.put("total_actions_successful", totalActionsSuccessful);
 		result.put("total_ops_async", totalOpsAsync);
 		result.put("total_ops_sync", totalOpsSync);
 		result.put("total_ops_initiated", totalOpsInitiated);
@@ -180,7 +179,7 @@ public class Scorecard {
 		result.put("effective_load_req", effectiveLoadRequests);
 		result.put("max_response_time", maxResponseTime);
 		result.put("min_response_time", minResponseTime);
-		result.put("average_operation_response_time_secs", averageOpResponseTimeSecs);
+		result.put("average_operation_response_time", averageOpResponseTimeSecs);
 
 		// Operational statistics
 		result.put("operational", getOperationalStatistics(false));
@@ -250,6 +249,8 @@ public class Scorecard {
 		this.totalOpsLate += from.totalOpsLate;
 		this.totalOpResponseTime += from.totalOpResponseTime;
 		this.numberOfUsers += from.numberOfUsers;
+		this.maxResponseTime = Math.max(maxResponseTime, from.maxResponseTime);
+		this.minResponseTime = Math.min(minResponseTime, from.minResponseTime);
 
 		// Merge operation maps
 		for (String operationName : from.operationMap.keySet()) {
