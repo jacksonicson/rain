@@ -73,8 +73,8 @@ public class Scoreboard implements Runnable, IScoreboard {
 	public static int WORKER_EXIT_TIMEOUT = 60;
 
 	// Who owns this scoreboard
-	private String _trackName;
-	private String _trackTargetHost;
+	private String trackName;
+	private String trackTargetHost;
 	private ScenarioTrack _owner = null;
 
 	// If true, this scoreboard will refuse any new results.
@@ -140,7 +140,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 	 *            The track name to associate with this scoreboard.
 	 */
 	public Scoreboard(String trackName) {
-		this._trackName = trackName;
+		this.trackName = trackName;
 	}
 
 	public void initialize(long startTime, long endTime) {
@@ -148,7 +148,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 		this.endTime = endTime;
 
 		long runDuration = this.endTime - this.startTime;
-		finalCard = new Scorecard("final", runDuration, this._trackName);
+		finalCard = new Scorecard("final", runDuration, this.trackName);
 
 		reset();
 	}
@@ -266,7 +266,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 				if (this.metricWriter == null) {
 					log.warn(this + " Metric snapshots disabled - No metric writer instance provided");
 				} else {
-					this.snapshotThread = new SnapshotWriterThread(this._trackName);
+					this.snapshotThread = new SnapshotWriterThread(this.trackName);
 					this.snapshotThread.setMetricWriter(this.metricWriter);
 					this.snapshotThread.setName("Scoreboard-Snapshot-Writer");
 					this.snapshotThread.start();
@@ -395,7 +395,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 				Scorecard profileScorecard = this.profileScorecards.get(profileName);
 				// Create a new scorecard if needed
 				if (profileScorecard == null) {
-					profileScorecard = new Scorecard(profileName, activeProfile._interval, this._trackName);
+					profileScorecard = new Scorecard(profileName, activeProfile._interval, this.trackName);
 					profileScorecard.numberOfUsers = activeProfile._numberOfUsers;
 					profileScorecards.put(profileName, profileScorecard);
 				}
@@ -430,7 +430,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 		responseTimeStat._totalResponseTime = this.finalCard.totalOpResponseTime;
 		responseTimeStat._numObservations = this.finalCard.totalOpsSuccessful;
 		responseTimeStat._operationName = result._operationName;
-		responseTimeStat._trackName = this._trackName;
+		responseTimeStat._trackName = this.trackName;
 		responseTimeStat._operationRequest = result._operationRequest;
 
 		if (result._generatedDuring != null)
@@ -444,20 +444,25 @@ public class Scoreboard implements Runnable, IScoreboard {
 		// Run duration in seconds
 		double runDuration = (double) (this.endTime - this.startTime);
 
+		double averageDropOffQTime = 0;
+		if (totalDropoffs > 0)
+			averageDropOffQTime = (double) totalDropOffWaitTime / (double) totalDropoffs;
+
+		// Results
 		JSONObject result = new JSONObject();
-		result.put("track", _trackName);
-		result.put("target_host", _trackTargetHost);
+		result.put("track", trackName);
+		result.put("target_host", trackTargetHost);
 		result.put("run_duration", runDuration);
 		result.put("total_drop_offs", totalDropoffs);
-		result.put("average_drop_off_q_time(ms)", (double) totalDropOffWaitTime / (double) totalDropoffs);
-		result.put("max_drop_off_q_time(ms)", maxDropOffWaitTime);
+		result.put("average_drop_off_q_time", averageDropOffQTime);
+		result.put("max_drop_off_q_time", maxDropOffWaitTime);
 		result.put("mean_response_time_sample_interval", meanResponseTimeSamplingInterval);
 
 		// Add final scorecard statistics
 		result.put("final_scorecard", finalCard.getStatistics(runDuration));
 
 		// Add other statistics
-		result.put("operation_stats", getJSONOperationStatistics(false));
+		result.put("operation_stats", getOperationStatistics(false));
 		result.put("wait_stats", getWaitTimeStatistics(false));
 
 		return result;
@@ -483,7 +488,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 				// Print out the operation summary.
 				JSONObject wait = waitSummary.getStatistics();
-				wait.put("operation", operationName);
+				wait.put("operation_name", operationName);
 
 				if (purgePercentileData)
 					waitSummary.resetSamples();
@@ -493,7 +498,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 		return result;
 	}
 
-	private JSONObject getJSONOperationStatistics(boolean purgePercentileData) throws JSONException {
+	private JSONObject getOperationStatistics(boolean purgePercentileData) throws JSONException {
 		JSONObject result = new JSONObject();
 
 		long totalOperations = finalCard.totalOpsSuccessful + this.finalCard.totalOpsFailed;
@@ -523,15 +528,15 @@ public class Scoreboard implements Runnable, IScoreboard {
 					operationSummary.maxResponseTime = 0;
 
 				// Calculations
-				double proportion = 0; 
-				if(totalOperations > 0)
+				double proportion = 0;
+				if (totalOperations > 0)
 					proportion = (double) (operationSummary.opsSuccessful + operationSummary.opsFailed) / (double) totalOperations;
-				
+
 				// Print out the operation summary.
-				JSONObject operation = operationSummary.getJSONStats(); 
+				JSONObject operation = operationSummary.getJSONStats();
 				operations.put(operation);
-				operation.put("operation", operationName);
-				operation.put("proportion",proportion);
+				operation.put("operation_name", operationName);
+				operation.put("proportion", proportion);
 
 				if (purgePercentileData)
 					operationSummary.resetSamples();
@@ -568,11 +573,11 @@ public class Scoreboard implements Runnable, IScoreboard {
 	}
 
 	public String getTrackName() {
-		return this._trackName;
+		return this.trackName;
 	}
 
 	public void setTrackName(String val) {
-		this._trackName = val;
+		this.trackName = val;
 	}
 
 	public void setLogSamplingProbability(double val) {
@@ -600,11 +605,11 @@ public class Scoreboard implements Runnable, IScoreboard {
 	}
 
 	public String getTargetHost() {
-		return this._trackTargetHost;
+		return this.trackTargetHost;
 	}
 
 	public void setTargetHost(String val) {
-		this._trackTargetHost = val;
+		this.trackTargetHost = val;
 	}
 
 	public Scorecard getFinalScorecard() {
@@ -620,6 +625,6 @@ public class Scoreboard implements Runnable, IScoreboard {
 	}
 
 	public String toString() {
-		return "[SCOREBOARD TRACK: " + this._trackName + "]";
+		return "[SCOREBOARD TRACK: " + this.trackName + "]";
 	}
 }

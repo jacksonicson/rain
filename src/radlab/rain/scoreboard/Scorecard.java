@@ -184,6 +184,7 @@ public class Scorecard {
 		result.put("effective_load_req", effectiveLoadRequests);
 		result.put("average_operation_response_time_secs", averageOpResponseTimeSecs);
 
+		// Operational statistics
 		result.put("operational", getOperationalStatistics(false));
 
 		return result;
