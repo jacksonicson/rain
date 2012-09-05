@@ -471,32 +471,22 @@ public class Scoreboard implements Runnable, IScoreboard {
 			result.put("waits", waits);
 
 			for (Iterator<String> keys = finalCard.operationMap.keySet().iterator(); keys.hasNext();) {
-				String opName = keys.next();
-				WaitTimeSummary summary = waitTimeMap.get(opName);
+				String operationName = keys.next();
+				WaitTimeSummary waitSummary = waitTimeMap.get(operationName);
 
 				// If there were no values, then the min and max wait times would not have been set so make them to 0
-				if (summary.minWaitTime == Long.MAX_VALUE)
-					summary.minWaitTime = 0;
+				if (waitSummary.minWaitTime == Long.MAX_VALUE)
+					waitSummary.minWaitTime = 0;
 
-				if (summary.maxWaitTime == Long.MIN_VALUE)
-					summary.maxWaitTime = 0;
+				if (waitSummary.maxWaitTime == Long.MIN_VALUE)
+					waitSummary.maxWaitTime = 0;
 
 				// Print out the operation summary.
-				JSONObject wait = new JSONObject();
-				wait.put("operation", opName);
-				wait.put("avg_wait", summary.getAverageWaitTime());
-				wait.put("min_wait", summary.minWaitTime);
-				wait.put("max_wait", summary.maxWaitTime);
-				wait.put("90th(s)", summary.getNthPercentileResponseTime(90));
-				wait.put("99th(s)", summary.getNthPercentileResponseTime(99));
-				wait.put("samples_collected", summary.getSamplesCollected());
-				wait.put("samples_seen", summary.getSamplesSeen());
-				wait.put("sample_mean", summary.getSampleMean());
-				wait.put("std_dev", summary.getSampleStandardDeviation());
-				wait.put("t_val", summary.getTvalue(summary.getAverageWaitTime()));
+				JSONObject wait = waitSummary.getStatistics();
+				wait.put("operation", operationName);
 
 				if (purgePercentileData)
-					summary.resetSamples();
+					waitSummary.resetSamples();
 			}
 		}
 
@@ -516,8 +506,8 @@ public class Scoreboard implements Runnable, IScoreboard {
 			result.put("operations", operations);
 
 			for (Iterator<String> keys = finalCard.operationMap.keySet().iterator(); keys.hasNext();) {
-				String opName = keys.next();
-				OperationSummary operationSummary = finalCard.operationMap.get(opName);
+				String operationName = keys.next();
+				OperationSummary operationSummary = finalCard.operationMap.get(operationName);
 
 				// Update global counters
 				totalAvgResponseTime += operationSummary.getAverageResponseTime();
@@ -532,24 +522,16 @@ public class Scoreboard implements Runnable, IScoreboard {
 				if (operationSummary.maxResponseTime == Long.MIN_VALUE)
 					operationSummary.maxResponseTime = 0;
 
+				// Calculations
+				double proportion = 0; 
+				if(totalOperations > 0)
+					proportion = (double) (operationSummary.opsSuccessful + operationSummary.opsFailed) / (double) totalOperations;
+				
 				// Print out the operation summary.
-				JSONObject operation = new JSONObject();
+				JSONObject operation = operationSummary.getJSONStats(); 
 				operations.put(operation);
-				operation.put("operation", opName);
-				operation.put("proportion",
-						((double) (operationSummary.opsSuccessful + operationSummary.opsFailed) / (double) totalOperations) * 100d);
-				operation.put("successes", operationSummary.opsSuccessful);
-				operation.put("failures", operationSummary.opsFailed);
-				operation.put("avg_response", operationSummary.getAverageResponseTime());
-				operation.put("min_response", operationSummary.minResponseTime);
-				operation.put("max_response", operationSummary.maxResponseTime);
-				operation.put("90th(s)", operationSummary.getNthPercentileResponseTime(90));
-				operation.put("99th(s)", operationSummary.getNthPercentileResponseTime(99));
-				operation.put("samples_collected", operationSummary.getSamplesCollected());
-				operation.put("samples_seen", operationSummary.getSamplesSeen());
-				operation.put("sample_mean", operationSummary.getSampleMean());
-				operation.put("sample_stdev", operationSummary.getSampleStandardDeviation());
-				operation.put("avg_resp_time", operationSummary.getTvalue(operationSummary.getAverageResponseTime()));
+				operation.put("operation", operationName);
+				operation.put("proportion",proportion);
 
 				if (purgePercentileData)
 					operationSummary.resetSamples();

@@ -31,6 +31,9 @@
 
 package radlab.rain.scoreboard;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import radlab.rain.util.ISamplingStrategy;
 
 public class WaitTimeSummary {
@@ -93,5 +96,22 @@ public class WaitTimeSummary {
 
 	public double getTvalue(double averageWaitTime) {
 		return this.waitTimeSampler.getTvalue(averageWaitTime);
+	}
+
+	public JSONObject getStatistics() throws JSONException {
+		JSONObject wait = new JSONObject();
+
+		wait.put("average_wait_time", getAverageWaitTime());
+		wait.put("min_wait_time", minWaitTime);
+		wait.put("max_wait_time", maxWaitTime);
+		wait.put("90th_percentile_response_time", getNthPercentileResponseTime(90));
+		wait.put("99th_percentile_response_time", getNthPercentileResponseTime(99));
+		wait.put("samples_collected", getSamplesCollected());
+		wait.put("samples_seen", getSamplesSeen());
+		wait.put("sample_mean", getSampleMean());
+		wait.put("sample_standard_deviation", getSampleStandardDeviation());
+		wait.put("tvalue_average_wait_time", getTvalue(getAverageWaitTime()));
+
+		return wait;
 	}
 }

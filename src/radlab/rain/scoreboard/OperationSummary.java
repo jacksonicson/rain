@@ -68,6 +68,10 @@ public class OperationSummary {
 		operation.put("max_response_time", maxResponseTime);
 		operation.put("90_percentile_response_time", getNthPercentileResponseTime(90));
 		operation.put("99_percentile_response_time", getNthPercentileResponseTime(99));
+		operation.put("sample_mean", getSampleMean());
+		operation.put("sample_stdev", getSampleStandardDeviation());
+		operation.put("avg_resp_time", getTvalue(getAverageResponseTime()));
+
 		return operation;
 	}
 
