@@ -16,41 +16,46 @@ import radlab.rain.OperationExecution;
 import radlab.rain.util.NullSamplingStrategy;
 import radlab.rain.util.PoissonSamplingStrategy;
 
-// Not even going to try to make Scorecards thread-safe, the Scoreboard must do "the right thing"(tm)
+/**
+ * Eventually all stats reporting will be done using Scorecards. There will be per-interval Scorecards as well as a final
+ * Scorecard for the entire run. The Scoreboard will maintain/manage a hashtable of Scorecards.
+ * 
+ */
 public class Scorecard {
 	private static Logger logger = LoggerFactory.getLogger(Scorecard.class);
 
-	// Eventually all stats reporting will be done using Scorecards. There will
-	// be per-interval Scorecards as well as a final Scorecard for the entire run.
-	// The Scoreboard will maintain/manage a hashtable of Scorecards.
-
 	// All scorecards are named with the interval they are generated in
-	String name = "";
+	private String name = "";
 
 	// What track does this scorecard belong to
-	String trackName = "";
+	private String trackName = "";
 
 	// What goes on the scorecard?
-	long totalOpsSuccessful = 0;
-	long totalOpsFailed = 0;
-	long totalActionsSuccessful = 0;
-	long totalOpsAsync = 0;
-	long totalOpsSync = 0;
-	long totalOpsInitiated = 0;
-	long totalOpsLate = 0;
-	long totalOpResponseTime = 0;
+	private long totalOpsSuccessful = 0;
+	private long totalOpsFailed = 0;
+	private long totalActionsSuccessful = 0;
+	private long totalOpsAsync = 0;
+	private long totalOpsSync = 0;
+	private long totalOpsInitiated = 0;
+	private long totalOpsLate = 0;
+	private long totalOpResponseTime = 0;
 
-	long intervalDuration = 0;
-	double numberOfUsers = 0.0;
-	double activeCount = 1.0;
+	private long intervalDuration = 0;
+	private double numberOfUsers = 0.0;
+	private double activeCount = 1.0;
 
 	// A mapping of each operation with its summary
-	TreeMap<String, OperationSummary> operationMap = new TreeMap<String, OperationSummary>();
+	private TreeMap<String, OperationSummary> operationMap = new TreeMap<String, OperationSummary>();
 
-	public Scorecard(String name, long intervalDurationInSecs, String trackName) {
+	public Scorecard(String name, String trackName, long intervalDurationInSecs) {
+		this(name, trackName, intervalDurationInSecs, 0);
+	}
+
+	public Scorecard(String name, String trackName, long intervalDurationInSecs, long numberOfUsers) {
 		this.name = name;
 		this.intervalDuration = intervalDurationInSecs;
 		this.trackName = trackName;
+		this.numberOfUsers = numberOfUsers;
 	}
 
 	public void reset() {
@@ -246,36 +251,36 @@ public class Scorecard {
 		return result;
 	}
 
-	public void merge(Scorecard rhs) {
-		// We expect to merge only "final" scorecards
-
+	public void merge(Scorecard from) {
 		// For merges the activeCount is always set to 1
 		this.activeCount = 1;
+		
 		// Merge another scorecard with "me"
-		// Let's compute total operations
-		this.totalOpsSuccessful += rhs.totalOpsSuccessful;
-		this.totalOpsFailed += rhs.totalOpsFailed;
-		this.totalActionsSuccessful += rhs.totalActionsSuccessful;
-		this.totalOpsAsync += rhs.totalOpsAsync;
-		this.totalOpsSync += rhs.totalOpsSync;
-		this.totalOpsInitiated += rhs.totalOpsInitiated;
-		this.totalOpsLate += rhs.totalOpsLate;
-		this.totalOpResponseTime += rhs.totalOpResponseTime;
-		this.numberOfUsers += rhs.numberOfUsers;
+		this.totalOpsSuccessful += from.totalOpsSuccessful;
+		this.totalOpsFailed += from.totalOpsFailed;
+		this.totalActionsSuccessful += from.totalActionsSuccessful;
+		this.totalOpsAsync += from.totalOpsAsync;
+		this.totalOpsSync += from.totalOpsSync;
+		this.totalOpsInitiated += from.totalOpsInitiated;
+		this.totalOpsLate += from.totalOpsLate;
+		this.totalOpResponseTime += from.totalOpResponseTime;
+		this.numberOfUsers += from.numberOfUsers;
 
 		// Merge operation maps
-		for (String opName : rhs.operationMap.keySet()) {
-			OperationSummary lhsOpSummary = null;
-			OperationSummary rhsOpSummary = rhs.operationMap.get(opName);
+		for (String operationName : from.operationMap.keySet()) {
+			OperationSummary mySummary = null;
+			OperationSummary fromSummary = from.operationMap.get(operationName);
+			
 			// Do we have an operationSummary for this operation yet?
 			// If we don't have one, initialize an OperationSummary with a Null/dummy sampler that will
 			// simply accept all of the samples from the rhs' sampler
-			if (this.operationMap.containsKey(opName))
-				lhsOpSummary = this.operationMap.get(opName);
+			if (this.operationMap.containsKey(operationName))
+				mySummary = this.operationMap.get(operationName);
 			else
-				lhsOpSummary = new OperationSummary(new NullSamplingStrategy());
-			lhsOpSummary.merge(rhsOpSummary);
-			this.operationMap.put(opName, lhsOpSummary);
+				mySummary = new OperationSummary(new NullSamplingStrategy());
+			
+			mySummary.merge(fromSummary);
+			this.operationMap.put(operationName, mySummary);
 		}
 	}
 

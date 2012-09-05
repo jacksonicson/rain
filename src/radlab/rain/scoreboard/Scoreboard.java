@@ -144,7 +144,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 		this.endTime = endTime;
 
 		long runDuration = this.endTime - this.startTime;
-		finalCard = new Scorecard("final", runDuration, this.trackName);
+		finalCard = new Scorecard("final", trackName, runDuration);
 
 		reset();
 	}
@@ -159,6 +159,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 		this.totalDropoffs = 0;
 		this.totalDropOffWaitTime = 0;
 		this.maxDropOffWaitTime = 0;
+
 		synchronized (this.swapDropoffQueueLock) {
 			this.dropOffQ.clear();
 		}
@@ -187,6 +188,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 		}
 	}
 
+	@Override
 	public void dropOffOperation(OperationExecution result) {
 		if (isDone())
 			return;
@@ -247,6 +249,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 		return (time > this.endTime);
 	}
 
+	@Override
 	public void start() {
 		if (!this.isRunning()) {
 			this.done = false;
@@ -270,6 +273,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 		}
 	}
 
+	@Override
 	public void stop() {
 		if (this.isRunning()) {
 			this.done = true;
@@ -312,19 +316,11 @@ public class Scoreboard implements Runnable, IScoreboard {
 		}
 	}
 
-	/**
-	 * Checks whether the worker thread exists and is alive.
-	 * 
-	 * @return True if the worker thread exists and is alive.
-	 */
-	protected boolean isRunning() {
+	private boolean isRunning() {
 		return (this.workerThread != null && this.workerThread.isAlive());
 	}
 
-	/**
-	 * Implements the worker thread that periodically grabs the results from the dropOffQ and copies it over to the processingQ to
-	 * be processed.
-	 */
+	@Override
 	public void run() {
 		log.debug(this + " starting worker thread...");
 
@@ -374,12 +370,6 @@ public class Scoreboard implements Runnable, IScoreboard {
 		log.debug(this + " worker thread finished!");
 	}
 
-	/**
-	 * Processes a result (from the processingQ) if it was received during the steady state period.
-	 * 
-	 * @param result
-	 *            The operation execution result to process.
-	 */
 	private void processSteadyStateResult(OperationExecution result) {
 		// Update per-interval (profile) cards
 		LoadProfile activeProfile = result._generatedDuring;
@@ -390,8 +380,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 				Scorecard profileScorecard = this.profileScorecards.get(profileName);
 				// Create a new scorecard if needed
 				if (profileScorecard == null) {
-					profileScorecard = new Scorecard(profileName, activeProfile._interval, this.trackName);
-					profileScorecard.numberOfUsers = activeProfile._numberOfUsers;
+					profileScorecard = new Scorecard(profileName, trackName, activeProfile._interval, activeProfile._numberOfUsers);
 					profileScorecards.put(profileName, profileScorecard);
 				}
 
@@ -404,13 +393,8 @@ public class Scoreboard implements Runnable, IScoreboard {
 		finalCard.processResult(result, meanResponseTimeSamplingInterval);
 
 		// If interactive, look at the total response time.
-		if (!result.isFailed() && result.isInteractive()) {
-			// Do metric SNAPSHOTS (record all response times)
-			// Only save response times if we're doing metric snapshots
-			// This reduces memory leakage
-			if (this.usingMetricSnapshots)
-				issueMetricSnapshot(result);
-		}
+		if (!result.isFailed() && result.isInteractive() && this.usingMetricSnapshots)
+			issueMetricSnapshot(result);
 	}
 
 	private void issueMetricSnapshot(OperationExecution result) {
@@ -422,10 +406,10 @@ public class Scoreboard implements Runnable, IScoreboard {
 		// Fill response time stat
 		responseTimeStat._timestamp = result.getTimeFinished();
 		responseTimeStat._responseTime = responseTime;
-		responseTimeStat._totalResponseTime = this.finalCard.totalOpResponseTime;
-		responseTimeStat._numObservations = this.finalCard.totalOpsSuccessful;
+		responseTimeStat._totalResponseTime = finalCard.getTotalOpResponseTime();
+		responseTimeStat._numObservations = finalCard.getTotalOpsSuccessful();
 		responseTimeStat._operationName = result._operationName;
-		responseTimeStat._trackName = this.trackName;
+		responseTimeStat._trackName = trackName;
 		responseTimeStat._operationRequest = result._operationRequest;
 
 		if (result._generatedDuring != null)
@@ -435,6 +419,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 		this.snapshotThread.accept(responseTimeStat);
 	}
 
+	@Override
 	public JSONObject getStatistics() throws JSONException {
 		// Run duration in seconds
 		double runDuration = (double) (this.endTime - this.startTime);
@@ -466,20 +451,13 @@ public class Scoreboard implements Runnable, IScoreboard {
 	private JSONObject getWaitTimeStatistics(boolean purgePercentileData) throws JSONException {
 		JSONObject result = new JSONObject();
 
-		synchronized (this.finalCard.operationMap) {
+		synchronized (this.finalCard) {
 			JSONArray waits = new JSONArray();
 			result.put("waits", waits);
 
-			for (Iterator<String> keys = finalCard.operationMap.keySet().iterator(); keys.hasNext();) {
+			for (Iterator<String> keys = finalCard.getOperationMap().keySet().iterator(); keys.hasNext();) {
 				String operationName = keys.next();
 				WaitTimeSummary waitSummary = waitTimeMap.get(operationName);
-
-				// If there were no values, then the min and max wait times would not have been set so make them to 0
-				if (waitSummary.minWaitTime == Long.MAX_VALUE)
-					waitSummary.minWaitTime = 0;
-
-				if (waitSummary.maxWaitTime == Long.MIN_VALUE)
-					waitSummary.maxWaitTime = 0;
 
 				// Print out the operation summary.
 				JSONObject wait = waitSummary.getStatistics();
@@ -497,31 +475,23 @@ public class Scoreboard implements Runnable, IScoreboard {
 	private JSONObject getOperationStatistics(boolean purgePercentileData) throws JSONException {
 		JSONObject result = new JSONObject();
 
-		long totalOperations = finalCard.totalOpsSuccessful + this.finalCard.totalOpsFailed;
+		long totalOperations = finalCard.getTotalOpsSuccessful() + finalCard.getTotalOpsFailed();
 		double totalAvgResponseTime = 0.0;
 		double totalResponseTime = 0.0;
 		long totalSuccesses = 0;
 
-		synchronized (this.finalCard.operationMap) {
+		synchronized (this.finalCard) {
 			JSONArray operations = new JSONArray();
 			result.put("operations", operations);
 
-			for (Iterator<String> keys = finalCard.operationMap.keySet().iterator(); keys.hasNext();) {
+			for (Iterator<String> keys = finalCard.getOperationMap().keySet().iterator(); keys.hasNext();) {
 				String operationName = keys.next();
-				OperationSummary operationSummary = finalCard.operationMap.get(operationName);
+				OperationSummary operationSummary = finalCard.getOperationMap().get(operationName);
 
 				// Update global counters
 				totalAvgResponseTime += operationSummary.getAverageResponseTime();
 				totalResponseTime += operationSummary.totalResponseTime;
 				totalSuccesses += operationSummary.opsSuccessful;
-
-				// If there were no successes, then the min and max response times would not have been set
-				// so make them to 0
-				if (operationSummary.minResponseTime == Long.MAX_VALUE)
-					operationSummary.minResponseTime = 0;
-
-				if (operationSummary.maxResponseTime == Long.MIN_VALUE)
-					operationSummary.maxResponseTime = 0;
 
 				// Calculations
 				double proportion = 0;
@@ -547,55 +517,43 @@ public class Scoreboard implements Runnable, IScoreboard {
 		return result;
 	}
 
-	public long getMeanResponseTimeSamplingInterval() {
-		return this.meanResponseTimeSamplingInterval;
-	}
-
+	@Override
 	public void setMeanResponseTimeSamplingInterval(long val) {
 		if (val > 0)
 			this.meanResponseTimeSamplingInterval = val;
 	}
 
-	public String getTrackName() {
-		return this.trackName;
-	}
-
-	public void setTrackName(String val) {
-		this.trackName = val;
-	}
-
+	@Override
 	public void setLogSamplingProbability(double val) {
 		this._logSamplingProbability = val;
 	}
 
+	@Override
 	public void setMetricSnapshotInterval(long val) {
-		
+
 	}
 
+	@Override
 	public void setUsingMetricSnapshots(boolean val) {
 		this.usingMetricSnapshots = val;
 	}
 
-	public MetricWriter getMetricWriter() {
-		return this.metricWriter;
-	}
-
+	@Override
 	public void setMetricWriter(MetricWriter val) {
 		this.metricWriter = val;
 	}
 
-	public String getTargetHost() {
-		return this.trackTargetHost;
-	}
-
+	@Override
 	public void setTargetHost(String val) {
 		this.trackTargetHost = val;
 	}
 
+	@Override
 	public Scorecard getFinalScorecard() {
 		return this.finalCard;
 	}
 
+	@Override
 	public void setScenarioTrack(ScenarioTrack owner) {
 		this._owner = owner;
 	}

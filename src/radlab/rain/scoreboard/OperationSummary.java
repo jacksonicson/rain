@@ -58,6 +58,16 @@ public class OperationSummary {
 	}
 
 	JSONObject getStatistics() throws JSONException {
+		// Calculations
+		long minResponseTime = this.minResponseTime; 
+		if (minResponseTime == Long.MAX_VALUE)
+			minResponseTime = 0;
+
+		long maxResponseTime = this.maxResponseTime; 
+		if (maxResponseTime == Long.MIN_VALUE)
+			maxResponseTime = 0;
+		
+		// Results
 		JSONObject operation = new JSONObject();
 		operation.put("samples_collected", getSamplesCollected());
 		operation.put("samples_seen", getSamplesSeen());
@@ -118,17 +128,17 @@ public class OperationSummary {
 		return responseTimeSampler;
 	}
 
-	public void merge(OperationSummary rhs) {
-		opsSuccessful += rhs.opsSuccessful;
-		opsFailed += rhs.opsFailed;
-		actionsSuccessful += rhs.actionsSuccessful;
-		totalResponseTime += rhs.totalResponseTime;
-		asyncInvocations += rhs.asyncInvocations;
-		syncInvocations += rhs.syncInvocations;
-		minResponseTime = Math.min(minResponseTime, rhs.minResponseTime);
-		maxResponseTime = Math.max(maxResponseTime, rhs.maxResponseTime);
+	public void merge(OperationSummary from) {
+		opsSuccessful += from.opsSuccessful;
+		opsFailed += from.opsFailed;
+		actionsSuccessful += from.actionsSuccessful;
+		totalResponseTime += from.totalResponseTime;
+		asyncInvocations += from.asyncInvocations;
+		syncInvocations += from.syncInvocations;
+		minResponseTime = Math.min(minResponseTime, from.minResponseTime);
+		maxResponseTime = Math.max(maxResponseTime, from.maxResponseTime);
 
-		LinkedList<Long> rhsRawSamples = rhs.getResponseTimeSampler().getRawSamples();
+		LinkedList<Long> rhsRawSamples = from.getResponseTimeSampler().getRawSamples();
 		for (Long obs : rhsRawSamples)
 			responseTimeSampler.accept(obs);
 	}

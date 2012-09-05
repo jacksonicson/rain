@@ -99,8 +99,18 @@ public class WaitTimeSummary {
 	}
 
 	public JSONObject getStatistics() throws JSONException {
-		JSONObject wait = new JSONObject();
 
+		// Calculations
+		long minWaitTime = this.minWaitTime;
+		if (minWaitTime == Long.MAX_VALUE)
+			minWaitTime = 0;
+
+		long maxWaitTime = this.maxWaitTime;
+		if (maxWaitTime == Long.MIN_VALUE)
+			maxWaitTime = 0;
+
+		// Results
+		JSONObject wait = new JSONObject();
 		wait.put("average_wait_time", getAverageWaitTime());
 		wait.put("min_wait_time", minWaitTime);
 		wait.put("max_wait_time", maxWaitTime);

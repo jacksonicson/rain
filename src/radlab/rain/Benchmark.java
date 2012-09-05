@@ -211,7 +211,7 @@ public class Benchmark {
 			if (!aggStats.containsKey(generatorClassName)) {
 				StringBuffer buf = new StringBuffer();
 				buf.append(generatorClassName).append(track);
-				Scorecard aggCard = new Scorecard("aggregated", finalScorecard.getIntervalDuration(), buf.toString());
+				Scorecard aggCard = new Scorecard("aggregated", buf.toString(), finalScorecard.getIntervalDuration());
 				aggStats.put(generatorClassName, aggCard);
 			}
 			// Get the current aggregated scorecard for this generator
