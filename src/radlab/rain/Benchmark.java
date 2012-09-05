@@ -196,9 +196,6 @@ public class Benchmark {
 			// Stop the scoreboard
 			track.getScoreboard().stop();
 
-			// Print out the stats for this track
-			track.getScoreboard().printStatistics(System.out);
-
 			// Write detailed statistics to sonar
 			JSONObject stats = track.getScoreboard().getJSONStatistics();
 			String strStats = stats.toString();
@@ -235,8 +232,6 @@ public class Benchmark {
 
 			for (String generatorName : aggStats.keySet()) {
 				Scorecard card = aggStats.get(generatorName);
-
-				card.printStatistics(System.out);
 
 				// Sonar output
 				JSONObject stats = card.getIntervalStatistics();

@@ -190,7 +190,7 @@ public class Scorecard {
 		}
 	}
 
-	JSONObject getScoreboardStats(double runDuration) throws JSONException {
+	JSONObject getStatistics(double runDuration) throws JSONException {
 		// Total operations executed
 		long totalOperations = totalOpsSuccessful + totalOpsFailed;
 
@@ -242,60 +242,8 @@ public class Scorecard {
 	}
 
 	public JSONObject getIntervalStatistics() throws JSONException {
-		JSONObject result = getScoreboardStats(intervalDuration);
+		JSONObject result = getStatistics(intervalDuration);
 		return result;
-	}
-
-	public void printStatistics(PrintStream out) {
-		long totalOperations = this.totalOpsSuccessful + this.totalOpsFailed;
-
-		double offeredLoadOps = 0.0;
-		if (totalOperations > 0) {
-			offeredLoadOps = (double) this.totalOpsInitiated / this.intervalDuration;
-		}
-
-		double effectiveLoadOps = 0.0;
-		if (this.totalOpsSuccessful > 0) {
-			effectiveLoadOps = (double) this.totalOpsSuccessful / this.intervalDuration;
-		}
-
-		double effectiveLoadRequests = 0.0;
-		if (this.totalActionsSuccessful > 0) {
-			effectiveLoadRequests = (double) this.totalActionsSuccessful / this.intervalDuration;
-		}
-
-		/*
-		 * Show... - average ops per second generated (load offered) - total ops/duration - average ops per second completed
-		 * (effective load)- total successful ops/duration - average requests per second - async % vs. sync %
-		 */
-		out.println(this + " Interval name                      : " + this.name);
-		out.println(this + " Active users                       : " + this.formatter.format(this.numberOfUsers));
-		out.println(this + " Activation count                   : " + this.formatter.format(this.activeCount));
-		out.println(this + " Offered load (ops/sec)             : " + this.formatter.format(offeredLoadOps / (double) this.activeCount));
-		out.println(this + " Effective load (ops/sec)           : " + this.formatter.format(effectiveLoadOps / (double) this.activeCount));
-		out.println(this + " Effective load (requests/sec)      : " + this.formatter.format(effectiveLoadRequests / (double) this.activeCount));
-		out.println(this + " Operations initiated               : " + this.totalOpsInitiated);
-		out.println(this + " Operations successfully completed  : " + this.totalOpsSuccessful);
-		// Avg response time per operation
-		if (this.totalOpsSuccessful > 0)
-			out.println(this + " Average operation response time (s): "
-					+ this.formatter.format(((double) this.totalOpResponseTime / (double) this.totalOpsSuccessful) / 1000.0));
-		else
-			out.println(this + " Average operation response time (s): 0.0000");
-		out.println(this + " Operations late                    : " + this.totalOpsLate);
-		out.println(this + " Operations failed                  : " + this.totalOpsFailed);
-		out.println(this + " Async Ops                          : " + this.totalOpsAsync + " "
-				+ this.formatter.format((((double) this.totalOpsAsync / (double) totalOperations) * 100)) + "%");
-		out.println(this + " Sync Ops                           : " + this.totalOpsSync + " "
-				+ this.formatter.format((((double) this.totalOpsSync / (double) totalOperations) * 100)) + "%");
-
-		// out.println( this + " Mean response time sample interval : " + this._meanResponseTimeSamplingInterval +
-		// " (using Poisson sampling)");
-
-		this.printOperationStatistics(out, true);
-		out.println("");
-		// this.printWaitTimeStatistics( out, true );
-
 	}
 
 	private JSONObject getOperationalStatistics(boolean purgePercentileData) throws JSONException {
@@ -345,75 +293,6 @@ public class Scorecard {
 		}
 
 		return result;
-	}
-
-	@SuppressWarnings("unused")
-	private void printOperationStatistics(PrintStream out, boolean purgePercentileData) {
-		long totalOperations = this.totalOpsSuccessful + this.totalOpsFailed;
-		double totalAvgResponseTime = 0.0;
-		double totalResponseTime = 0.0;
-		long totalSuccesses = 0;
-
-		synchronized (this.operationMap) {
-			try {
-				// Make this thing "prettier", using fixed width columns
-				String outputFormatSpec = "|%20s|%10s|%10s|%10s|%12s|%12s|%12s|%10s|%10s|%10s|";
-
-				out.println(this
-						+ String.format(outputFormatSpec, "operation", "proportion", "successes", "failures", "avg response", "min response",
-								"max response", "90th (s)", "99th (s)", "pctile"));
-				out.println(this + String.format(outputFormatSpec, "", "", "", "", "time (s)", "time (s)", "time(s)", "", "", "samples"));
-				// out.println( this +
-				// "| operation | proportion | successes | failures | avg response | min response | max response | 90th (s) | 99th (s) | pctile  |"
-				// );
-				// out.println( this +
-				// "|           |            |           |          | time (s)     | time (s)     | time (s)     |          |          | samples |"
-				// );
-
-				// Show operation proportions, response time: avg, max, min, stdev (op1 = x%, op2 = y%...)
-				// Enumeration<String> keys = this._operationMap.keys();
-				Iterator<String> keys = this.operationMap.keySet().iterator();
-				while (keys.hasNext()) {
-					String opName = keys.next();
-					OperationSummary summary = this.operationMap.get(opName);
-
-					totalAvgResponseTime += summary.getAverageResponseTime();
-					totalResponseTime += summary.totalResponseTime;
-					totalSuccesses += summary.succeeded;
-					// If there were no successes, then the min and max response times would not have been set
-					// so make them to 0
-					if (summary.minResponseTime == Long.MAX_VALUE)
-						summary.minResponseTime = 0;
-
-					if (summary.maxResponseTime == Long.MIN_VALUE)
-						summary.maxResponseTime = 0;
-
-					// Print out the operation summary.
-					out.println(this
-							+ String.format(outputFormatSpec, opName,
-									this.formatter.format((((double) (summary.succeeded + summary.failed) / (double) totalOperations) * 100)) + "% ",
-									summary.succeeded, summary.failed, this.formatter.format(summary.getAverageResponseTime() / 1000.0),
-									this.formatter.format(summary.minResponseTime / 1000.0), this.formatter.format(summary.maxResponseTime / 1000.0),
-									this.formatter.format(summary.getNthPercentileResponseTime(90) / 1000.0),
-									this.formatter.format(summary.getNthPercentileResponseTime(99) / 1000.0), summary.getSamplesCollected() + "/"
-											+ summary.getSamplesSeen()));
-
-					if (purgePercentileData)
-						summary.resetSamples();
-				}
-
-				/*
-				 * if( this._operationMap.size() > 0 ) { out.println( "" ); //out.println( this +
-				 * " average response time (agg)        : " + this._formatter.format( (
-				 * totalAvgResponseTime/this._operationMap.size())/1000.0 ) ); out.println( this +
-				 * " average response time (s)          : " + this._formatter.format( ( totalResponseTime/totalSuccesses)/1000.0 )
-				 * ); }
-				 */
-			} catch (Exception e) {
-				logger.info(this + " Error printing operation summary. Reason: " + e.toString());
-				e.printStackTrace();
-			}
-		}
 	}
 
 	public void merge(Scorecard rhs) {

@@ -453,140 +453,16 @@ public class Scoreboard implements Runnable, IScoreboard {
 		result.put("mean_response_time_sample_interval", meanResponseTimeSamplingInterval);
 
 		// Add final scorecard statistics
-		result.put("final_scorecard", finalCard.getScoreboardStats(runDuration));
+		result.put("final_scorecard", finalCard.getStatistics(runDuration));
 
 		// Add other statistics
 		result.put("operation_stats", getJSONOperationStatistics(false));
-		result.put("wait_stats", getJSONWaitTimeStatistics(false));
+		result.put("wait_stats", getWaitTimeStatistics(false));
 
 		return result;
 	}
 
-	public void printStatistics(PrintStream out) {
-		double runDuration = (double) (this.endTime - this.startTime) / 1000.0;
-		long totalOperations = this.finalCard.totalOpsSuccessful + this.finalCard.totalOpsFailed;
-		double offeredLoadOps = (double) this.finalCard.totalOpsInitiated / runDuration;
-		double effectiveLoadOps = (double) this.finalCard.totalOpsSuccessful / runDuration;
-		double effectiveLoadRequests = (double) this.finalCard.totalActionsSuccessful / runDuration;
-
-		double totalUsers = 0.0;
-		double totalIntervalActivations = 0.0;
-
-		out.println(this + " Interval results-------------------: ");
-
-		// Print all scorecard stats
-		for (Scorecard card : this.profileScorecards.values()) {
-			for (LoadProfile profile : this._owner._loadSchedule) {
-				// Skip profile if name does not match
-				if (!card.name.equals(profile._name))
-					continue;
-
-				// If the profile started after the end of a run then
-				// decrease the activation count accordingly
-				if (profile.getTimeStarted() > this.endTime) {
-					// Decrease activation count
-					double intervalSpillOver = (this.endTime - profile.getTimeStarted())
-							/ ((profile._interval * 1000) + (profile._transitionTime * 1000));
-					log.info(this + " Need to decrease activation count for: " + profile._name + " spillover: " + intervalSpillOver);
-					card.activeCount -= intervalSpillOver;
-					continue;
-				}
-
-				// Look at the diff between the last activation
-				// and the end of steady state
-				long intervalEndTime = profile.getTimeStarted() + (profile._interval * 1000) + (profile._transitionTime * 1000);
-
-				// Did the end of the run interrupt this interval
-				double diff = intervalEndTime - this.endTime;
-				if (diff > 0) {
-					double delta = (diff / (double) (profile._interval * 1000));
-					log.info(this + " " + card.name + " shortchanged (msecs): " + this.formatter.format(diff));
-					log.info(this + " " + card.name + " shortchanged (delta): " + this.formatter.format(delta));
-					// Interval truncated so revise activation count downwards
-					card.activeCount -= delta;
-				}
-			}
-
-			totalUsers += card.numberOfUsers * card.activeCount;
-			totalIntervalActivations += card.activeCount;
-			card.printStatistics(out);
-		}
-
-		double averageOpResponseTimeSecs = 0.0;
-
-		if (this.finalCard.totalOpsSuccessful > 0)
-			averageOpResponseTimeSecs = ((double) this.finalCard.totalOpResponseTime / (double) this.finalCard.totalOpsSuccessful) / 1000.0;
-
-		ScenarioTrack track = this.getScenarioTrack();
-		// Rough averaging of the additional time spent in the system due to think times/cycle times.
-		// Look at the proportion of time we would have waited based on think times and the proportion of times we would have
-		// waited based on cycle times
-		double thinkTimeDeltaSecs = ((1 - track._openLoopProbability) * track.getMeanThinkTime())
-				+ (track._openLoopProbability * track.getMeanCycleTime());
-
-		double averageNumberOfUsers = 0.0;
-		if (totalIntervalActivations != 0)
-			averageNumberOfUsers = totalUsers / totalIntervalActivations;
-		finalCard.numberOfUsers = averageNumberOfUsers;
-		out.println(this + " Final results----------------------: ");
-		out.println(this + " Target host                        : " + this._trackTargetHost);
-		out.println(this + " Total drop offs                    : " + this.totalDropoffs);
-		out.println(this + " Average drop off Q time (ms)       : "
-				+ this.formatter.format((double) this.totalDropOffWaitTime / (double) this.totalDropoffs));
-		out.println(this + " Max drop off Q time (ms)           : " + this.maxDropOffWaitTime);
-		out.println(this + " Total interval activations         : " + this.formatter.format(totalIntervalActivations));
-		out.println(this + " Average number of users            : " + this.formatter.format(averageNumberOfUsers));
-		out.println(this + " Offered load (ops/sec)             : " + this.formatter.format(offeredLoadOps));
-		out.println(this + " Effective load (ops/sec)           : " + this.formatter.format(effectiveLoadOps));
-
-		// Still a rough estimate, need to compute the bounds on this estimate
-		if (averageOpResponseTimeSecs > 0.0) {
-			// double opsPerUser = averageNumberOfUsers / this.finalCard._totalOpsSuccessful;
-
-			double littlesEstimate = averageNumberOfUsers / (averageOpResponseTimeSecs + thinkTimeDeltaSecs);
-			double littlesDelta = Math.abs((effectiveLoadOps - littlesEstimate) / littlesEstimate) * 100;
-			out.println(this + " Little's Law Estimate (ops/sec)    : " + this.formatter.format(littlesEstimate));
-			out.println(this + " Variation from Little's Law (%)    : " + this.formatter.format(littlesDelta));
-		} else
-			out.println(this + " Little's Law Estimate (ops/sec)    : 0");
-
-		out.println(this + " Effective load (requests/sec)      : " + this.formatter.format(effectiveLoadRequests));
-		out.println(this + " Operations initiated               : " + this.finalCard.totalOpsInitiated);
-		out.println(this + " Operations successfully completed  : " + this.finalCard.totalOpsSuccessful);
-		// Avg response time per operation
-		out.println(this + " Average operation response time (s): " + this.formatter.format(averageOpResponseTimeSecs));
-		out.println(this + " Operations late                    : " + this.finalCard.totalOpsLate);
-		out.println(this + " Operations failed                  : " + this.finalCard.totalOpsFailed);
-		out.println(this + " Async Ops                          : " + this.finalCard.totalOpsAsync + " "
-				+ this.formatter.format((((double) this.finalCard.totalOpsAsync / (double) totalOperations) * 100)) + "%");
-		out.println(this + " Sync Ops                           : " + this.finalCard.totalOpsSync + " "
-				+ this.formatter.format((((double) this.finalCard.totalOpsSync / (double) totalOperations) * 100)) + "%");
-
-		out.println(this + " Mean response time sample interval : " + this.meanResponseTimeSamplingInterval + " (using Poisson sampling)");
-
-		// Print other statistics
-		this.printOperationStatistics(out, false);
-		out.println("");
-		this.printErrorSummaryStatistics(out, false);
-		out.println("");
-		this.printWaitTimeStatistics(out, false);
-	}
-
-	private void printErrorSummaryStatistics(PrintStream out, boolean purgeStats) {
-		synchronized (this.errorSummaryDropOffLock) {
-			long totalFailures = 0;
-			out.println(this + " Error Summary Results              : " + this.errorMap.size() + " types of error(s)");
-			Iterator<String> errorNameIt = this.errorMap.keySet().iterator();
-			while (errorNameIt.hasNext()) {
-				ErrorSummary summary = this.errorMap.get(errorNameIt.next());
-				out.println(this + " " + summary.toString());
-				totalFailures += summary._errorCount;
-			}
-			out.println(this + " Total failures                     : " + totalFailures);
-		}
-	}
-
-	private JSONObject getJSONWaitTimeStatistics(boolean purgePercentileData) throws JSONException {
+	private JSONObject getWaitTimeStatistics(boolean purgePercentileData) throws JSONException {
 		JSONObject result = new JSONObject();
 
 		synchronized (this.finalCard.operationMap) {
@@ -624,57 +500,6 @@ public class Scoreboard implements Runnable, IScoreboard {
 		}
 
 		return result;
-	}
-
-	private void printWaitTimeStatistics(PrintStream out, boolean purgePercentileData) {
-		synchronized (this.finalCard.operationMap) {
-			try {
-				// Make this thing "prettier", using fixed width columns
-				String outputFormatSpec = "|%20s|%12s|%12s|%12s|%10s|%10s|%50s|";
-
-				out.println(this + String.format(outputFormatSpec, "operation", "avg wait", "min wait", "max wait", "90th (s)", "99th (s)", "pctile"));
-				out.println(this + String.format(outputFormatSpec, "", "time (s)", "time (s)", "time (s)", "", "", "samples"));
-
-				// Show operation proportions, response time: avg, max, min, stdev (op1 = x%, op2 = y%...)
-				// Enumeration<String> keys = this.finalCard._operationMap.keys();
-				Iterator<String> keys = this.finalCard.operationMap.keySet().iterator();
-				while (keys.hasNext()) {
-					String opName = keys.next();
-					WaitTimeSummary summary = this.waitTimeMap.get(opName);
-
-					// If there were no values, then the min and max wait times would not have been set
-					// so make them to 0
-					if (summary.minWaitTime == Long.MAX_VALUE)
-						summary.minWaitTime = 0;
-
-					if (summary.maxWaitTime == Long.MIN_VALUE)
-						summary.maxWaitTime = 0;
-
-					// Print out the operation summary.
-					out.println(this
-							+ String.format(
-									outputFormatSpec,
-									opName,
-									// this._formatter.format( ( ( (double) ( summary.succeeded + summary.failed ) / (double)
-									// totalOperations ) * 100 ) ) + "% ",
-									// summary.succeeded,
-									// summary.failed,
-									this.formatter.format(summary.getAverageWaitTime() / 1000.0),
-									this.formatter.format(summary.minWaitTime / 1000.0), this.formatter.format(summary.maxWaitTime / 1000.0),
-									this.formatter.format(summary.getNthPercentileResponseTime(90) / 1000.0),
-									this.formatter.format(summary.getNthPercentileResponseTime(99) / 1000.0), summary.getSamplesCollected() + "/"
-											+ summary.getSamplesSeen() + " (mu: " + this.formatter.format(summary.getSampleMean() / 1000.0)
-											+ ", sd: " + this.formatter.format(summary.getSampleStandardDeviation() / 1000.0) + " t: "
-											+ this.formatter.format(summary.getTvalue(summary.getAverageWaitTime())) + ")"));
-
-					if (purgePercentileData)
-						summary.resetSamples();
-				}
-			} catch (Exception e) {
-				log.info(this + " Error printing think/cycle time summary. Reason: " + e.toString());
-				e.printStackTrace();
-			}
-		}
 	}
 
 	private JSONObject getJSONOperationStatistics(boolean purgePercentileData) throws JSONException {
@@ -735,64 +560,6 @@ public class Scoreboard implements Runnable, IScoreboard {
 		result.put("total_successes", totalSuccesses);
 
 		return result;
-	}
-
-	@SuppressWarnings("unused")
-	private void printOperationStatistics(PrintStream out, boolean purgePercentileData) {
-		long totalOperations = this.finalCard.totalOpsSuccessful + this.finalCard.totalOpsFailed;
-		double totalAvgResponseTime = 0.0;
-		double totalResponseTime = 0.0;
-		long totalSuccesses = 0;
-
-		synchronized (this.finalCard.operationMap) {
-			try {
-				// Make this thing "prettier", using fixed width columns
-				String outputFormatSpec = "|%20s|%10s|%10s|%10s|%12s|%12s|%12s|%10s|%10s|%50s|";
-
-				out.println(this
-						+ String.format(outputFormatSpec, "operation", "proportion", "successes", "failures", "avg response", "min response",
-								"max response", "90th (s)", "99th (s)", "pctile"));
-				out.println(this + String.format(outputFormatSpec, "", "", "", "", "time (s)", "time (s)", "time(s)", "", "", "samples"));
-
-				// Show operation proportions, response time: avg, max, min, stdev (op1 = x%, op2 = y%...)
-				// Enumeration<String> keys = this.finalCard._operationMap.keys();
-				Iterator<String> keys = this.finalCard.operationMap.keySet().iterator();
-				while (keys.hasNext()) {
-					String opName = keys.next();
-					OperationSummary summary = this.finalCard.operationMap.get(opName);
-
-					totalAvgResponseTime += summary.getAverageResponseTime();
-					totalResponseTime += summary.totalResponseTime;
-					totalSuccesses += summary.succeeded;
-					// If there were no successes, then the min and max response times would not have been set
-					// so make them to 0
-					if (summary.minResponseTime == Long.MAX_VALUE)
-						summary.minResponseTime = 0;
-
-					if (summary.maxResponseTime == Long.MIN_VALUE)
-						summary.maxResponseTime = 0;
-
-					// Print out the operation summary.
-					out.println(this
-							+ String.format(outputFormatSpec, opName,
-									this.formatter.format((((double) (summary.succeeded + summary.failed) / (double) totalOperations) * 100)) + "% ",
-									summary.succeeded, summary.failed, this.formatter.format(summary.getAverageResponseTime() / 1000.0),
-									this.formatter.format(summary.minResponseTime / 1000.0), this.formatter.format(summary.maxResponseTime / 1000.0),
-									this.formatter.format(summary.getNthPercentileResponseTime(90) / 1000.0),
-									this.formatter.format(summary.getNthPercentileResponseTime(99) / 1000.0), summary.getSamplesCollected() + "/"
-											+ summary.getSamplesSeen() + " (mu: " + this.formatter.format(summary.getSampleMean() / 1000.0)
-											+ ", sd: " + this.formatter.format(summary.getSampleStandardDeviation() / 1000.0) + " t: "
-											+ this.formatter.format(summary.getTvalue(summary.getAverageResponseTime())) + ")"));
-
-					if (purgePercentileData)
-						summary.resetSamples();
-				}
-
-			} catch (Exception e) {
-				log.info(this + " Error printing operation summary. Reason: " + e.toString());
-				e.printStackTrace();
-			}
-		}
 	}
 
 	public long getMeanResponseTimeSamplingInterval() {

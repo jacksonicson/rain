@@ -31,8 +31,6 @@
 
 package radlab.rain;
 
-import java.io.PrintStream;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -97,47 +95,6 @@ public interface IScoreboard {
 	void dropOffOperation(OperationExecution result);
 
 	void dropOffWaitTime(long time, String opName, long waitTime);
-
-	/**
-	 * Prints the statistics processed by this scoreboard.
-	 */
-	void printStatistics(PrintStream out);
-
-	/**
-	 * Registers a log handler for a string identifier.
-	 * 
-	 * @param owner
-	 *            The string to identify this log handler by.
-	 * @param logHandle
-	 *            The log handler to register.
-	 */
-	// void registerLogHandle( String owner, FileWriter logHandle );
-
-	/**
-	 * Deregisters a log handler identified by the given string.
-	 * 
-	 * @param owner
-	 *            The string identifying the log handler.
-	 */
-	// void deRegisterLogHandle( String owner );
-
-	/**
-	 * Registers an error log handler for a string identifier.
-	 * 
-	 * @param owner
-	 *            The string to identify this error log handler by.
-	 * @param logHandle
-	 *            The error log handler to register.
-	 */
-	// void registerErrorLogHandle( String owner, FileWriter logHandle );
-
-	/**
-	 * Deregisters an error log handler identified by the given string.
-	 * 
-	 * @param owner
-	 *            The string identifying the error log handler.
-	 */
-	// void deRegisterErrorLogHandle( String owner );
 
 	void setLogSamplingProbability(double val);
 
