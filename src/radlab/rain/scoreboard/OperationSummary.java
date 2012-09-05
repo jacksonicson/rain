@@ -132,4 +132,36 @@ public class OperationSummary {
 		for (Long obs : rhsRawSamples)
 			responseTimeSampler.accept(obs);
 	}
+
+	public long getOpsSuccessful() {
+		return opsSuccessful;
+	}
+
+	public long getOpsFailed() {
+		return opsFailed;
+	}
+
+	public long getActionsSuccessful() {
+		return actionsSuccessful;
+	}
+
+	public long getTotalResponseTime() {
+		return totalResponseTime;
+	}
+
+	public long getAsyncInvocations() {
+		return asyncInvocations;
+	}
+
+	public long getSyncInvocations() {
+		return syncInvocations;
+	}
+
+	public long getMinResponseTime() {
+		return minResponseTime;
+	}
+
+	public long getMaxResponseTime() {
+		return maxResponseTime;
+	}
 }

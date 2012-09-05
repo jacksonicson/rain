@@ -1,6 +1,8 @@
 package radlab.rain.scoreboard;
 
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.TreeMap;
 
 import org.json.JSONArray;
@@ -283,5 +285,57 @@ public class Scorecard {
 
 	public String toString() {
 		return "[SCOREBOARD TRACK: " + this.trackName + "]";
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public String getTrackName() {
+		return trackName;
+	}
+
+	public long getTotalOpsSuccessful() {
+		return totalOpsSuccessful;
+	}
+
+	public long getTotalOpsFailed() {
+		return totalOpsFailed;
+	}
+
+	public long getTotalActionsSuccessful() {
+		return totalActionsSuccessful;
+	}
+
+	public long getTotalOpsAsync() {
+		return totalOpsAsync;
+	}
+
+	public long getTotalOpsSync() {
+		return totalOpsSync;
+	}
+
+	public long getTotalOpsInitiated() {
+		return totalOpsInitiated;
+	}
+
+	public long getTotalOpsLate() {
+		return totalOpsLate;
+	}
+
+	public long getTotalOpResponseTime() {
+		return totalOpResponseTime;
+	}
+
+	public double getNumberOfUsers() {
+		return numberOfUsers;
+	}
+
+	public double getActiveCount() {
+		return activeCount;
+	}
+
+	public Map<String, OperationSummary> getOperationMap() {
+		return Collections.unmodifiableMap(operationMap);
 	}
 }
