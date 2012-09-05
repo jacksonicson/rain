@@ -33,66 +33,65 @@ package radlab.rain;
 
 import radlab.rain.util.ISamplingStrategy;
 
-public class WaitTimeSummary 
-{
-	public long count					= 0;
-	public long totalWaitTime			= 0;
-	public long minWaitTime				= Long.MAX_VALUE;
-	public long maxWaitTime				= Long.MIN_VALUE;
-	
-	// Sample the response times so that we can give a "reasonable" 
-	// estimate of the 90th and 99th percentiles.	
+public class WaitTimeSummary {
+	public long count = 0;
+	public long totalWaitTime = 0;
+	public long minWaitTime = Long.MAX_VALUE;
+	public long maxWaitTime = Long.MIN_VALUE;
+
+	// Sample the response times so that we can give a "reasonable"
+	// estimate of the 90th and 99th percentiles.
 	private ISamplingStrategy waitTimeSampler;
-	
-	public WaitTimeSummary( ISamplingStrategy strategy )
-	{
+
+	public WaitTimeSummary(ISamplingStrategy strategy) {
 		this.waitTimeSampler = strategy;
 	}
-	
-	public long getNthPercentileResponseTime( int pct )
-	{
-		return this.waitTimeSampler.getNthPercentile( pct );
-	}
-	
-	public boolean acceptSample( long respTime )
-	{
-		return this.waitTimeSampler.accept( respTime );
-	}
-	
-	public void resetSamples()
-	{
-		this.waitTimeSampler.reset();
-	}
-	
-	public int getSamplesSeen()
-	{
-		return this.waitTimeSampler.getSamplesSeen();
-	}
-	
-	public int getSamplesCollected()
-	{
-		return this.waitTimeSampler.getSamplesCollected();
-	}
-	
-	public double getAverageWaitTime()
-	{
-		if( this.count == 0 )
-			return 0.0;
-		else return (double) this.totalWaitTime/(double)this.count;
+
+	void dropOff(long waitTime) {
+		// Update wait time summary for this operation
+		count++;
+		totalWaitTime += waitTime;
+		if (waitTime < minWaitTime)
+			minWaitTime = waitTime;
+		if (waitTime > maxWaitTime)
+			maxWaitTime = waitTime;
+
+		// Drop sample
+		waitTimeSampler.accept(waitTime);
 	}
 
-	public double getSampleMean() 
-	{
+	public long getNthPercentileResponseTime(int pct) {
+		return this.waitTimeSampler.getNthPercentile(pct);
+	}
+
+	public void resetSamples() {
+		this.waitTimeSampler.reset();
+	}
+
+	public int getSamplesSeen() {
+		return this.waitTimeSampler.getSamplesSeen();
+	}
+
+	public int getSamplesCollected() {
+		return this.waitTimeSampler.getSamplesCollected();
+	}
+
+	public double getAverageWaitTime() {
+		if (this.count == 0)
+			return 0.0;
+		else
+			return (double) this.totalWaitTime / (double) this.count;
+	}
+
+	public double getSampleMean() {
 		return this.waitTimeSampler.getSampleMean();
 	}
 
-	public double getSampleStandardDeviation() 
-	{
+	public double getSampleStandardDeviation() {
 		return this.waitTimeSampler.getSampleStandardDeviation();
 	}
 
-	public double getTvalue( double averageWaitTime ) 
-	{
-		return this.waitTimeSampler.getTvalue( averageWaitTime );
+	public double getTvalue(double averageWaitTime) {
+		return this.waitTimeSampler.getTvalue(averageWaitTime);
 	}
 }

@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import radlab.rain.util.NullSamplingStrategy;
+import radlab.rain.util.PoissonSamplingStrategy;
 //import java.util.Enumeration;
 //import java.util.Hashtable;
 
@@ -59,6 +60,7 @@ public class Scorecard {
 	public void reset() {
 		// Clear the operation map
 		this._operationMap.clear();
+
 		// Reset aggregate counters
 		this._totalActionsSuccessful = 0;
 		this._totalOpsAsync = 0;
@@ -71,6 +73,74 @@ public class Scorecard {
 		this._intervalDuration = 0;
 		this._activeCount = 0.0;
 		this._numberOfUsers = 0.0;
+	}
+
+	void processSteadyStateResult(OperationExecution result, double meanResponseTimeSamplingInterval) {
+		if (result.isAsynchronous())
+			_totalOpsAsync++;
+		else
+			_totalOpsSync++;
+	}
+
+	void processPerIntervalResult(OperationExecution result, double meanResponseTimeSamplingInterval) {
+		String operationName = result._operationName;
+		LoadProfile activeProfile = result._generatedDuring;
+		
+		// Operation summary
+		OperationSummary operationSummary = _operationMap.get(operationName);
+		// Create new operation summary if needed
+		if (operationSummary == null) {
+			operationSummary = new OperationSummary(new PoissonSamplingStrategy(meanResponseTimeSamplingInterval));
+			_operationMap.put(operationName, operationSummary);
+		}
+
+		// Update global counters counters
+		_activeCount = activeProfile._activeCount;
+		_totalOpsInitiated += 1;
+
+		// Failed result
+		if (result.isFailed()) {
+			_totalOpsFailed++;
+			operationSummary.failed++;
+		} else // Successful result
+		{
+			// Intervals passed in seconds, convert to milliseconds
+			long profileLengthMsecs = result._generatedDuring._interval * 1000;
+			long profileEndMsecs = result._profileStartTime + profileLengthMsecs;
+
+			// Result returned after profile interval ended
+			if (result.getTimeFinished() > profileEndMsecs) {
+				_totalOpsLate++;
+			} else { // Did the result occur before the profile interval ended
+			}
+			// Count operations
+			if (result.isAsynchronous()) {
+				_totalOpsAsync++;
+				operationSummary.totalAsyncInvocations++;
+			} else {
+				_totalOpsSync++;
+				operationSummary.totalSyncInvocations++;
+			}
+
+			_totalOpsSuccessful++;
+			operationSummary.succeeded++;
+			_totalActionsSuccessful += result.getActionsPerformed();
+			operationSummary.totalActions += result.getActionsPerformed();
+
+			// If interactive, look at the total response time.
+			if (result.isInteractive()) {
+				long responseTime = result.getExecutionTime();
+				operationSummary.acceptSample(responseTime);
+
+				// Response time
+				operationSummary.totalResponseTime += responseTime;
+				_totalOpResponseTime += responseTime;
+
+				// Update max and min response time
+				operationSummary.maxResponseTime = Math.max(operationSummary.maxResponseTime, responseTime);
+				operationSummary.minResponseTime = Math.min(operationSummary.minResponseTime, responseTime);
+			}
+		}
 	}
 
 	public JSONObject getJsonStatistics() throws JSONException {

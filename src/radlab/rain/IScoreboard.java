@@ -51,14 +51,6 @@ public interface IScoreboard {
 	long getStartTimestamp();
 
 	/**
-	 * Sets the time when this scoreboard starts recording results.
-	 * 
-	 * @param val
-	 *            The time to use as the start time.
-	 */
-	void setStartTimestamp(long val);
-
-	/**
 	 * Gets the time when this scoreboard stops recording results.
 	 */
 	long getEndTimestamp();

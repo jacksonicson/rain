@@ -81,57 +81,62 @@ public class Scoreboard implements Runnable, IScoreboard {
 	private ScenarioTrack _owner = null;
 
 	// If true, this scoreboard will refuse any new results.
-	private boolean _closed = false;
+	// Indicates the thread status (started or stopped)
+	private boolean done = false;
 
 	// Random number generator
 	private Random _random = new Random();
 
-	// Response time sampling interval
-	private long _meanResponseTimeSamplingInterval = 500;
+	// Response time sampling interval (wait time and operation summary)
+	private long meanResponseTimeSamplingInterval = 500;
 
 	// Log (trace) sampling probability
 	private double _logSamplingProbability = 1.0;
 
-	// Time markers
-	private long _startTime = 0;
-	private long _endTime = 0;
+	// Time markers are set in the initialization method
+	private long startTime;
+	private long endTime;
 
-	// Counters for dropoffs and dropoff time (time waited for the lock to
+	// Global counters for dropoffs and dropoff time (time waited for the lock to
 	// write a result to a processing queue)
-	private long _totalDropOffWaitTime = 0;
-	private long _maxDropOffWaitTime = 0;
-	private long _totalDropoffs = 0;
+	// They are only used for internal statistics about the scoreboard behavior
+	private long totalDropoffs = 0;
+	private long totalDropOffWaitTime = 0;
+	private long maxDropOffWaitTime = 0;
 
-	// Write metrics to the metric writer
-	private boolean _usingMetricSnapshots = false;
-	private MetricWriter _metricWriter = null;
+	// Write metrics using the snapshotThread with the MetricWriter
+	private boolean usingMetricSnapshots = false;
+	private MetricWriter metricWriter = null;
 
-	// Final scorecard (aggregates all stat counters)
+	// Final scorecard
+	// Basically holds all counters relevant for aggregated result statistics
 	Scorecard finalCard = null;
 
 	// Scorecards: For each profile (= interval) there is one scorecard
 	// Each element of a workload profile is a profile in rain
-	private TreeMap<String, Scorecard> _profileScorecards = new TreeMap<String, Scorecard>();
+	// This scorecards are only generated if per-interval metrics are used
+	// Per-interval means, the <code>_generatedDuring</code> flag in OperationExecution is filled
+	private TreeMap<String, Scorecard> profileScorecards = new TreeMap<String, Scorecard>();
 
 	// Summary reports for each operation
-	private TreeMap<String, ErrorSummary> _errorMap = new TreeMap<String, ErrorSummary>();
-	private TreeMap<String, WaitTimeSummary> _waitTimeMap = new TreeMap<String, WaitTimeSummary>();
+	private TreeMap<String, ErrorSummary> errorMap = new TreeMap<String, ErrorSummary>();
+	private TreeMap<String, WaitTimeSummary> waitTimeMap = new TreeMap<String, WaitTimeSummary>();
 
 	// Dropoff and processing queues
-	private LinkedList<OperationExecution> _dropOffQ = new LinkedList<OperationExecution>();
-	private LinkedList<OperationExecution> _processingQ = new LinkedList<OperationExecution>();
+	private LinkedList<OperationExecution> dropOffQ = new LinkedList<OperationExecution>();
+	private LinkedList<OperationExecution> processingQ = new LinkedList<OperationExecution>();
 
 	// Lock objects
-	private Object _swapDropoffQueueLock = new Object();
-	private Object _waitTimeDropOffLock = new Object();
-	private Object _errorSummaryDropOffLock = new Object();
+	private Object swapDropoffQueueLock = new Object();
+	private Object waitTimeDropOffLock = new Object();
+	private Object errorSummaryDropOffLock = new Object();
 
 	// Threads used to process the queues
-	private Thread _workerThread = null;
-	private SnapshotWriterThread _snapshotThread = null;
+	private Thread workerThread = null;
+	private SnapshotWriterThread snapshotThread = null;
 
 	// Formatter is used for the output
-	private NumberFormat _formatter = new DecimalFormat("#0.0000");
+	private NumberFormat formatter = new DecimalFormat("#0.0000");
 
 	/**
 	 * Creates a new Scoreboard with the track name specified. The Scoreboard returned must be initialized by calling
@@ -145,64 +150,50 @@ public class Scoreboard implements Runnable, IScoreboard {
 	}
 
 	public void initialize(long startTime, long endTime) {
-		this._startTime = startTime;
-		this._endTime = endTime;
+		this.startTime = startTime;
+		this.endTime = endTime;
 
-		double runDuration = (double) (this._endTime - this._startTime) / 1000.0;
-		this.finalCard = new Scorecard("final", runDuration, this._trackName);
+		double runDuration = (double) (this.endTime - this.startTime) / 1000.0;
+		finalCard = new Scorecard("final", runDuration, this._trackName);
 
-		this.reset();
+		reset();
 	}
 
 	@Override
 	public void reset() {
-		// Clear the operation map
-		this.finalCard._operationMap.clear();
-		synchronized (this._swapDropoffQueueLock) {
-			this._dropOffQ.clear();
+		// Reset final card
+		finalCard.reset();
+
+		// Reset Scoreboard
+		this.processingQ.clear();
+		this.totalDropoffs = 0;
+		this.totalDropOffWaitTime = 0;
+		this.maxDropOffWaitTime = 0;
+		synchronized (this.swapDropoffQueueLock) {
+			this.dropOffQ.clear();
 		}
-		this._processingQ.clear();
-		synchronized (this._waitTimeDropOffLock) {
-			this._waitTimeMap.clear();
+		synchronized (this.waitTimeDropOffLock) {
+			this.waitTimeMap.clear();
 		}
-		this.finalCard._totalActionsSuccessful = 0;
-		this._totalDropoffs = 0;
-		this._totalDropOffWaitTime = 0;
-		this.finalCard._totalOpsAsync = 0;
-		this.finalCard._totalOpsFailed = 0;
-		this.finalCard._totalOpsInitiated = 0;
-		this.finalCard._totalOpsSuccessful = 0;
-		this.finalCard._totalOpsSync = 0;
-		this._maxDropOffWaitTime = 0;
-		this.finalCard._totalOpsLate = 0;
-		this.finalCard._totalOpResponseTime = 0;
 	}
 
+	@Override
 	public void dropOffWaitTime(long time, String opName, long waitTime) {
 		if (isDone())
 			return;
 		if (!this.isSteadyState(time))
 			return;
 
-		synchronized (this._waitTimeDropOffLock) {
-			WaitTimeSummary waitTimeSummary = this._waitTimeMap.get(opName);
+		synchronized (this.waitTimeDropOffLock) {
+			WaitTimeSummary waitTimeSummary = this.waitTimeMap.get(opName);
 
 			// Create wait time summary if it does not exist
 			if (waitTimeSummary == null) {
-				waitTimeSummary = new WaitTimeSummary(new PoissonSamplingStrategy(this._meanResponseTimeSamplingInterval));
-				this._waitTimeMap.put(opName, waitTimeSummary);
+				waitTimeSummary = new WaitTimeSummary(new PoissonSamplingStrategy(this.meanResponseTimeSamplingInterval));
+				this.waitTimeMap.put(opName, waitTimeSummary);
 			}
 
-			// Update wait time summary for this operation
-			waitTimeSummary.count++;
-			waitTimeSummary.totalWaitTime += waitTime;
-			if (waitTime < waitTimeSummary.minWaitTime)
-				waitTimeSummary.minWaitTime = waitTime;
-			if (waitTime > waitTimeSummary.maxWaitTime)
-				waitTimeSummary.maxWaitTime = waitTime;
-
-			// Drop sample
-			waitTimeSummary.acceptSample(waitTime);
+			waitTimeSummary.dropOff(waitTime);
 		}
 	}
 
@@ -222,22 +213,22 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 		// Put all results into the dropoff queue
 		long lockStart = System.currentTimeMillis();
-		synchronized (this._swapDropoffQueueLock) {
+		synchronized (this.swapDropoffQueueLock) {
 			long dropOffWaitTime = (System.currentTimeMillis() - lockStart);
 
-			// Update statistics
-			this._totalDropOffWaitTime += dropOffWaitTime;
-			this._totalDropoffs++;
-			if (dropOffWaitTime > this._maxDropOffWaitTime)
-				this._maxDropOffWaitTime = dropOffWaitTime;
+			// Update internal dropoff statistics
+			this.totalDropOffWaitTime += dropOffWaitTime;
+			this.totalDropoffs++;
+			if (dropOffWaitTime > this.maxDropOffWaitTime)
+				this.maxDropOffWaitTime = dropOffWaitTime;
 
 			// Put this result into the dropoff queue
-			this._dropOffQ.add(result);
+			this.dropOffQ.add(result);
 		}
 
-		// TODO: Log error reason
+		// TODO: If operation failed - log error reason
 
-		// Flip a coin to determine whether we log or not?
+		// Flip a coin to determine whether we log or not? (reduces amount of log information)
 		double randomVal = this._random.nextDouble();
 		if (this._logSamplingProbability == 1.0 || randomVal <= this._logSamplingProbability) {
 			// TODO: If needed file logging can be done here
@@ -246,87 +237,88 @@ public class Scoreboard implements Runnable, IScoreboard {
 			result.getOperation().disposeOfTrace();
 		}
 
-		// Important
-		// Return operation object to pool!
+		// ATTENTION: Return operation object to pool
 		if (this._owner.getObjectPool().isActive())
 			this._owner.getObjectPool().returnObject(result.getOperation());
 	}
 
 	private final boolean isDone() {
-		return this._closed;
+		return this.done;
 	}
 
 	private final boolean isSteadyState(long time) {
-		return (time >= this._startTime && time <= this._endTime);
+		return (time >= this.startTime && time <= this.endTime);
 	}
 
 	private final boolean isRampUp(long time) {
-		return (time < this._startTime);
+		return (time < this.startTime);
 	}
 
 	private final boolean isRampDown(long time) {
-		return (time > this._endTime);
+		return (time > this.endTime);
 	}
 
 	public void start() {
 		if (!this.isRunning()) {
-			this._closed = false;
+			this.done = false;
 
 			// Start worker thread
-			this._workerThread = new Thread(this);
-			this._workerThread.setName("Scoreboard-Worker");
-			this._workerThread.start();
+			this.workerThread = new Thread(this);
+			this.workerThread.setName("Scoreboard-Worker");
+			this.workerThread.start();
 
 			// Start snapshot thread
-			if (this._usingMetricSnapshots) {
-				this._snapshotThread = new SnapshotWriterThread(this._trackName);
-
-				if (this._metricWriter == null)
+			if (this.usingMetricSnapshots) {
+				if (this.metricWriter == null) {
 					log.warn(this + " Metric snapshots disabled - No metric writer instance provided");
-				else
-					this._snapshotThread.setMetricWriter(this._metricWriter);
-
-				this._snapshotThread.setName("Scoreboard-Snapshot-Writer");
-				this._snapshotThread.start();
+				} else {
+					this.snapshotThread = new SnapshotWriterThread(this._trackName);
+					this.snapshotThread.setMetricWriter(this.metricWriter);
+					this.snapshotThread.setName("Scoreboard-Snapshot-Writer");
+					this.snapshotThread.start();
+				}
 			}
 		}
 	}
 
 	public void stop() {
 		if (this.isRunning()) {
-			// Set the finished flag
-			this._closed = true;
+			this.done = true;
 
+			// Worker thread
 			try {
-				// Stop worker thread
-				// Wait to join
+				// Join worker thread
 				log.debug(this + " waiting " + WORKER_EXIT_TIMEOUT + " seconds for worker thread to exit!");
-				this._workerThread.join(WORKER_EXIT_TIMEOUT * 1000);
+				workerThread.join(WORKER_EXIT_TIMEOUT * 1000);
 
-				// If its still alive try to interrupt
-				if (this._workerThread.isAlive()) {
+				// If its still alive try to interrupt it
+				if (workerThread.isAlive()) {
 					log.debug(this + " interrupting worker thread.");
-					this._workerThread.interrupt();
+					workerThread.interrupt();
 				}
+			} catch (InterruptedException ie) {
+				log.info(this + " Interrupted waiting on worker thread exit!");
+			}
 
+			// Snapshot thread
+			try {
 				// Stop snapshot thread
-				if (this._snapshotThread != null) {
+				if (snapshotThread != null) {
 					// Set stop flag
-					this._snapshotThread.set_done(true);
+					snapshotThread.set_done(true);
 
 					// Wait to join
 					log.debug(this + " waiting " + WORKER_EXIT_TIMEOUT + " seconds for snapshot thread to exit!");
-					this._snapshotThread.join(WORKER_EXIT_TIMEOUT * 1000);
+					snapshotThread.join(WORKER_EXIT_TIMEOUT * 1000);
 
 					// If its still alive try to interrupt again
-					if (this._snapshotThread.isAlive()) {
+					if (snapshotThread.isAlive()) {
 						log.debug(this + " interrupting snapshot thread.");
-						this._snapshotThread.interrupt();
+						snapshotThread.interrupt();
 					}
 				}
-
 			} catch (InterruptedException ie) {
-				log.info(this + " Interrupted waiting on worker thread exit!");
+				log.info(this + " Interrupted waiting on snapshot thread exit!");
 			}
 		}
 	}
@@ -337,7 +329,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 	 * @return True if the worker thread exists and is alive.
 	 */
 	protected boolean isRunning() {
-		return (this._workerThread != null && this._workerThread.isAlive());
+		return (this.workerThread != null && this.workerThread.isAlive());
 	}
 
 	/**
@@ -345,31 +337,30 @@ public class Scoreboard implements Runnable, IScoreboard {
 	 * be processed.
 	 */
 	public void run() {
-		log.debug(this + " starting worker thread");
+		log.debug(this + " starting worker thread...");
 
-		while (!isDone() || this._dropOffQ.size() > 0) {
-			if (this._dropOffQ.size() > 0) {
+		// Run as long as the scoreboard is not done
+		// Or the dropoff queue still contains entries
+		while (!isDone() || !dropOffQ.isEmpty()) {
+			if (!dropOffQ.isEmpty()) {
 
 				// Queue swap (dropOffQ with processingQ)
-				synchronized (this._swapDropoffQueueLock) {
-					LinkedList<OperationExecution> temp = _processingQ;
-					_processingQ = _dropOffQ;
-					_dropOffQ = temp;
+				synchronized (this.swapDropoffQueueLock) {
+					LinkedList<OperationExecution> temp = processingQ;
+					processingQ = dropOffQ;
+					dropOffQ = temp;
 				}
 
 				// Process all entries in the working queue
-				while (!this._processingQ.isEmpty()) {
-					OperationExecution result = this._processingQ.remove();
+				while (!processingQ.isEmpty()) {
+					OperationExecution result = processingQ.remove();
 					String traceLabel = result.getTraceLabel();
+					finalCard._totalOpsInitiated++;
 
 					// Process this operation by its label
 					if (traceLabel.equals(Scoreboard.STEADY_STATE_TRACE_LABEL)) {
-						this.finalCard._totalOpsInitiated++;
-
-						// Process a steady state result
-						this.processSteadyStateResult(result);
+						processSteadyStateResult(result);
 					} else if (traceLabel.equals(Scoreboard.LATE_LABEL)) {
-						this.finalCard._totalOpsInitiated++;
 						this.finalCard._totalOpsLate++;
 					}
 				}
@@ -384,8 +375,8 @@ public class Scoreboard implements Runnable, IScoreboard {
 		}
 
 		// Debugging
-		log.debug(this + " drop off queue size: " + this._dropOffQ.size());
-		log.debug(this + " processing queue size: " + this._processingQ.size());
+		log.debug(this + " drop off queue size: " + this.dropOffQ.size());
+		log.debug(this + " processing queue size: " + this.processingQ.size());
 		log.debug(this + " worker thread finished!");
 	}
 
@@ -397,97 +388,43 @@ public class Scoreboard implements Runnable, IScoreboard {
 	 */
 	private void processSteadyStateResult(OperationExecution result) {
 		String operationName = result._operationName;
-		LoadProfile activeProfile = result._generatedDuring;
 
-		// By default we don't save per-interval metrics
+		// Update per-interval (profile) cards
+		LoadProfile activeProfile = result._generatedDuring;
 		if (activeProfile != null) {
 			if ((activeProfile._name != null && activeProfile._name.length() > 0)) {
 				// Get scorecard for this interval
 				String profileName = activeProfile._name;
-				Scorecard profileScorecard = this._profileScorecards.get(profileName);
+				Scorecard profileScorecard = this.profileScorecards.get(profileName);
 				// Create a new scorecard if needed
 				if (profileScorecard == null) {
 					profileScorecard = new Scorecard(profileName, activeProfile._interval, this._trackName);
 					profileScorecard._numberOfUsers = activeProfile._numberOfUsers;
-					this._profileScorecards.put(profileName, profileScorecard);
+					profileScorecards.put(profileName, profileScorecard);
 				}
 
-				// Operation summary
-				OperationSummary operationSummary = profileScorecard._operationMap.get(operationName);
-				// Create new operation summary if needed
-				if (operationSummary == null) {
-					operationSummary = new OperationSummary(new PoissonSamplingStrategy(this._meanResponseTimeSamplingInterval));
-					profileScorecard._operationMap.put(operationName, operationSummary);
-				}
-
-				// Update global counters counters
-				profileScorecard._activeCount = activeProfile._activeCount;
-				profileScorecard._totalOpsInitiated += 1;
-
-				// Failed result
-				if (result.isFailed()) {
-					profileScorecard._totalOpsFailed++;
-					operationSummary.failed++;
-				} else // Successful result
-				{
-					// Intervals passed in seconds, convert to msecs
-					long profileLengthMsecs = result._generatedDuring._interval * 1000;
-					long profileEndMsecs = result._profileStartTime + profileLengthMsecs;
-
-					// Result returned after profile interval ended
-					if (result.getTimeFinished() > profileEndMsecs) {
-						profileScorecard._totalOpsLate++;
-					} else { // Did the result occur before the profile interval ended
-					}
-					// Count operations
-					if (result.isAsynchronous()) {
-						profileScorecard._totalOpsAsync++;
-						operationSummary.totalAsyncInvocations++;
-					} else {
-						profileScorecard._totalOpsSync++;
-						operationSummary.totalSyncInvocations++;
-					}
-
-					profileScorecard._totalOpsSuccessful++;
-					operationSummary.succeeded++;
-					profileScorecard._totalActionsSuccessful += result.getActionsPerformed();
-					operationSummary.totalActions += result.getActionsPerformed();
-
-					// If interactive, look at the total response time.
-					if (result.isInteractive()) {
-						long responseTime = result.getExecutionTime();
-						operationSummary.acceptSample(responseTime);
-
-						// Response time
-						operationSummary.totalResponseTime += responseTime;
-						profileScorecard._totalOpResponseTime += responseTime;
-
-						// Update max and min response time
-						operationSummary.maxResponseTime = Math.max(operationSummary.maxResponseTime, responseTime);
-						operationSummary.minResponseTime = Math.min(operationSummary.minResponseTime, responseTime);
-					}
-				}
+				profileScorecard.processPerIntervalResult(result, meanResponseTimeSamplingInterval); 
 			}
 		}
 
+		// Update final card
+		
+		
 		// Do the accounting for the final score card
-		OperationSummary operationSummary = this.finalCard._operationMap.get(operationName);
+		OperationSummary operationSummary = finalCard._operationMap.get(operationName);
 
 		// Create operation summary if needed
 		if (operationSummary == null) {
-			operationSummary = new OperationSummary(new PoissonSamplingStrategy(this._meanResponseTimeSamplingInterval));
-			this.finalCard._operationMap.put(operationName, operationSummary);
+			operationSummary = new OperationSummary(new PoissonSamplingStrategy(this.meanResponseTimeSamplingInterval));
+			finalCard._operationMap.put(operationName, operationSummary);
 		}
 
 		// Update final card
-		if (result.isAsynchronous())
-			this.finalCard._totalOpsAsync++;
-		else
-			this.finalCard._totalOpsSync++;
+		
 
 		// Result failed
 		if (result.isFailed()) {
-			this.finalCard._totalOpsFailed++;
+			finalCard._totalOpsFailed++;
 			operationSummary.failed++;
 		} else { // Result successful
 			this.finalCard._totalOpsSuccessful++;
@@ -517,8 +454,8 @@ public class Scoreboard implements Runnable, IScoreboard {
 				// Do metric SNAPSHOTS (record all response times)
 				// Only save response times if we're doing metric snapshots
 				// This reduces memory leakage
-				if (this._usingMetricSnapshots) {
-					ResponseTimeStat responseTimeStat = this._snapshotThread.provisionRTSObject();
+				if (this.usingMetricSnapshots) {
+					ResponseTimeStat responseTimeStat = this.snapshotThread.provisionRTSObject();
 					if (responseTimeStat == null)
 						responseTimeStat = new ResponseTimeStat();
 
@@ -535,7 +472,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 						responseTimeStat._generatedDuring = result._generatedDuring._name;
 
 					// Push this stat onto a Queue for the snapshot thread
-					this._snapshotThread.accept(responseTimeStat);
+					this.snapshotThread.accept(responseTimeStat);
 				}
 			}
 		}
@@ -543,7 +480,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 	public JSONObject getJSONStatistics() throws JSONException {
 		// Run duration in seconds
-		double runDuration = (double) (this._endTime - this._startTime) / 1000.0;
+		double runDuration = (double) (this.endTime - this.startTime) / 1000.0;
 
 		// Total operations executed
 		long totalOperations = this.finalCard._totalOpsSuccessful + this.finalCard._totalOpsFailed;
@@ -566,9 +503,9 @@ public class Scoreboard implements Runnable, IScoreboard {
 		result.put("track", _trackName);
 		result.put("target_host", _trackTargetHost);
 		result.put("total_operations", totalOperations);
-		result.put("total_drop_offs", _totalDropoffs);
-		result.put("average_drop_off_q_time(ms)", (double) _totalDropOffWaitTime / (double) _totalDropoffs);
-		result.put("max_drop_off_q_time(ms)", _maxDropOffWaitTime);
+		result.put("total_drop_offs", totalDropoffs);
+		result.put("average_drop_off_q_time(ms)", (double) totalDropOffWaitTime / (double) totalDropoffs);
+		result.put("max_drop_off_q_time(ms)", maxDropOffWaitTime);
 		result.put("offered_load(ops/sec)", offeredLoadOps);
 		result.put("effective_load(ops/sec)", effectiveLoadOps);
 		result.put("effective_load(req/sec)", effectiveLoadRequests);
@@ -579,7 +516,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 		result.put("operations_failed", finalCard._totalOpsFailed);
 		result.put("async_ops", finalCard._totalOpsAsync);
 		result.put("sycn_ops", finalCard._totalOpsSync);
-		result.put("mean_response_time_sample_interval", _meanResponseTimeSamplingInterval);
+		result.put("mean_response_time_sample_interval", meanResponseTimeSamplingInterval);
 
 		// Print other statistics
 		result.put("operation_stats", getJSONOperationStatistics(false));
@@ -589,7 +526,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 	}
 
 	public void printStatistics(PrintStream out) {
-		double runDuration = (double) (this._endTime - this._startTime) / 1000.0;
+		double runDuration = (double) (this.endTime - this.startTime) / 1000.0;
 		long totalOperations = this.finalCard._totalOpsSuccessful + this.finalCard._totalOpsFailed;
 		double offeredLoadOps = (double) this.finalCard._totalOpsInitiated / runDuration;
 		double effectiveLoadOps = (double) this.finalCard._totalOpsSuccessful / runDuration;
@@ -601,7 +538,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 		out.println(this + " Interval results-------------------: ");
 
 		// Print all scorecard stats
-		for (Scorecard card : this._profileScorecards.values()) {
+		for (Scorecard card : this.profileScorecards.values()) {
 			for (LoadProfile profile : this._owner._loadSchedule) {
 				// Skip profile if name does not match
 				if (!card._name.equals(profile._name))
@@ -609,9 +546,9 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 				// If the profile started after the end of a run then
 				// decrease the activation count accordingly
-				if (profile.getTimeStarted() > this._endTime) {
+				if (profile.getTimeStarted() > this.endTime) {
 					// Decrease activation count
-					double intervalSpillOver = (this._endTime - profile.getTimeStarted())
+					double intervalSpillOver = (this.endTime - profile.getTimeStarted())
 							/ ((profile._interval * 1000) + (profile._transitionTime * 1000));
 					log.info(this + " Need to decrease activation count for: " + profile._name + " spillover: " + intervalSpillOver);
 					card._activeCount -= intervalSpillOver;
@@ -623,11 +560,11 @@ public class Scoreboard implements Runnable, IScoreboard {
 				long intervalEndTime = profile.getTimeStarted() + (profile._interval * 1000) + (profile._transitionTime * 1000);
 
 				// Did the end of the run interrupt this interval
-				double diff = intervalEndTime - this._endTime;
+				double diff = intervalEndTime - this.endTime;
 				if (diff > 0) {
 					double delta = (diff / (double) (profile._interval * 1000));
-					log.info(this + " " + card._name + " shortchanged (msecs): " + this._formatter.format(diff));
-					log.info(this + " " + card._name + " shortchanged (delta): " + this._formatter.format(delta));
+					log.info(this + " " + card._name + " shortchanged (msecs): " + this.formatter.format(diff));
+					log.info(this + " " + card._name + " shortchanged (delta): " + this.formatter.format(delta));
 					// Interval truncated so revise activation count downwards
 					card._activeCount -= delta;
 				}
@@ -656,14 +593,14 @@ public class Scoreboard implements Runnable, IScoreboard {
 		finalCard._numberOfUsers = averageNumberOfUsers;
 		out.println(this + " Final results----------------------: ");
 		out.println(this + " Target host                        : " + this._trackTargetHost);
-		out.println(this + " Total drop offs                    : " + this._totalDropoffs);
+		out.println(this + " Total drop offs                    : " + this.totalDropoffs);
 		out.println(this + " Average drop off Q time (ms)       : "
-				+ this._formatter.format((double) this._totalDropOffWaitTime / (double) this._totalDropoffs));
-		out.println(this + " Max drop off Q time (ms)           : " + this._maxDropOffWaitTime);
-		out.println(this + " Total interval activations         : " + this._formatter.format(totalIntervalActivations));
-		out.println(this + " Average number of users            : " + this._formatter.format(averageNumberOfUsers));
-		out.println(this + " Offered load (ops/sec)             : " + this._formatter.format(offeredLoadOps));
-		out.println(this + " Effective load (ops/sec)           : " + this._formatter.format(effectiveLoadOps));
+				+ this.formatter.format((double) this.totalDropOffWaitTime / (double) this.totalDropoffs));
+		out.println(this + " Max drop off Q time (ms)           : " + this.maxDropOffWaitTime);
+		out.println(this + " Total interval activations         : " + this.formatter.format(totalIntervalActivations));
+		out.println(this + " Average number of users            : " + this.formatter.format(averageNumberOfUsers));
+		out.println(this + " Offered load (ops/sec)             : " + this.formatter.format(offeredLoadOps));
+		out.println(this + " Effective load (ops/sec)           : " + this.formatter.format(effectiveLoadOps));
 
 		// Still a rough estimate, need to compute the bounds on this estimate
 		if (averageOpResponseTimeSecs > 0.0) {
@@ -671,24 +608,24 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 			double littlesEstimate = averageNumberOfUsers / (averageOpResponseTimeSecs + thinkTimeDeltaSecs);
 			double littlesDelta = Math.abs((effectiveLoadOps - littlesEstimate) / littlesEstimate) * 100;
-			out.println(this + " Little's Law Estimate (ops/sec)    : " + this._formatter.format(littlesEstimate));
-			out.println(this + " Variation from Little's Law (%)    : " + this._formatter.format(littlesDelta));
+			out.println(this + " Little's Law Estimate (ops/sec)    : " + this.formatter.format(littlesEstimate));
+			out.println(this + " Variation from Little's Law (%)    : " + this.formatter.format(littlesDelta));
 		} else
 			out.println(this + " Little's Law Estimate (ops/sec)    : 0");
 
-		out.println(this + " Effective load (requests/sec)      : " + this._formatter.format(effectiveLoadRequests));
+		out.println(this + " Effective load (requests/sec)      : " + this.formatter.format(effectiveLoadRequests));
 		out.println(this + " Operations initiated               : " + this.finalCard._totalOpsInitiated);
 		out.println(this + " Operations successfully completed  : " + this.finalCard._totalOpsSuccessful);
 		// Avg response time per operation
-		out.println(this + " Average operation response time (s): " + this._formatter.format(averageOpResponseTimeSecs));
+		out.println(this + " Average operation response time (s): " + this.formatter.format(averageOpResponseTimeSecs));
 		out.println(this + " Operations late                    : " + this.finalCard._totalOpsLate);
 		out.println(this + " Operations failed                  : " + this.finalCard._totalOpsFailed);
 		out.println(this + " Async Ops                          : " + this.finalCard._totalOpsAsync + " "
-				+ this._formatter.format((((double) this.finalCard._totalOpsAsync / (double) totalOperations) * 100)) + "%");
+				+ this.formatter.format((((double) this.finalCard._totalOpsAsync / (double) totalOperations) * 100)) + "%");
 		out.println(this + " Sync Ops                           : " + this.finalCard._totalOpsSync + " "
-				+ this._formatter.format((((double) this.finalCard._totalOpsSync / (double) totalOperations) * 100)) + "%");
+				+ this.formatter.format((((double) this.finalCard._totalOpsSync / (double) totalOperations) * 100)) + "%");
 
-		out.println(this + " Mean response time sample interval : " + this._meanResponseTimeSamplingInterval + " (using Poisson sampling)");
+		out.println(this + " Mean response time sample interval : " + this.meanResponseTimeSamplingInterval + " (using Poisson sampling)");
 
 		// Print other statistics
 		this.printOperationStatistics(out, false);
@@ -699,12 +636,12 @@ public class Scoreboard implements Runnable, IScoreboard {
 	}
 
 	private void printErrorSummaryStatistics(PrintStream out, boolean purgeStats) {
-		synchronized (this._errorSummaryDropOffLock) {
+		synchronized (this.errorSummaryDropOffLock) {
 			long totalFailures = 0;
-			out.println(this + " Error Summary Results              : " + this._errorMap.size() + " types of error(s)");
-			Iterator<String> errorNameIt = this._errorMap.keySet().iterator();
+			out.println(this + " Error Summary Results              : " + this.errorMap.size() + " types of error(s)");
+			Iterator<String> errorNameIt = this.errorMap.keySet().iterator();
 			while (errorNameIt.hasNext()) {
-				ErrorSummary summary = this._errorMap.get(errorNameIt.next());
+				ErrorSummary summary = this.errorMap.get(errorNameIt.next());
 				out.println(this + " " + summary.toString());
 				totalFailures += summary._errorCount;
 			}
@@ -721,7 +658,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 			for (Iterator<String> keys = finalCard._operationMap.keySet().iterator(); keys.hasNext();) {
 				String opName = keys.next();
-				WaitTimeSummary summary = _waitTimeMap.get(opName);
+				WaitTimeSummary summary = waitTimeMap.get(opName);
 
 				// If there were no values, then the min and max wait times would not have been set so make them to 0
 				if (summary.minWaitTime == Long.MAX_VALUE)
@@ -766,7 +703,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 				Iterator<String> keys = this.finalCard._operationMap.keySet().iterator();
 				while (keys.hasNext()) {
 					String opName = keys.next();
-					WaitTimeSummary summary = this._waitTimeMap.get(opName);
+					WaitTimeSummary summary = this.waitTimeMap.get(opName);
 
 					// If there were no values, then the min and max wait times would not have been set
 					// so make them to 0
@@ -785,13 +722,13 @@ public class Scoreboard implements Runnable, IScoreboard {
 									// totalOperations ) * 100 ) ) + "% ",
 									// summary.succeeded,
 									// summary.failed,
-									this._formatter.format(summary.getAverageWaitTime() / 1000.0),
-									this._formatter.format(summary.minWaitTime / 1000.0), this._formatter.format(summary.maxWaitTime / 1000.0),
-									this._formatter.format(summary.getNthPercentileResponseTime(90) / 1000.0),
-									this._formatter.format(summary.getNthPercentileResponseTime(99) / 1000.0), summary.getSamplesCollected() + "/"
-											+ summary.getSamplesSeen() + " (mu: " + this._formatter.format(summary.getSampleMean() / 1000.0)
-											+ ", sd: " + this._formatter.format(summary.getSampleStandardDeviation() / 1000.0) + " t: "
-											+ this._formatter.format(summary.getTvalue(summary.getAverageWaitTime())) + ")"));
+									this.formatter.format(summary.getAverageWaitTime() / 1000.0),
+									this.formatter.format(summary.minWaitTime / 1000.0), this.formatter.format(summary.maxWaitTime / 1000.0),
+									this.formatter.format(summary.getNthPercentileResponseTime(90) / 1000.0),
+									this.formatter.format(summary.getNthPercentileResponseTime(99) / 1000.0), summary.getSamplesCollected() + "/"
+											+ summary.getSamplesSeen() + " (mu: " + this.formatter.format(summary.getSampleMean() / 1000.0)
+											+ ", sd: " + this.formatter.format(summary.getSampleStandardDeviation() / 1000.0) + " t: "
+											+ this.formatter.format(summary.getTvalue(summary.getAverageWaitTime())) + ")"));
 
 					if (purgePercentileData)
 						summary.resetSamples();
@@ -900,18 +837,15 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 					// Print out the operation summary.
 					out.println(this
-							+ String.format(
-									outputFormatSpec,
-									opName,
-									this._formatter.format((((double) (summary.succeeded + summary.failed) / (double) totalOperations) * 100)) + "% ",
-									summary.succeeded, summary.failed, this._formatter.format(summary.getAverageResponseTime() / 1000.0),
-									this._formatter.format(summary.minResponseTime / 1000.0),
-									this._formatter.format(summary.maxResponseTime / 1000.0),
-									this._formatter.format(summary.getNthPercentileResponseTime(90) / 1000.0),
-									this._formatter.format(summary.getNthPercentileResponseTime(99) / 1000.0), summary.getSamplesCollected() + "/"
-											+ summary.getSamplesSeen() + " (mu: " + this._formatter.format(summary.getSampleMean() / 1000.0)
-											+ ", sd: " + this._formatter.format(summary.getSampleStandardDeviation() / 1000.0) + " t: "
-											+ this._formatter.format(summary.getTvalue(summary.getAverageResponseTime())) + ")"));
+							+ String.format(outputFormatSpec, opName,
+									this.formatter.format((((double) (summary.succeeded + summary.failed) / (double) totalOperations) * 100)) + "% ",
+									summary.succeeded, summary.failed, this.formatter.format(summary.getAverageResponseTime() / 1000.0),
+									this.formatter.format(summary.minResponseTime / 1000.0), this.formatter.format(summary.maxResponseTime / 1000.0),
+									this.formatter.format(summary.getNthPercentileResponseTime(90) / 1000.0),
+									this.formatter.format(summary.getNthPercentileResponseTime(99) / 1000.0), summary.getSamplesCollected() + "/"
+											+ summary.getSamplesSeen() + " (mu: " + this.formatter.format(summary.getSampleMean() / 1000.0)
+											+ ", sd: " + this.formatter.format(summary.getSampleStandardDeviation() / 1000.0) + " t: "
+											+ this.formatter.format(summary.getTvalue(summary.getAverageResponseTime())) + ")"));
 
 					if (purgePercentileData)
 						summary.resetSamples();
@@ -925,28 +859,24 @@ public class Scoreboard implements Runnable, IScoreboard {
 	}
 
 	public long getMeanResponseTimeSamplingInterval() {
-		return this._meanResponseTimeSamplingInterval;
+		return this.meanResponseTimeSamplingInterval;
 	}
 
 	public void setMeanResponseTimeSamplingInterval(long val) {
 		if (val > 0)
-			this._meanResponseTimeSamplingInterval = val;
+			this.meanResponseTimeSamplingInterval = val;
 	}
 
 	public long getStartTimestamp() {
-		return this._startTime;
-	}
-
-	public void setStartTimestamp(long val) {
-		this._startTime = val;
+		return this.startTime;
 	}
 
 	public long getEndTimestamp() {
-		return this._endTime;
+		return this.endTime;
 	}
 
 	public void setEndTimestamp(long val) {
-		this._endTime = val;
+		this.endTime = val;
 	}
 
 	public String getTrackName() {
@@ -955,14 +885,6 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 	public void setTrackName(String val) {
 		this._trackName = val;
-	}
-
-	public boolean getDone() {
-		return this._closed;
-	}
-
-	public void setDone(boolean val) {
-		this._closed = val;
 	}
 
 	public void setLogSamplingProbability(double val) {
@@ -974,19 +896,19 @@ public class Scoreboard implements Runnable, IScoreboard {
 	}
 
 	public boolean getUsingMetricSnapshots() {
-		return this._usingMetricSnapshots;
+		return this.usingMetricSnapshots;
 	}
 
 	public void setUsingMetricSnapshots(boolean val) {
-		this._usingMetricSnapshots = val;
+		this.usingMetricSnapshots = val;
 	}
 
 	public MetricWriter getMetricWriter() {
-		return this._metricWriter;
+		return this.metricWriter;
 	}
 
 	public void setMetricWriter(MetricWriter val) {
-		this._metricWriter = val;
+		this.metricWriter = val;
 	}
 
 	public String getTargetHost() {
