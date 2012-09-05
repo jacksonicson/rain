@@ -110,7 +110,7 @@ public class OperationSummary {
 		operation.put("99_percentile_response_time", getNthPercentileResponseTime(99));
 		operation.put("sample_mean", getSampleMean());
 		operation.put("sample_stdev", getSampleStandardDeviation());
-		operation.put("avg_resp_time", getTvalue(getAverageResponseTime()));
+		operation.put("tvalue_avg_resp_time", getTvalue(getAverageResponseTime()));
 
 		return operation;
 	}
