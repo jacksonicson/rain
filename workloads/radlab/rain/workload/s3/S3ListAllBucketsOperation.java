@@ -2,7 +2,7 @@ package radlab.rain.workload.s3;
 
 import org.jets3t.service.model.S3Bucket;
 
-import radlab.rain.IScoreboard;
+import radlab.rain.scoreboard.IScoreboard;
 
 public class S3ListAllBucketsOperation extends S3Operation 
 {

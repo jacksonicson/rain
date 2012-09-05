@@ -2,7 +2,7 @@ package radlab.rain.workload.s3;
 
 import java.util.Map;
 
-import radlab.rain.IScoreboard;
+import radlab.rain.scoreboard.IScoreboard;
 
 public class S3MoveOperation extends S3Operation 
 {

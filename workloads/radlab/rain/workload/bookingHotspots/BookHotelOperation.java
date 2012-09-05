@@ -10,7 +10,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicNameValuePair;
 
-import radlab.rain.IScoreboard;
+import radlab.rain.scoreboard.IScoreboard;
 
 /**
  * The Book Hotel operation allows the user to book a reservation at the

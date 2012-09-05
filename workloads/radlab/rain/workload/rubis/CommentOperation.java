@@ -33,7 +33,7 @@ package radlab.rain.workload.rubis;
 
 import java.io.IOException;
 
-import radlab.rain.IScoreboard;
+import radlab.rain.scoreboard.IScoreboard;
 
 /**
  * Comment operation.

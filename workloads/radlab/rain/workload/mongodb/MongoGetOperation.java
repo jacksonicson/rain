@@ -3,7 +3,7 @@ package radlab.rain.workload.mongodb;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
-import radlab.rain.IScoreboard;
+import radlab.rain.scoreboard.IScoreboard;
 
 public class MongoGetOperation extends MongoOperation 
 {

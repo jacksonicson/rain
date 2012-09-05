@@ -32,10 +32,10 @@
 package radlab.rain.workload.olio;
 
 import radlab.rain.Generator;
-import radlab.rain.IScoreboard;
 import radlab.rain.LoadProfile;
 import radlab.rain.Operation;
 
+import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.util.HttpTransport;
 import radlab.rain.workload.olio.Random;
 

@@ -45,10 +45,10 @@ import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.StringBody;
 
 import radlab.rain.Generator;
-import radlab.rain.IScoreboard;
 import radlab.rain.LoadProfile;
 import radlab.rain.Operation;
 import radlab.rain.ScenarioTrack;
+import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.util.HttpTransport;
 
 public abstract class ComradesOperation extends Operation 

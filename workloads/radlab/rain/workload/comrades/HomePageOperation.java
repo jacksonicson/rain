@@ -31,7 +31,7 @@
 
 package radlab.rain.workload.comrades;
 
-import radlab.rain.IScoreboard;
+import radlab.rain.scoreboard.IScoreboard;
 
 public class HomePageOperation extends ComradesOperation 
 {

@@ -31,7 +31,7 @@
 
 package radlab.rain.workload.sample;
 
-import radlab.rain.IScoreboard;
+import radlab.rain.scoreboard.IScoreboard;
 
 /**
  * The Operation2 operation is a sample operation.

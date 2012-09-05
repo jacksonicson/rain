@@ -31,7 +31,7 @@
 
 package radlab.rain.workload.olio;
 
-import radlab.rain.IScoreboard;
+import radlab.rain.scoreboard.IScoreboard;
 
 import java.util.Set;
 import java.io.IOException;

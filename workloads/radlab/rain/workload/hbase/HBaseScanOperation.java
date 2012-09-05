@@ -2,7 +2,7 @@ package radlab.rain.workload.hbase;
 
 import java.util.ArrayList;
 
-import radlab.rain.IScoreboard;
+import radlab.rain.scoreboard.IScoreboard;
 
 public class HBaseScanOperation extends HBaseOperation 
 {

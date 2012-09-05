@@ -31,7 +31,7 @@
 
 package radlab.rain.workload.olio;
 
-import radlab.rain.IScoreboard;
+import radlab.rain.scoreboard.IScoreboard;
 
 /**
  * The LoginOperation is an operation that logs in as a random user. If the

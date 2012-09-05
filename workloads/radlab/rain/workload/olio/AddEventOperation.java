@@ -34,7 +34,7 @@ package radlab.rain.workload.olio;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
-import radlab.rain.IScoreboard;
+import radlab.rain.scoreboard.IScoreboard;
 
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.mime.MultipartEntity;

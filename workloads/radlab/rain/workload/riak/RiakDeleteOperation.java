@@ -1,6 +1,6 @@
 package radlab.rain.workload.riak;
 
-import radlab.rain.IScoreboard;
+import radlab.rain.scoreboard.IScoreboard;
 
 public class RiakDeleteOperation extends RiakOperation 
 {

@@ -29,12 +29,13 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package radlab.rain;
+package radlab.rain.scoreboard;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.scoreboard.Scorecard;
+import radlab.rain.OperationExecution;
+import radlab.rain.ScenarioTrack;
 import radlab.rain.util.MetricWriter;
 
 /**
@@ -44,85 +45,46 @@ import radlab.rain.util.MetricWriter;
  * among other things.
  */
 public interface IScoreboard {
-	/**
-	 * Gets the time when this scoreboard starts recording results.
-	 */
-	long getStartTimestamp();
 
 	/**
-	 * Gets the time when this scoreboard stops recording results.
+	 * Bootstrapping and initialization
 	 */
-	long getEndTimestamp();
+	void initialize(long startRecordingTime, long endRecordingTime);
 
-	/**
-	 * Sets the time when this scoreboard stops recording results.
-	 * 
-	 * @param val
-	 *            The time to use as the end time.
-	 */
-	void setEndTimestamp(long val);
+	void setScenarioTrack(ScenarioTrack val);
 
-	/**
-	 * Initializes the start and end times and resets the results.
-	 * 
-	 * @param startTime
-	 *            The time to start receiving results.
-	 * @param endTime
-	 *            The time to stop receiving results.
-	 */
-	void initialize(long startTime, long endTime);
+	void setMetricWriter(MetricWriter val);
 
-	/**
-	 * Resets the results recorded by this scoreboard.
-	 */
 	void reset();
 
-	/**
-	 * Starts this scoreboard for recording results.
-	 */
 	void start();
 
-	/**
-	 * Stops this scoreboard from recording any more results.
-	 */
 	void stop();
 
 	/**
 	 * Receives the results of an operation execution.
-	 * 
-	 * @param result
-	 *            The result to record.
 	 */
 	void dropOffOperation(OperationExecution result);
 
 	void dropOffWaitTime(long time, String opName, long waitTime);
 
+	/**
+	 * Configuration settings
+	 */
 	void setLogSamplingProbability(double val);
 
 	void setMetricSnapshotInterval(long val);
 
-	boolean getUsingMetricSnapshots();
-
 	void setUsingMetricSnapshots(boolean val);
-
-	ScenarioTrack getScenarioTrack();
-
-	void setScenarioTrack(ScenarioTrack val);
-
-	long getMeanResponseTimeSamplingInterval();
 
 	void setMeanResponseTimeSamplingInterval(long val);
 
-	String getTargetHost();
-
 	void setTargetHost(String val);
 
+	/**
+	 * Getter methods
+	 */
 	Scorecard getFinalScorecard();
 
-	MetricWriter getMetricWriter();
-
-	void setMetricWriter(MetricWriter val);
-
 	JSONObject getStatistics() throws JSONException;
-
 }

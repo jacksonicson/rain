@@ -34,8 +34,8 @@ package radlab.rain.workload.rubis;
 import java.util.logging.Logger;
 
 import radlab.rain.Generator;
-import radlab.rain.IScoreboard;
 import radlab.rain.Operation;
+import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.util.HttpTransport;
 import radlab.rain.workload.olio.Random;
 

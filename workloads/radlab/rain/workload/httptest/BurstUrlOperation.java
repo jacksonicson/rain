@@ -5,9 +5,9 @@ import java.io.IOException;
 import org.apache.http.HttpStatus;
 
 import radlab.rain.Generator;
-import radlab.rain.IScoreboard;
 import radlab.rain.LoadProfile;
 import radlab.rain.Operation;
+import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.util.HttpTransport;
 
 public class BurstUrlOperation extends Operation 

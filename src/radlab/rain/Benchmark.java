@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 
 import radlab.rain.communication.RainPipe;
 import radlab.rain.communication.thrift.ThriftService;
+import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.scoreboard.Scorecard;
 import radlab.rain.util.ConfigUtil;
 

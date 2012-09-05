@@ -1,6 +1,6 @@
 package radlab.rain.workload.scadr;
 
-import radlab.rain.IScoreboard;
+import radlab.rain.scoreboard.IScoreboard;
 
 public class ScadrNullOperation extends ScadrOperation 
 {

@@ -40,6 +40,7 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.util.MetricWriter;
 import radlab.rain.util.MetricWriterFactory;
 

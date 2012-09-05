@@ -1,6 +1,6 @@
 package radlab.rain.workload.s3;
 
-import radlab.rain.IScoreboard;
+import radlab.rain.scoreboard.IScoreboard;
 
 public class S3DeleteBucketOperation extends S3Operation 
 {

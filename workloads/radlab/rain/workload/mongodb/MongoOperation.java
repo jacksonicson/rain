@@ -1,9 +1,9 @@
 package radlab.rain.workload.mongodb;
 
 import radlab.rain.Generator;
-import radlab.rain.IScoreboard;
 import radlab.rain.LoadProfile;
 import radlab.rain.Operation;
+import radlab.rain.scoreboard.IScoreboard;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.CommandResult;

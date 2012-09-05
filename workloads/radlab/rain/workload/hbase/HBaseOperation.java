@@ -3,9 +3,9 @@ package radlab.rain.workload.hbase;
 import java.util.ArrayList;
 
 import radlab.rain.Generator;
-import radlab.rain.IScoreboard;
 import radlab.rain.LoadProfile;
 import radlab.rain.Operation;
+import radlab.rain.scoreboard.IScoreboard;
 
 
 public abstract class HBaseOperation extends Operation 

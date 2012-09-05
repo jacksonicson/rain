@@ -1,7 +1,8 @@
 package radlab.rain.workload.riak;
 
 import com.basho.riak.client.IRiakObject;
-import radlab.rain.IScoreboard;
+
+import radlab.rain.scoreboard.IScoreboard;
 
 public class RiakFetchOperation extends RiakOperation 
 {

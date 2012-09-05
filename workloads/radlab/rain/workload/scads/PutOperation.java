@@ -31,7 +31,7 @@
 
 package radlab.rain.workload.scads;
 
-import radlab.rain.IScoreboard;
+import radlab.rain.scoreboard.IScoreboard;
 
 /**
  * Executes a SCADs put operation.

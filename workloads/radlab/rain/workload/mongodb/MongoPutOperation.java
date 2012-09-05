@@ -1,6 +1,6 @@
 package radlab.rain.workload.mongodb;
 
-import radlab.rain.IScoreboard;
+import radlab.rain.scoreboard.IScoreboard;
 
 public class MongoPutOperation extends MongoOperation 
 {

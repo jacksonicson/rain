@@ -1,6 +1,8 @@
-package radlab.rain;
+package radlab.rain.scoreboard;
 
 import java.io.Serializable;
+
+import radlab.rain.Poolable;
 
 public class ResponseTimeStat extends Poolable implements Serializable 
 {

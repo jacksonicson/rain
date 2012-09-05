@@ -1,4 +1,4 @@
-package radlab.rain;
+package radlab.rain.scoreboard;
 
 public class ErrorSummary 
 {

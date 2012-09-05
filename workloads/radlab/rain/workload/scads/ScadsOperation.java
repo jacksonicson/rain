@@ -34,6 +34,7 @@ package radlab.rain.workload.scads;
 import org.json.JSONObject;
 
 import radlab.rain.*;
+import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.workload.scads.keys.KeyGenerator;
 
 /**

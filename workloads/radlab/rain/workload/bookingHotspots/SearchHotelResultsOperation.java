@@ -2,7 +2,7 @@ package radlab.rain.workload.bookingHotspots;
 
 import org.apache.http.client.methods.HttpGet;
 
-import radlab.rain.IScoreboard;
+import radlab.rain.scoreboard.IScoreboard;
 
 	/**
 	 * The Search Hotel Results operation displays the hotels that match

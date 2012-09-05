@@ -1,6 +1,6 @@
 package radlab.rain.workload.gradit;
 
-import radlab.rain.IScoreboard;
+import radlab.rain.scoreboard.IScoreboard;
 
 public class DashboardOperation extends GraditOperation 
 {

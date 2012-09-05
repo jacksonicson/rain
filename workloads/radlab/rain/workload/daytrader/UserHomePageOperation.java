@@ -33,7 +33,7 @@ package radlab.rain.workload.daytrader;
 
 import java.io.IOException;
 
-import radlab.rain.IScoreboard;
+import radlab.rain.scoreboard.IScoreboard;
 
 public class UserHomePageOperation extends DayTraderOperation 
 {

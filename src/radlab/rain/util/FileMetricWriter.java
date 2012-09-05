@@ -5,7 +5,7 @@ import java.io.PrintStream;
 
 import org.json.JSONObject;
 
-import radlab.rain.ResponseTimeStat;
+import radlab.rain.scoreboard.ResponseTimeStat;
 
 public class FileMetricWriter extends MetricWriter 
 {

@@ -3,7 +3,7 @@ package radlab.rain.util;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.ResponseTimeStat;
+import radlab.rain.scoreboard.ResponseTimeStat;
 
 public abstract class MetricWriter {
 	public static String CFG_TYPE_KEY = "type";

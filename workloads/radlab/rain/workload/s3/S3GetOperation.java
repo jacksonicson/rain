@@ -5,7 +5,7 @@ import java.io.InputStream;
 
 import org.jets3t.service.model.S3Object;
 
-import radlab.rain.IScoreboard;
+import radlab.rain.scoreboard.IScoreboard;
 
 public class S3GetOperation extends S3Operation 
 {

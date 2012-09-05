@@ -42,13 +42,9 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import radlab.rain.ErrorSummary;
-import radlab.rain.IScoreboard;
 import radlab.rain.LoadProfile;
 import radlab.rain.OperationExecution;
-import radlab.rain.ResponseTimeStat;
 import radlab.rain.ScenarioTrack;
-import radlab.rain.TraceLabels;
 import radlab.rain.util.MetricWriter;
 import radlab.rain.util.PoissonSamplingStrategy;
 
@@ -560,18 +556,6 @@ public class Scoreboard implements Runnable, IScoreboard {
 			this.meanResponseTimeSamplingInterval = val;
 	}
 
-	public long getStartTimestamp() {
-		return this.startTime;
-	}
-
-	public long getEndTimestamp() {
-		return this.endTime;
-	}
-
-	public void setEndTimestamp(long val) {
-		this.endTime = val;
-	}
-
 	public String getTrackName() {
 		return this.trackName;
 	}
@@ -585,11 +569,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 	}
 
 	public void setMetricSnapshotInterval(long val) {
-		// not supported
-	}
-
-	public boolean getUsingMetricSnapshots() {
-		return this.usingMetricSnapshots;
+		
 	}
 
 	public void setUsingMetricSnapshots(boolean val) {
@@ -614,10 +594,6 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 	public Scorecard getFinalScorecard() {
 		return this.finalCard;
-	}
-
-	public ScenarioTrack getScenarioTrack() {
-		return this._owner;
 	}
 
 	public void setScenarioTrack(ScenarioTrack owner) {

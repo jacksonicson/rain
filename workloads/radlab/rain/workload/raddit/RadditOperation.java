@@ -43,8 +43,8 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import radlab.rain.Generator;
-import radlab.rain.IScoreboard;
 import radlab.rain.Operation;
+import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.util.HttpTransport;
 /**
  * The RadditOperation class contains common static methods for use by the

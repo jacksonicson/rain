@@ -34,6 +34,8 @@ package radlab.rain;
 import org.json.JSONObject;
 import org.json.JSONException;
 
+import radlab.rain.scoreboard.IScoreboard;
+
 /**
  * The Generator abstract class provides a default constructor, required
  * properties, and specifies the methods that must be implemented in order

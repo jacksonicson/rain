@@ -1,6 +1,6 @@
 package radlab.rain.workload.s3;
 
-import radlab.rain.IScoreboard;
+import radlab.rain.scoreboard.IScoreboard;
 
 public class S3PutOperation extends S3Operation 
 {

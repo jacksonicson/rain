@@ -33,6 +33,8 @@ package radlab.rain;
 
 import java.util.Set;
 
+import radlab.rain.scoreboard.IScoreboard;
+
 /**
  * The Operation class is a (delegatable) encapsulation of "tasks to be done".
  * An operation contains all features of the state necessary to execute at an

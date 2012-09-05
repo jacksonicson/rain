@@ -2,7 +2,7 @@ package radlab.rain.workload.booking;
 
 import java.io.IOException;
 
-import radlab.rain.IScoreboard;
+import radlab.rain.scoreboard.IScoreboard;
 
 
 /**

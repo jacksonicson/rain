@@ -33,7 +33,7 @@ package radlab.rain.workload.httptest;
 
 import java.io.IOException;
 
-import radlab.rain.IScoreboard;
+import radlab.rain.scoreboard.IScoreboard;
 
 public class PingHomePageOperation extends HttpTestOperation 
 {

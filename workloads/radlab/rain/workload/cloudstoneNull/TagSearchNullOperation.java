@@ -32,7 +32,7 @@
 package radlab.rain.workload.cloudstoneNull;
 
 import radlab.rain.Generator;
-import radlab.rain.IScoreboard;
+import radlab.rain.scoreboard.IScoreboard;
 
 public class TagSearchNullOperation extends CloudstoneNullOperation 
 {

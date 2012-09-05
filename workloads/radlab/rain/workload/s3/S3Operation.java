@@ -6,9 +6,9 @@ import org.jets3t.service.model.S3Bucket;
 import org.jets3t.service.model.S3Object;
 
 import radlab.rain.Generator;
-import radlab.rain.IScoreboard;
 import radlab.rain.LoadProfile;
 import radlab.rain.Operation;
+import radlab.rain.scoreboard.IScoreboard;
 
 public abstract class S3Operation extends Operation 
 {

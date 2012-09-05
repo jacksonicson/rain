@@ -31,10 +31,10 @@
 
 package radlab.rain.workload.cloudstoneNull;
 
-import radlab.rain.IScoreboard;
 import radlab.rain.LoadProfile;
 import radlab.rain.Operation;
 import radlab.rain.Generator;
+import radlab.rain.scoreboard.IScoreboard;
 
 public abstract class CloudstoneNullOperation extends Operation 
 {

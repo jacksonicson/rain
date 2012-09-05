@@ -31,6 +31,8 @@
 
 package radlab.rain;
 
+import radlab.rain.scoreboard.TraceLabels;
+
 /**
  * The OperationExecution class is a wrapper for the results recorded from the execution of an operation. This wrapper can be
  * passed off to an IScoreboard to be recorded and presented at a later time.

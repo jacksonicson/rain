@@ -1,6 +1,6 @@
 package radlab.rain.workload.hbase;
 
-import radlab.rain.IScoreboard;
+import radlab.rain.scoreboard.IScoreboard;
 
 public class HBasePutOperation extends HBaseOperation 
 {

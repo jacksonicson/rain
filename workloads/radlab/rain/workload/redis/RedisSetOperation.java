@@ -1,6 +1,6 @@
 package radlab.rain.workload.redis;
 
-import radlab.rain.IScoreboard;
+import radlab.rain.scoreboard.IScoreboard;
 
 public class RedisSetOperation extends RedisOperation 
 {

@@ -30,7 +30,7 @@
  */
 
 package radlab.rain.workload.scads;
-import radlab.rain.IScoreboard;
+import radlab.rain.scoreboard.IScoreboard;
 /**
  * The Operation1 operation is a sample operation.
  */

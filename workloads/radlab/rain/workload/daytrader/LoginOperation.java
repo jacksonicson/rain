@@ -31,7 +31,7 @@
 
 package radlab.rain.workload.daytrader;
 
-import radlab.rain.IScoreboard;
+import radlab.rain.scoreboard.IScoreboard;
 
 public class LoginOperation extends DayTraderOperation 
 {

@@ -9,7 +9,7 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.json.JSONObject;
 
-import radlab.rain.ResponseTimeStat;
+import radlab.rain.scoreboard.ResponseTimeStat;
 import de.tum.in.sonar.collector.CollectService;
 import de.tum.in.sonar.collector.Identifier;
 import de.tum.in.sonar.collector.MetricReading;

@@ -5,7 +5,7 @@ import java.net.Socket;
 
 import org.json.JSONObject;
 
-import radlab.rain.ResponseTimeStat;
+import radlab.rain.scoreboard.ResponseTimeStat;
 
 public class SocketMetricObjectWriter extends SocketMetricWriter 
 {
