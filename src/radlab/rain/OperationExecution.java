@@ -32,16 +32,14 @@
 package radlab.rain;
 
 /**
- * The OperationExecution class is a wrapper for the results recorded from the
- * execution of an operation. This wrapper can be passed off to an IScoreboard
- * to be recorded and presented at a later time.
+ * The OperationExecution class is a wrapper for the results recorded from the execution of an operation. This wrapper can be
+ * passed off to an IScoreboard to be recorded and presented at a later time.
  */
-public class OperationExecution implements Comparable<OperationExecution>
-{
+public class OperationExecution implements Comparable<OperationExecution> {
 	/** The owner operation for/in which the results are stored. */
 	private Operation _owner = null;
 	private boolean _interactive = true;
-	private String _traceLabel = Scoreboard.NO_TRACE_LABEL;
+	private TraceLabels _traceLabel = TraceLabels.NO_TRACE_LABEL;
 	private long _timeStarted = 0;
 	private long _timeFinished = 0;
 	public String _operationName;
@@ -51,18 +49,26 @@ public class OperationExecution implements Comparable<OperationExecution>
 	public long _actionsPerformed = 1;
 	public boolean _async = false;
 	public boolean _failed = true;
-	public Operation getOperation() { return this._owner; }
-	
-	public String getTraceLabel() { return this._traceLabel; }
-	public void setTraceLabel( String val ) { this._traceLabel = val; }
-	
+
+	public Operation getOperation() {
+		return this._owner;
+	}
+
+	public TraceLabels getTraceLabel() {
+		return this._traceLabel;
+	}
+
+	public void setTraceLabel(TraceLabels label) {
+		this._traceLabel = label;
+	}
+
 	/**
 	 * Creates a new OperationExecution for the specified operation.
 	 * 
-	 * @param operation     The operation for/in which results are stored.
+	 * @param operation
+	 *            The operation for/in which results are stored.
 	 */
-	public OperationExecution( Operation operation )
-	{ 
+	public OperationExecution(Operation operation) {
 		this._owner = operation;
 		this._interactive = operation.isInteractive();
 		this._timeStarted = operation.getTimeStarted();
@@ -74,44 +80,59 @@ public class OperationExecution implements Comparable<OperationExecution>
 		// Pull out any info on when this operation was created
 		this._generatedDuring = operation.getGeneratedDuringProfile();
 		this._profileStartTime = operation.getProfileStartTime();
-		
+
 		TraceRecord traceRec = operation.getTrace();
-		if ( traceRec != null && traceRec._lstRequests.size() > 0 )
-		{
+		if (traceRec != null && traceRec._lstRequests.size() > 0) {
 			this._actionsPerformed = traceRec._lstRequests.size();
-		}
-		else
-		{
+		} else {
 			this._actionsPerformed = 1;
 		}
 	}
-	
+
 	/* Delegate to get the execution statistics */
-	
-	//public long getTimeQueued()   { return (this._owner != null) ? this._owner.getTimeQueued()   : 0; }
-	public long getTimeStarted()  { return this._timeStarted; }
-	public long getTimeFinished() { return this._timeFinished; }
-	
-	public long getActionsPerformed() { return this._actionsPerformed; }
-	
-	//public long getDelayTime() { return (this._owner != null) ? this.getDelayTime() : 0; }
-	
-	public boolean isAsynchronous() { return this._async; }
-	public boolean isFailed()       { return this._failed; }
-	public boolean isInteractive() { return this._interactive; }
-	
-	//public long getWaitTime()      { return this.getTimeStarted()  - this.getTimeQueued(); }
-	public long getExecutionTime() { return this.getTimeFinished() - this.getTimeStarted(); }
-	//public long getTotalTime()     { return this.getWaitTime()     + this.getExecutionTime() + this.getDelayTime(); }
-	
+
+	// public long getTimeQueued() { return (this._owner != null) ? this._owner.getTimeQueued() : 0; }
+	public long getTimeStarted() {
+		return this._timeStarted;
+	}
+
+	public long getTimeFinished() {
+		return this._timeFinished;
+	}
+
+	public long getActionsPerformed() {
+		return this._actionsPerformed;
+	}
+
+	// public long getDelayTime() { return (this._owner != null) ? this.getDelayTime() : 0; }
+
+	public boolean isAsynchronous() {
+		return this._async;
+	}
+
+	public boolean isFailed() {
+		return this._failed;
+	}
+
+	public boolean isInteractive() {
+		return this._interactive;
+	}
+
+	// public long getWaitTime() { return this.getTimeStarted() - this.getTimeQueued(); }
+	public long getExecutionTime() {
+		return this.getTimeFinished() - this.getTimeStarted();
+	}
+
+	// public long getTotalTime() { return this.getWaitTime() + this.getExecutionTime() + this.getDelayTime(); }
+
 	/**
-	 * Compares the start time of this OperationExecution with the provided
-	 * OperationExecution; used to construct a timeline of what happened.
+	 * Compares the start time of this OperationExecution with the provided OperationExecution; used to construct a timeline of
+	 * what happened.
 	 * 
-	 * @param other     The other OperationExecution.
+	 * @param other
+	 *            The other OperationExecution.
 	 */
-	public int compareTo( OperationExecution other ) 
-	{
+	public int compareTo(OperationExecution other) {
 		// TODO: Implement me.
 		return 0;
 	}

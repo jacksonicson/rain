@@ -75,9 +75,17 @@ public class Scorecard {
 		this._numberOfUsers = 0.0;
 	}
 
+	void processLateOperation(OperationExecution result)
+	{
+		_totalOpsInitiated++;
+		_totalOpsLate++;
+	}
+	
 	void processSteadyStateResult(OperationExecution result, double meanResponseTimeSamplingInterval) {
 		String operationName = result._operationName;
 
+		_totalOpsInitiated++;
+		
 		if (result.isAsynchronous())
 			_totalOpsAsync++;
 		else

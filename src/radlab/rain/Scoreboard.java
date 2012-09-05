@@ -65,13 +65,6 @@ import radlab.rain.util.PoissonSamplingStrategy;
 public class Scoreboard implements Runnable, IScoreboard {
 	private static Logger log = LoggerFactory.getLogger(Scoreboard.class);
 
-	// Labels used for the results
-	public static String NO_TRACE_LABEL = "[NONE]";
-	public static String STEADY_STATE_TRACE_LABEL = "[STEADY-STATE]";
-	public static String LATE_LABEL = "[LATE]";
-	public static String RAMP_UP_LABEL = "[RAMP-UP]";
-	public static String RAMP_DOWN_LABEL = "[RAMP-DOWN]";
-
 	// Time in seconds to wait for worker thread to exit before interrupt
 	public static int WORKER_EXIT_TIMEOUT = 60;
 
@@ -203,13 +196,13 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 		// Set result label
 		if (this.isRampUp(result.getTimeStarted()))
-			result.setTraceLabel(Scoreboard.RAMP_UP_LABEL);
+			result.setTraceLabel(TraceLabels.RAMP_UP_LABEL);
 		else if (this.isSteadyState(result.getTimeFinished()))
-			result.setTraceLabel(Scoreboard.STEADY_STATE_TRACE_LABEL);
+			result.setTraceLabel(TraceLabels.STEADY_STATE_TRACE_LABEL);
 		else if (this.isSteadyState(result.getTimeStarted()))
-			result.setTraceLabel(Scoreboard.LATE_LABEL);
+			result.setTraceLabel(TraceLabels.LATE_LABEL);
 		else if (this.isRampDown(result.getTimeStarted()))
-			result.setTraceLabel(Scoreboard.RAMP_DOWN_LABEL);
+			result.setTraceLabel(TraceLabels.RAMP_DOWN_LABEL);
 
 		// Put all results into the dropoff queue
 		long lockStart = System.currentTimeMillis();
@@ -354,14 +347,19 @@ public class Scoreboard implements Runnable, IScoreboard {
 				// Process all entries in the working queue
 				while (!processingQ.isEmpty()) {
 					OperationExecution result = processingQ.remove();
-					String traceLabel = result.getTraceLabel();
-					finalCard._totalOpsInitiated++;
+					TraceLabels traceLabel = result.getTraceLabel();
 
 					// Process this operation by its label
-					if (traceLabel.equals(Scoreboard.STEADY_STATE_TRACE_LABEL)) {
+					switch (traceLabel) {
+					case STEADY_STATE_TRACE_LABEL:
 						processSteadyStateResult(result);
-					} else if (traceLabel.equals(Scoreboard.LATE_LABEL)) {
-						this.finalCard._totalOpsLate++;
+						break;
+					case LATE_LABEL:
+						finalCard.processLateOperation(result);
+						break;
+					default:
+						// Not processed
+						break;
 					}
 				}
 			} else {
