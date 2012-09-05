@@ -59,14 +59,14 @@ public class OperationSummary {
 
 	JSONObject getStatistics() throws JSONException {
 		// Calculations
-		long minResponseTime = this.minResponseTime; 
+		long minResponseTime = this.minResponseTime;
 		if (minResponseTime == Long.MAX_VALUE)
 			minResponseTime = 0;
 
-		long maxResponseTime = this.maxResponseTime; 
+		long maxResponseTime = this.maxResponseTime;
 		if (maxResponseTime == Long.MIN_VALUE)
 			maxResponseTime = 0;
-		
+
 		// Results
 		JSONObject operation = new JSONObject();
 		operation.put("samples_collected", getSamplesCollected());
@@ -83,6 +83,10 @@ public class OperationSummary {
 		operation.put("avg_resp_time", getTvalue(getAverageResponseTime()));
 
 		return operation;
+	}
+
+	public final long getTotalSteadyOperations() {
+		return opsSuccessful + opsFailed;
 	}
 
 	public long getNthPercentileResponseTime(int pct) {
@@ -174,4 +178,5 @@ public class OperationSummary {
 	public long getMaxResponseTime() {
 		return maxResponseTime;
 	}
+
 }

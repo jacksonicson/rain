@@ -37,10 +37,10 @@ import org.json.JSONObject;
 import radlab.rain.util.ISamplingStrategy;
 
 public class WaitTimeSummary {
-	public long count = 0;
-	public long totalWaitTime = 0;
-	public long minWaitTime = Long.MAX_VALUE;
-	public long maxWaitTime = Long.MIN_VALUE;
+	private long count = 0;
+	private long totalWaitTime = 0;
+	private long minWaitTime = Long.MAX_VALUE;
+	private long maxWaitTime = Long.MIN_VALUE;
 
 	// Sample the response times so that we can give a "reasonable"
 	// estimate of the 90th and 99th percentiles.
@@ -51,15 +51,10 @@ public class WaitTimeSummary {
 	}
 
 	void dropOff(long waitTime) {
-		// Update wait time summary for this operation
 		count++;
 		totalWaitTime += waitTime;
-		if (waitTime < minWaitTime)
-			minWaitTime = waitTime;
-		if (waitTime > maxWaitTime)
-			maxWaitTime = waitTime;
-
-		// Drop sample
+		minWaitTime = Math.min(minWaitTime, waitTime);
+		maxWaitTime = Math.max(maxWaitTime, waitTime);
 		waitTimeSampler.accept(waitTime);
 	}
 
@@ -99,7 +94,6 @@ public class WaitTimeSummary {
 	}
 
 	public JSONObject getStatistics() throws JSONException {
-
 		// Calculations
 		long minWaitTime = this.minWaitTime;
 		if (minWaitTime == Long.MAX_VALUE)

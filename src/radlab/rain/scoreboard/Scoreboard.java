@@ -475,7 +475,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 	private JSONObject getOperationStatistics(boolean purgePercentileData) throws JSONException {
 		JSONObject result = new JSONObject();
 
-		long totalOperations = finalCard.getTotalOpsSuccessful() + finalCard.getTotalOpsFailed();
+		long totalOperations = finalCard.getTotalSteadyOperations();
 		double totalAvgResponseTime = 0.0;
 		double totalResponseTime = 0.0;
 		long totalSuccesses = 0;
@@ -490,13 +490,13 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 				// Update global counters
 				totalAvgResponseTime += operationSummary.getAverageResponseTime();
-				totalResponseTime += operationSummary.totalResponseTime;
-				totalSuccesses += operationSummary.opsSuccessful;
+				totalResponseTime += operationSummary.getTotalResponseTime();
+				totalSuccesses += operationSummary.getOpsSuccessful();
 
 				// Calculations
 				double proportion = 0;
 				if (totalOperations > 0)
-					proportion = (double) (operationSummary.opsSuccessful + operationSummary.opsFailed) / (double) totalOperations;
+					proportion = (double) operationSummary.getTotalSteadyOperations() / (double) totalOperations;
 
 				// Print out the operation summary.
 				JSONObject operation = operationSummary.getStatistics();

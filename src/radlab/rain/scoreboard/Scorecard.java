@@ -39,10 +39,11 @@ public class Scorecard {
 	private long totalOpsInitiated = 0;
 	private long totalOpsLate = 0;
 	private long totalOpResponseTime = 0;
-
 	private long intervalDuration = 0;
 	private double numberOfUsers = 0.0;
 	private double activeCount = 1.0;
+	private long maxResponseTime = 0;
+	private long minResponseTime = Long.MAX_VALUE;
 
 	// A mapping of each operation with its summary
 	private TreeMap<String, OperationSummary> operationMap = new TreeMap<String, OperationSummary>();
@@ -74,6 +75,8 @@ public class Scorecard {
 		this.intervalDuration = 0;
 		this.activeCount = 0.0;
 		this.numberOfUsers = 0.0;
+		this.maxResponseTime = 0;
+		this.minResponseTime = Long.MAX_VALUE;
 	}
 
 	void processLateOperation(OperationExecution result) {
@@ -85,10 +88,6 @@ public class Scorecard {
 		// Update global counters counters
 		String operationName = result._operationName;
 		totalOpsInitiated++;
-		if (result.isAsynchronous())
-			totalOpsAsync++;
-		else
-			totalOpsSync++;
 
 		// Do the accounting for the final score card
 		OperationSummary operationSummary = operationMap.get(operationName);
@@ -109,19 +108,12 @@ public class Scorecard {
 			operationSummary.actionsSuccessful += result.getActionsPerformed();
 
 			// Count operations
-			if (result.isAsynchronous())
+			if (result.isAsynchronous()) {
 				operationSummary.asyncInvocations++;
-			else
+				totalOpsAsync++;
+			} else {
 				operationSummary.syncInvocations++;
-
-			// Intervals passed in seconds, convert to milliseconds
-			long profileLengthMsecs = result._generatedDuring._interval * 1000;
-			long profileEndMsecs = result._profileStartTime + profileLengthMsecs;
-
-			// Result returned after profile interval ended
-			if (result.getTimeFinished() > profileEndMsecs) {
-				totalOpsLate++;
-			} else { // Did the result occur before the profile interval ended
+				totalOpsSync++;
 			}
 
 			if (result.isInteractive()) {
@@ -129,10 +121,12 @@ public class Scorecard {
 				operationSummary.acceptSample(responseTime);
 
 				// Response time
-				operationSummary.totalResponseTime += responseTime;
 				totalOpResponseTime += responseTime;
+				operationSummary.totalResponseTime += responseTime;
 
 				// Update max and min response time
+				maxResponseTime = Math.max(maxResponseTime, responseTime);
+				minResponseTime = Math.min(minResponseTime, responseTime);
 				operationSummary.maxResponseTime = Math.max(operationSummary.maxResponseTime, responseTime);
 				operationSummary.minResponseTime = Math.min(operationSummary.minResponseTime, responseTime);
 			}
@@ -189,6 +183,8 @@ public class Scorecard {
 		result.put("offered_load_ops", offeredLoadOps);
 		result.put("effective_load_ops", effectiveLoadOps);
 		result.put("effective_load_req", effectiveLoadRequests);
+		result.put("max_response_time", maxResponseTime);
+		result.put("min_response_time", minResponseTime);
 		result.put("average_operation_response_time_secs", averageOpResponseTimeSecs);
 
 		// Operational statistics
@@ -209,7 +205,7 @@ public class Scorecard {
 
 		synchronized (operationMap) {
 
-			long totalOperations = totalOpsSuccessful + totalOpsFailed;
+			long totalOperations = getTotalSteadyOperations();
 			double totalAvgResponseTime = 0.0;
 			double totalResponseTime = 0.0;
 			long totalSuccesses = 0;
@@ -222,12 +218,6 @@ public class Scorecard {
 				totalAvgResponseTime += operationSummary.getAverageResponseTime();
 				totalResponseTime += operationSummary.totalResponseTime;
 				totalSuccesses += operationSummary.opsSuccessful;
-
-				if (operationSummary.minResponseTime == Long.MAX_VALUE)
-					operationSummary.minResponseTime = 0;
-
-				if (operationSummary.maxResponseTime == Long.MIN_VALUE)
-					operationSummary.maxResponseTime = 0;
 
 				// Calculations
 				double proportion = (double) (operationSummary.opsSuccessful + operationSummary.opsFailed) / (double) totalOperations;
@@ -254,7 +244,7 @@ public class Scorecard {
 	public void merge(Scorecard from) {
 		// For merges the activeCount is always set to 1
 		this.activeCount = 1;
-		
+
 		// Merge another scorecard with "me"
 		this.totalOpsSuccessful += from.totalOpsSuccessful;
 		this.totalOpsFailed += from.totalOpsFailed;
@@ -270,7 +260,7 @@ public class Scorecard {
 		for (String operationName : from.operationMap.keySet()) {
 			OperationSummary mySummary = null;
 			OperationSummary fromSummary = from.operationMap.get(operationName);
-			
+
 			// Do we have an operationSummary for this operation yet?
 			// If we don't have one, initialize an OperationSummary with a Null/dummy sampler that will
 			// simply accept all of the samples from the rhs' sampler
@@ -278,18 +268,18 @@ public class Scorecard {
 				mySummary = this.operationMap.get(operationName);
 			else
 				mySummary = new OperationSummary(new NullSamplingStrategy());
-			
+
 			mySummary.merge(fromSummary);
 			this.operationMap.put(operationName, mySummary);
 		}
 	}
 
-	public long getIntervalDuration() {
-		return intervalDuration;
+	public final long getTotalSteadyOperations() {
+		return totalOpsSuccessful + totalOpsFailed;
 	}
 
-	public String toString() {
-		return "[SCOREBOARD TRACK: " + this.trackName + "]";
+	public long getIntervalDuration() {
+		return intervalDuration;
 	}
 
 	public String getName() {
@@ -342,5 +332,9 @@ public class Scorecard {
 
 	public Map<String, OperationSummary> getOperationMap() {
 		return Collections.unmodifiableMap(operationMap);
+	}
+
+	public String toString() {
+		return "[SCOREBOARD TRACK: " + this.trackName + "]";
 	}
 }
