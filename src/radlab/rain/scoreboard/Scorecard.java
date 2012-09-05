@@ -97,24 +97,22 @@ public class Scorecard {
 			operationMap.put(operationName, operationSummary);
 		}
 
+		// Process result for the operation
+		operationSummary.processResult(result, meanResponseTimeSamplingInterval);
+
+		// Process result for this scorecard
 		if (result.isFailed()) {
 			totalOpsFailed++;
-			operationSummary.opsFailed++;
 		} else { // Result successful
 			totalOpsSuccessful++;
-			operationSummary.opsSuccessful++;
 
 			totalActionsSuccessful += result.getActionsPerformed();
-			operationSummary.actionsSuccessful += result.getActionsPerformed();
 
 			// Count operations
-			if (result.isAsynchronous()) {
-				operationSummary.asyncInvocations++;
+			if (result.isAsynchronous())
 				totalOpsAsync++;
-			} else {
-				operationSummary.syncInvocations++;
+			else
 				totalOpsSync++;
-			}
 
 			if (result.isInteractive()) {
 				long responseTime = result.getExecutionTime();
@@ -122,13 +120,10 @@ public class Scorecard {
 
 				// Response time
 				totalOpResponseTime += responseTime;
-				operationSummary.totalResponseTime += responseTime;
 
 				// Update max and min response time
 				maxResponseTime = Math.max(maxResponseTime, responseTime);
 				minResponseTime = Math.min(minResponseTime, responseTime);
-				operationSummary.maxResponseTime = Math.max(operationSummary.maxResponseTime, responseTime);
-				operationSummary.minResponseTime = Math.min(operationSummary.minResponseTime, responseTime);
 			}
 		}
 	}
@@ -216,11 +211,11 @@ public class Scorecard {
 
 				// Update global counters
 				totalAvgResponseTime += operationSummary.getAverageResponseTime();
-				totalResponseTime += operationSummary.totalResponseTime;
-				totalSuccesses += operationSummary.opsSuccessful;
+				totalResponseTime += operationSummary.getTotalResponseTime();
+				totalSuccesses += operationSummary.getOpsSuccessful();
 
 				// Calculations
-				double proportion = (double) (operationSummary.opsSuccessful + operationSummary.opsFailed) / (double) totalOperations;
+				double proportion = (double) (operationSummary.getOpsSuccessful() + operationSummary.getOpsFailed()) / (double) totalOperations;
 
 				// Print out the operation summary.
 				JSONObject operation = operationSummary.getStatistics();

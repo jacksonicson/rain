@@ -36,18 +36,19 @@ import java.util.LinkedList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import radlab.rain.OperationExecution;
 import radlab.rain.util.ISamplingStrategy;
 
 public class OperationSummary {
 	// Information recorded about one operation type
-	long opsSuccessful = 0;
-	long opsFailed = 0;
-	long actionsSuccessful = 0;
-	long totalResponseTime = 0;
-	long asyncInvocations = 0;
-	long syncInvocations = 0;
-	long minResponseTime = Long.MAX_VALUE;
-	long maxResponseTime = Long.MIN_VALUE;
+	private long opsSuccessful = 0;
+	private long opsFailed = 0;
+	private long actionsSuccessful = 0;
+	private long totalResponseTime = 0;
+	private long asyncInvocations = 0;
+	private long syncInvocations = 0;
+	private long minResponseTime = Long.MAX_VALUE;
+	private long maxResponseTime = Long.MIN_VALUE;
 
 	// Sample the response times so that we can give a "reasonable"
 	// estimate of the 90th and 99th percentiles.
@@ -55,6 +56,35 @@ public class OperationSummary {
 
 	public OperationSummary(ISamplingStrategy strategy) {
 		responseTimeSampler = strategy;
+	}
+
+	void processResult(OperationExecution result, double meanResponseTimeSamplingInterval) {
+		if (result.isFailed()) {
+			opsFailed++;
+		} else { // Result successful
+			opsSuccessful++;
+
+			actionsSuccessful += result.getActionsPerformed();
+
+			// Count operations
+			if (result.isAsynchronous()) {
+				asyncInvocations++;
+			} else {
+				syncInvocations++;
+			}
+
+			if (result.isInteractive()) {
+				long responseTime = result.getExecutionTime();
+				acceptSample(responseTime);
+
+				// Response time
+				totalResponseTime += responseTime;
+
+				// Update max and min response time
+				maxResponseTime = Math.max(maxResponseTime, responseTime);
+				minResponseTime = Math.min(minResponseTime, responseTime);
+			}
+		}
 	}
 
 	JSONObject getStatistics() throws JSONException {
