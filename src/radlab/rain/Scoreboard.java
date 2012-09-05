@@ -395,7 +395,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 				// Create a new scorecard if needed
 				if (profileScorecard == null) {
 					profileScorecard = new Scorecard(profileName, activeProfile._interval, this._trackName);
-					profileScorecard._numberOfUsers = activeProfile._numberOfUsers;
+					profileScorecard.numberOfUsers = activeProfile._numberOfUsers;
 					profileScorecards.put(profileName, profileScorecard);
 				}
 
@@ -426,8 +426,8 @@ public class Scoreboard implements Runnable, IScoreboard {
 		// Fill response time stat
 		responseTimeStat._timestamp = result.getTimeFinished();
 		responseTimeStat._responseTime = responseTime;
-		responseTimeStat._totalResponseTime = this.finalCard._totalOpResponseTime;
-		responseTimeStat._numObservations = this.finalCard._totalOpsSuccessful;
+		responseTimeStat._totalResponseTime = this.finalCard.totalOpResponseTime;
+		responseTimeStat._numObservations = this.finalCard.totalOpsSuccessful;
 		responseTimeStat._operationName = result._operationName;
 		responseTimeStat._trackName = this._trackName;
 		responseTimeStat._operationRequest = result._operationRequest;
@@ -443,43 +443,19 @@ public class Scoreboard implements Runnable, IScoreboard {
 		// Run duration in seconds
 		double runDuration = (double) (this.endTime - this.startTime) / 1000.0;
 
-		// Total operations executed
-		long totalOperations = this.finalCard._totalOpsSuccessful + this.finalCard._totalOpsFailed;
-
-		// Operations initiated per second
-		double offeredLoadOps = (double) this.finalCard._totalOpsInitiated / runDuration;
-
-		// Operations successful per second
-		double effectiveLoadOps = (double) this.finalCard._totalOpsSuccessful / runDuration;
-
-		// Actions successful per second
-		double effectiveLoadRequests = (double) this.finalCard._totalActionsSuccessful / runDuration;
-
-		// Average response time of an operation in seconds
-		double averageOpResponseTimeSecs = 0.0;
-		if (this.finalCard._totalOpsSuccessful > 0)
-			averageOpResponseTimeSecs = ((double) this.finalCard._totalOpResponseTime / (double) this.finalCard._totalOpsSuccessful) / 1000.0;
-
 		JSONObject result = new JSONObject();
 		result.put("track", _trackName);
 		result.put("target_host", _trackTargetHost);
-		result.put("total_operations", totalOperations);
+		result.put("run_duration", runDuration);
 		result.put("total_drop_offs", totalDropoffs);
 		result.put("average_drop_off_q_time(ms)", (double) totalDropOffWaitTime / (double) totalDropoffs);
 		result.put("max_drop_off_q_time(ms)", maxDropOffWaitTime);
-		result.put("offered_load(ops/sec)", offeredLoadOps);
-		result.put("effective_load(ops/sec)", effectiveLoadOps);
-		result.put("effective_load(req/sec)", effectiveLoadRequests);
-		result.put("operations_initiated", finalCard._totalOpsInitiated);
-		result.put("operations_successfully_complaeted", finalCard._totalOpsSuccessful);
-		result.put("average_operation_response_time(s)", averageOpResponseTimeSecs);
-		result.put("operations_late", finalCard._totalOpsLate);
-		result.put("operations_failed", finalCard._totalOpsFailed);
-		result.put("async_ops", finalCard._totalOpsAsync);
-		result.put("sycn_ops", finalCard._totalOpsSync);
 		result.put("mean_response_time_sample_interval", meanResponseTimeSamplingInterval);
 
-		// Print other statistics
+		// Add final scorecard statistics
+		result.put("final_scorecard", finalCard.getScoreboardStats(runDuration));
+
+		// Add other statistics
 		result.put("operation_stats", getJSONOperationStatistics(false));
 		result.put("wait_stats", getJSONWaitTimeStatistics(false));
 
@@ -488,10 +464,10 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 	public void printStatistics(PrintStream out) {
 		double runDuration = (double) (this.endTime - this.startTime) / 1000.0;
-		long totalOperations = this.finalCard._totalOpsSuccessful + this.finalCard._totalOpsFailed;
-		double offeredLoadOps = (double) this.finalCard._totalOpsInitiated / runDuration;
-		double effectiveLoadOps = (double) this.finalCard._totalOpsSuccessful / runDuration;
-		double effectiveLoadRequests = (double) this.finalCard._totalActionsSuccessful / runDuration;
+		long totalOperations = this.finalCard.totalOpsSuccessful + this.finalCard.totalOpsFailed;
+		double offeredLoadOps = (double) this.finalCard.totalOpsInitiated / runDuration;
+		double effectiveLoadOps = (double) this.finalCard.totalOpsSuccessful / runDuration;
+		double effectiveLoadRequests = (double) this.finalCard.totalActionsSuccessful / runDuration;
 
 		double totalUsers = 0.0;
 		double totalIntervalActivations = 0.0;
@@ -502,7 +478,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 		for (Scorecard card : this.profileScorecards.values()) {
 			for (LoadProfile profile : this._owner._loadSchedule) {
 				// Skip profile if name does not match
-				if (!card._name.equals(profile._name))
+				if (!card.name.equals(profile._name))
 					continue;
 
 				// If the profile started after the end of a run then
@@ -512,7 +488,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 					double intervalSpillOver = (this.endTime - profile.getTimeStarted())
 							/ ((profile._interval * 1000) + (profile._transitionTime * 1000));
 					log.info(this + " Need to decrease activation count for: " + profile._name + " spillover: " + intervalSpillOver);
-					card._activeCount -= intervalSpillOver;
+					card.activeCount -= intervalSpillOver;
 					continue;
 				}
 
@@ -524,22 +500,22 @@ public class Scoreboard implements Runnable, IScoreboard {
 				double diff = intervalEndTime - this.endTime;
 				if (diff > 0) {
 					double delta = (diff / (double) (profile._interval * 1000));
-					log.info(this + " " + card._name + " shortchanged (msecs): " + this.formatter.format(diff));
-					log.info(this + " " + card._name + " shortchanged (delta): " + this.formatter.format(delta));
+					log.info(this + " " + card.name + " shortchanged (msecs): " + this.formatter.format(diff));
+					log.info(this + " " + card.name + " shortchanged (delta): " + this.formatter.format(delta));
 					// Interval truncated so revise activation count downwards
-					card._activeCount -= delta;
+					card.activeCount -= delta;
 				}
 			}
 
-			totalUsers += card._numberOfUsers * card._activeCount;
-			totalIntervalActivations += card._activeCount;
+			totalUsers += card.numberOfUsers * card.activeCount;
+			totalIntervalActivations += card.activeCount;
 			card.printStatistics(out);
 		}
 
 		double averageOpResponseTimeSecs = 0.0;
 
-		if (this.finalCard._totalOpsSuccessful > 0)
-			averageOpResponseTimeSecs = ((double) this.finalCard._totalOpResponseTime / (double) this.finalCard._totalOpsSuccessful) / 1000.0;
+		if (this.finalCard.totalOpsSuccessful > 0)
+			averageOpResponseTimeSecs = ((double) this.finalCard.totalOpResponseTime / (double) this.finalCard.totalOpsSuccessful) / 1000.0;
 
 		ScenarioTrack track = this.getScenarioTrack();
 		// Rough averaging of the additional time spent in the system due to think times/cycle times.
@@ -551,7 +527,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 		double averageNumberOfUsers = 0.0;
 		if (totalIntervalActivations != 0)
 			averageNumberOfUsers = totalUsers / totalIntervalActivations;
-		finalCard._numberOfUsers = averageNumberOfUsers;
+		finalCard.numberOfUsers = averageNumberOfUsers;
 		out.println(this + " Final results----------------------: ");
 		out.println(this + " Target host                        : " + this._trackTargetHost);
 		out.println(this + " Total drop offs                    : " + this.totalDropoffs);
@@ -575,16 +551,16 @@ public class Scoreboard implements Runnable, IScoreboard {
 			out.println(this + " Little's Law Estimate (ops/sec)    : 0");
 
 		out.println(this + " Effective load (requests/sec)      : " + this.formatter.format(effectiveLoadRequests));
-		out.println(this + " Operations initiated               : " + this.finalCard._totalOpsInitiated);
-		out.println(this + " Operations successfully completed  : " + this.finalCard._totalOpsSuccessful);
+		out.println(this + " Operations initiated               : " + this.finalCard.totalOpsInitiated);
+		out.println(this + " Operations successfully completed  : " + this.finalCard.totalOpsSuccessful);
 		// Avg response time per operation
 		out.println(this + " Average operation response time (s): " + this.formatter.format(averageOpResponseTimeSecs));
-		out.println(this + " Operations late                    : " + this.finalCard._totalOpsLate);
-		out.println(this + " Operations failed                  : " + this.finalCard._totalOpsFailed);
-		out.println(this + " Async Ops                          : " + this.finalCard._totalOpsAsync + " "
-				+ this.formatter.format((((double) this.finalCard._totalOpsAsync / (double) totalOperations) * 100)) + "%");
-		out.println(this + " Sync Ops                           : " + this.finalCard._totalOpsSync + " "
-				+ this.formatter.format((((double) this.finalCard._totalOpsSync / (double) totalOperations) * 100)) + "%");
+		out.println(this + " Operations late                    : " + this.finalCard.totalOpsLate);
+		out.println(this + " Operations failed                  : " + this.finalCard.totalOpsFailed);
+		out.println(this + " Async Ops                          : " + this.finalCard.totalOpsAsync + " "
+				+ this.formatter.format((((double) this.finalCard.totalOpsAsync / (double) totalOperations) * 100)) + "%");
+		out.println(this + " Sync Ops                           : " + this.finalCard.totalOpsSync + " "
+				+ this.formatter.format((((double) this.finalCard.totalOpsSync / (double) totalOperations) * 100)) + "%");
 
 		out.println(this + " Mean response time sample interval : " + this.meanResponseTimeSamplingInterval + " (using Poisson sampling)");
 
@@ -613,11 +589,11 @@ public class Scoreboard implements Runnable, IScoreboard {
 	private JSONObject getJSONWaitTimeStatistics(boolean purgePercentileData) throws JSONException {
 		JSONObject result = new JSONObject();
 
-		synchronized (this.finalCard._operationMap) {
+		synchronized (this.finalCard.operationMap) {
 			JSONArray waits = new JSONArray();
 			result.put("waits", waits);
 
-			for (Iterator<String> keys = finalCard._operationMap.keySet().iterator(); keys.hasNext();) {
+			for (Iterator<String> keys = finalCard.operationMap.keySet().iterator(); keys.hasNext();) {
 				String opName = keys.next();
 				WaitTimeSummary summary = waitTimeMap.get(opName);
 
@@ -651,7 +627,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 	}
 
 	private void printWaitTimeStatistics(PrintStream out, boolean purgePercentileData) {
-		synchronized (this.finalCard._operationMap) {
+		synchronized (this.finalCard.operationMap) {
 			try {
 				// Make this thing "prettier", using fixed width columns
 				String outputFormatSpec = "|%20s|%12s|%12s|%12s|%10s|%10s|%50s|";
@@ -661,7 +637,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 				// Show operation proportions, response time: avg, max, min, stdev (op1 = x%, op2 = y%...)
 				// Enumeration<String> keys = this.finalCard._operationMap.keys();
-				Iterator<String> keys = this.finalCard._operationMap.keySet().iterator();
+				Iterator<String> keys = this.finalCard.operationMap.keySet().iterator();
 				while (keys.hasNext()) {
 					String opName = keys.next();
 					WaitTimeSummary summary = this.waitTimeMap.get(opName);
@@ -704,18 +680,18 @@ public class Scoreboard implements Runnable, IScoreboard {
 	private JSONObject getJSONOperationStatistics(boolean purgePercentileData) throws JSONException {
 		JSONObject result = new JSONObject();
 
-		long totalOperations = finalCard._totalOpsSuccessful + this.finalCard._totalOpsFailed;
+		long totalOperations = finalCard.totalOpsSuccessful + this.finalCard.totalOpsFailed;
 		double totalAvgResponseTime = 0.0;
 		double totalResponseTime = 0.0;
 		long totalSuccesses = 0;
 
-		synchronized (this.finalCard._operationMap) {
+		synchronized (this.finalCard.operationMap) {
 			JSONArray operations = new JSONArray();
 			result.put("operations", operations);
 
-			for (Iterator<String> keys = finalCard._operationMap.keySet().iterator(); keys.hasNext();) {
+			for (Iterator<String> keys = finalCard.operationMap.keySet().iterator(); keys.hasNext();) {
 				String opName = keys.next();
-				OperationSummary operationSummary = finalCard._operationMap.get(opName);
+				OperationSummary operationSummary = finalCard.operationMap.get(opName);
 
 				// Update global counters
 				totalAvgResponseTime += operationSummary.getAverageResponseTime();
@@ -763,12 +739,12 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 	@SuppressWarnings("unused")
 	private void printOperationStatistics(PrintStream out, boolean purgePercentileData) {
-		long totalOperations = this.finalCard._totalOpsSuccessful + this.finalCard._totalOpsFailed;
+		long totalOperations = this.finalCard.totalOpsSuccessful + this.finalCard.totalOpsFailed;
 		double totalAvgResponseTime = 0.0;
 		double totalResponseTime = 0.0;
 		long totalSuccesses = 0;
 
-		synchronized (this.finalCard._operationMap) {
+		synchronized (this.finalCard.operationMap) {
 			try {
 				// Make this thing "prettier", using fixed width columns
 				String outputFormatSpec = "|%20s|%10s|%10s|%10s|%12s|%12s|%12s|%10s|%10s|%50s|";
@@ -780,10 +756,10 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 				// Show operation proportions, response time: avg, max, min, stdev (op1 = x%, op2 = y%...)
 				// Enumeration<String> keys = this.finalCard._operationMap.keys();
-				Iterator<String> keys = this.finalCard._operationMap.keySet().iterator();
+				Iterator<String> keys = this.finalCard.operationMap.keySet().iterator();
 				while (keys.hasNext()) {
 					String opName = keys.next();
-					OperationSummary summary = this.finalCard._operationMap.get(opName);
+					OperationSummary summary = this.finalCard.operationMap.get(opName);
 
 					totalAvgResponseTime += summary.getAverageResponseTime();
 					totalResponseTime += summary.totalResponseTime;

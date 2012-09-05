@@ -33,91 +33,99 @@ package radlab.rain;
 
 import java.util.LinkedList;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import radlab.rain.util.ISamplingStrategy;
 
-public class OperationSummary 
-{
+public class OperationSummary {
 	// Information recorded about one operation type
-	public long succeeded 					= 0;
-	public long failed 						= 0;
-	public long totalActions				= 0;
-	public long totalResponseTime 			= 0;
-	public long totalAsyncInvocations		= 0;
-	public long totalSyncInvocations		= 0;
-	public long minResponseTime				= Long.MAX_VALUE;
-	public long maxResponseTime				= Long.MIN_VALUE;
-	
-	// Sample the response times so that we can give a "reasonable" 
-	// estimate of the 90th and 99th percentiles.	
-	private ISamplingStrategy responseTimeSampler; 
-	
-	public OperationSummary( ISamplingStrategy strategy )
-	{
+	public long succeeded = 0;
+	public long failed = 0;
+	public long totalActions = 0;
+	public long totalResponseTime = 0;
+	public long totalAsyncInvocations = 0;
+	public long totalSyncInvocations = 0;
+	public long minResponseTime = Long.MAX_VALUE;
+	public long maxResponseTime = Long.MIN_VALUE;
+
+	// Sample the response times so that we can give a "reasonable"
+	// estimate of the 90th and 99th percentiles.
+	private ISamplingStrategy responseTimeSampler;
+
+	public OperationSummary(ISamplingStrategy strategy) {
 		this.responseTimeSampler = strategy;
 	}
-	
-	public long getNthPercentileResponseTime( int pct )
-	{
-		return this.responseTimeSampler.getNthPercentile( pct );
-	}
-	
-	public boolean acceptSample( long respTime )
-	{
-		return this.responseTimeSampler.accept( respTime );
-	}
-	
-	public void resetSamples()
-	{
-		this.responseTimeSampler.reset();
-	}
-	
-	public int getSamplesSeen()
-	{
-		return this.responseTimeSampler.getSamplesSeen();
-	}
-	
-	public int getSamplesCollected()
-	{
-		return this.responseTimeSampler.getSamplesCollected();
-	}
-	public double getAverageResponseTime()
-	{
-		if( this.succeeded == 0 )
-			return 0.0;
-		else return (double) this.totalResponseTime/(double)this.succeeded;
+
+	JSONObject getJSONStats() throws JSONException {
+		JSONObject operation = new JSONObject();
+		operation.put("success", succeeded);
+		operation.put("failures", failed);
+		operation.put("avg_response", getAverageResponseTime());
+		operation.put("min_response", minResponseTime);
+		operation.put("max_response", maxResponseTime);
+		operation.put("90th (s)", getNthPercentileResponseTime(90));
+		operation.put("99th (s)", getNthPercentileResponseTime(99));
+		operation.put("sample_collected", getSamplesCollected());
+		operation.put("samples_seen", getSamplesSeen());
+		return operation;
 	}
 
-	public double getSampleMean() 
-	{
+	public long getNthPercentileResponseTime(int pct) {
+		return this.responseTimeSampler.getNthPercentile(pct);
+	}
+
+	public boolean acceptSample(long respTime) {
+		return this.responseTimeSampler.accept(respTime);
+	}
+
+	public void resetSamples() {
+		this.responseTimeSampler.reset();
+	}
+
+	public int getSamplesSeen() {
+		return this.responseTimeSampler.getSamplesSeen();
+	}
+
+	public int getSamplesCollected() {
+		return this.responseTimeSampler.getSamplesCollected();
+	}
+
+	public double getAverageResponseTime() {
+		if (this.succeeded == 0)
+			return 0.0;
+		else
+			return (double) this.totalResponseTime / (double) this.succeeded;
+	}
+
+	public double getSampleMean() {
 		return this.responseTimeSampler.getSampleMean();
 	}
 
-	public double getSampleStandardDeviation() 
-	{
+	public double getSampleStandardDeviation() {
 		return this.responseTimeSampler.getSampleStandardDeviation();
 	}
 
-	public double getTvalue( double averageResponseTime ) 
-	{
-		return this.responseTimeSampler.getTvalue( averageResponseTime );
+	public double getTvalue(double averageResponseTime) {
+		return this.responseTimeSampler.getTvalue(averageResponseTime);
 	}
-	
-	protected ISamplingStrategy getResponseTimeSampler()
-	{ return this.responseTimeSampler; }
-	
-	public void merge( OperationSummary rhs )
-	{
+
+	protected ISamplingStrategy getResponseTimeSampler() {
+		return this.responseTimeSampler;
+	}
+
+	public void merge(OperationSummary rhs) {
 		this.succeeded += rhs.succeeded;
 		this.failed += rhs.failed;
 		this.totalActions += rhs.totalActions;
 		this.totalResponseTime += rhs.totalResponseTime;
 		this.totalAsyncInvocations += rhs.totalAsyncInvocations;
 		this.totalSyncInvocations += rhs.totalSyncInvocations;
-		this.minResponseTime = Math.min( this.minResponseTime, rhs.minResponseTime );
-		this.maxResponseTime = Math.max( this.maxResponseTime, rhs.maxResponseTime );
-		
+		this.minResponseTime = Math.min(this.minResponseTime, rhs.minResponseTime);
+		this.maxResponseTime = Math.max(this.maxResponseTime, rhs.maxResponseTime);
+
 		LinkedList<Long> rhsRawSamples = rhs.getResponseTimeSampler().getRawSamples();
-		for( Long obs : rhsRawSamples )
-			this.responseTimeSampler.accept( obs );
+		for (Long obs : rhsRawSamples)
+			this.responseTimeSampler.accept(obs);
 	}
 }

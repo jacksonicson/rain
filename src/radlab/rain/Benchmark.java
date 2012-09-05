@@ -203,7 +203,7 @@ public class Benchmark {
 			JSONObject stats = track.getScoreboard().getJSONStatistics();
 			String strStats = stats.toString();
 			logger.info("Track metrics: " + strStats);
-			logger.info("Track scorecard: " + track.getScoreboard().getFinalScorecard().getJsonStatistics().toString());
+			logger.info("Track scorecard: " + track.getScoreboard().getFinalScorecard().getIntervalStatistics().toString());
 
 			// Get the name of the generator active for this track
 			String generatorClassName = track.getGeneratorClassName();
@@ -212,7 +212,7 @@ public class Benchmark {
 			if (!aggStats.containsKey(generatorClassName)) {
 				StringBuffer buf = new StringBuffer();
 				buf.append(generatorClassName).append(track);
-				Scorecard aggCard = new Scorecard("aggregated", finalScorecard._intervalDuration, buf.toString());
+				Scorecard aggCard = new Scorecard("aggregated", finalScorecard.intervalDuration, buf.toString());
 				aggStats.put(generatorClassName, aggCard);
 			}
 			// Get the current aggregated scorecard for this generator
@@ -239,7 +239,7 @@ public class Benchmark {
 				card.printStatistics(System.out);
 
 				// Sonar output
-				JSONObject stats = card.getJsonStatistics();
+				JSONObject stats = card.getIntervalStatistics();
 				String strStats = stats.toString();
 				logger.info("Rain metrics: " + strStats);
 			}

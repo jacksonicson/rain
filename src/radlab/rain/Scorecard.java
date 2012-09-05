@@ -26,88 +26,87 @@ public class Scorecard {
 	// The Scoreboard will maintain/manage a hashtable of Scorecards.
 
 	// All scorecards are named with the interval they are generated in
-	public String _name = "";
+	public String name = "";
 
 	// What track does this scorecard belong to
-	public String _trackName = "";
+	public String trackName = "";
 
 	// What goes on the scorecard?
-	public long _totalOpsSuccessful = 0;
-	public long _totalOpsFailed = 0;
-	public long _totalActionsSuccessful = 0;
-	public long _totalOpsAsync = 0;
-	public long _totalOpsSync = 0;
-	public long _totalOpsInitiated = 0;
-	public long _totalOpsLate = 0;
-	public long _totalOpResponseTime = 0;
+	public long totalOpsSuccessful = 0;
+	public long totalOpsFailed = 0;
+	public long totalActionsSuccessful = 0;
+	public long totalOpsAsync = 0;
+	public long totalOpsSync = 0;
+	public long totalOpsInitiated = 0;
+	public long totalOpsLate = 0;
+	public long totalOpResponseTime = 0;
 
-	public double _intervalDuration = 0;
-	public double _numberOfUsers = 0.0;
-	public double _activeCount = 1.0;
+	public double intervalDuration = 0;
+	public double numberOfUsers = 0.0;
+	public double activeCount = 1.0;
 
 	// A mapping of each operation with its summary
-	public TreeMap<String, OperationSummary> _operationMap = new TreeMap<String, OperationSummary>();
+	public TreeMap<String, OperationSummary> operationMap = new TreeMap<String, OperationSummary>();
 
 	// Format numbers
-	private NumberFormat _formatter = new DecimalFormat("#0.0000");
+	private NumberFormat formatter = new DecimalFormat("#0.0000");
 
 	public Scorecard(String name, double intervalDurationInSecs, String trackName) {
-		this._name = name;
-		this._intervalDuration = intervalDurationInSecs;
-		this._trackName = trackName;
+		this.name = name;
+		this.intervalDuration = intervalDurationInSecs;
+		this.trackName = trackName;
 	}
 
 	public void reset() {
 		// Clear the operation map
-		this._operationMap.clear();
+		this.operationMap.clear();
 
 		// Reset aggregate counters
-		this._totalActionsSuccessful = 0;
-		this._totalOpsAsync = 0;
-		this._totalOpsFailed = 0;
-		this._totalOpsInitiated = 0;
-		this._totalOpsSuccessful = 0;
-		this._totalOpsSync = 0;
-		this._totalOpsLate = 0;
-		this._totalOpResponseTime = 0;
-		this._intervalDuration = 0;
-		this._activeCount = 0.0;
-		this._numberOfUsers = 0.0;
+		this.totalActionsSuccessful = 0;
+		this.totalOpsAsync = 0;
+		this.totalOpsFailed = 0;
+		this.totalOpsInitiated = 0;
+		this.totalOpsSuccessful = 0;
+		this.totalOpsSync = 0;
+		this.totalOpsLate = 0;
+		this.totalOpResponseTime = 0;
+		this.intervalDuration = 0;
+		this.activeCount = 0.0;
+		this.numberOfUsers = 0.0;
 	}
 
-	void processLateOperation(OperationExecution result)
-	{
-		_totalOpsInitiated++;
-		_totalOpsLate++;
+	void processLateOperation(OperationExecution result) {
+		totalOpsInitiated++;
+		totalOpsLate++;
 	}
-	
+
 	void processSteadyStateResult(OperationExecution result, double meanResponseTimeSamplingInterval) {
 		String operationName = result._operationName;
 
-		_totalOpsInitiated++;
-		
+		totalOpsInitiated++;
+
 		if (result.isAsynchronous())
-			_totalOpsAsync++;
+			totalOpsAsync++;
 		else
-			_totalOpsSync++;
+			totalOpsSync++;
 
 		// Do the accounting for the final score card
-		OperationSummary operationSummary = _operationMap.get(operationName);
+		OperationSummary operationSummary = operationMap.get(operationName);
 
 		// Create operation summary if needed
 		if (operationSummary == null) {
 			operationSummary = new OperationSummary(new PoissonSamplingStrategy(meanResponseTimeSamplingInterval));
-			_operationMap.put(operationName, operationSummary);
+			operationMap.put(operationName, operationSummary);
 		}
 
 		if (result.isFailed()) {
-			_totalOpsFailed++;
+			totalOpsFailed++;
 			operationSummary.failed++;
 		} else { // Result successful
-			_totalOpsSuccessful++;
+			totalOpsSuccessful++;
 			operationSummary.succeeded++;
 
-			_totalActionsSuccessful += result.getActionsPerformed();
+			totalActionsSuccessful += result.getActionsPerformed();
 			operationSummary.totalActions += result.getActionsPerformed();
 
 			if (result.isAsynchronous())
@@ -121,7 +120,7 @@ public class Scorecard {
 
 				// Response time
 				operationSummary.totalResponseTime += responseTime;
-				_totalOpResponseTime += responseTime;
+				totalOpResponseTime += responseTime;
 
 				// Update max and min response time
 				operationSummary.maxResponseTime = Math.max(operationSummary.maxResponseTime, responseTime);
@@ -135,20 +134,20 @@ public class Scorecard {
 		LoadProfile activeProfile = result._generatedDuring;
 
 		// Operation summary
-		OperationSummary operationSummary = _operationMap.get(operationName);
+		OperationSummary operationSummary = operationMap.get(operationName);
 		// Create new operation summary if needed
 		if (operationSummary == null) {
 			operationSummary = new OperationSummary(new PoissonSamplingStrategy(meanResponseTimeSamplingInterval));
-			_operationMap.put(operationName, operationSummary);
+			operationMap.put(operationName, operationSummary);
 		}
 
 		// Update global counters counters
-		_activeCount = activeProfile._activeCount;
-		_totalOpsInitiated += 1;
+		activeCount = activeProfile._activeCount;
+		totalOpsInitiated += 1;
 
 		// Failed result
 		if (result.isFailed()) {
-			_totalOpsFailed++;
+			totalOpsFailed++;
 			operationSummary.failed++;
 		} else // Successful result
 		{
@@ -158,21 +157,21 @@ public class Scorecard {
 
 			// Result returned after profile interval ended
 			if (result.getTimeFinished() > profileEndMsecs) {
-				_totalOpsLate++;
+				totalOpsLate++;
 			} else { // Did the result occur before the profile interval ended
 			}
 			// Count operations
 			if (result.isAsynchronous()) {
-				_totalOpsAsync++;
+				totalOpsAsync++;
 				operationSummary.totalAsyncInvocations++;
 			} else {
-				_totalOpsSync++;
+				totalOpsSync++;
 				operationSummary.totalSyncInvocations++;
 			}
 
-			_totalOpsSuccessful++;
+			totalOpsSuccessful++;
 			operationSummary.succeeded++;
-			_totalActionsSuccessful += result.getActionsPerformed();
+			totalActionsSuccessful += result.getActionsPerformed();
 			operationSummary.totalActions += result.getActionsPerformed();
 
 			// If interactive, look at the total response time.
@@ -182,7 +181,7 @@ public class Scorecard {
 
 				// Response time
 				operationSummary.totalResponseTime += responseTime;
-				_totalOpResponseTime += responseTime;
+				totalOpResponseTime += responseTime;
 
 				// Update max and min response time
 				operationSummary.maxResponseTime = Math.max(operationSummary.maxResponseTime, responseTime);
@@ -191,88 +190,104 @@ public class Scorecard {
 		}
 	}
 
-	public JSONObject getJsonStatistics() throws JSONException {
-		long totalOperations = this._totalOpsSuccessful + this._totalOpsFailed;
+	JSONObject getScoreboardStats(double runDuration) throws JSONException {
+		// Total operations executed
+		long totalOperations = totalOpsSuccessful + totalOpsFailed;
 
-		double offeredLoadOps = 0.0;
-		double effectiveLoadOps = 0.0;
-		double effectiveLoadRequests = 0.0;
-		if (this._intervalDuration > 0) {
-			offeredLoadOps = (double) this._totalOpsInitiated / this._intervalDuration;
-			effectiveLoadOps = (double) this._totalOpsSuccessful / this._intervalDuration;
-			effectiveLoadRequests = (double) this._totalActionsSuccessful / this._intervalDuration;
+		double offeredLoadOps = 0;// Operations initiated per second
+		double effectiveLoadOps = 0; // Operations successful per second
+		double effectiveLoadRequests = 0; // Actions successful per second
+		double averageOpResponseTimeSecs = 0; // Average response time of an operation in seconds
+
+		// Calculations
+		if (runDuration > 0) {
+			offeredLoadOps = (double) totalOpsInitiated / runDuration;
+			effectiveLoadOps = (double) totalOpsSuccessful / runDuration;
+			effectiveLoadRequests = (double) totalActionsSuccessful / runDuration;
+		} else {
+			logger.warn("run duration <= 0");
 		}
 
-		JSONObject object = new JSONObject();
-		object.put("track", _trackName);
-		object.put("interval_name", _name);
-		object.put("active_users", _numberOfUsers);
-		object.put("activation_count", _activeCount);
-		object.put("offered_load(ops/sec)", (offeredLoadOps / (double) _activeCount));
-		object.put("effective_load(ops/sec)", (effectiveLoadOps / (double) _activeCount));
-		object.put("effective_load(req/sec)", (effectiveLoadRequests / (double) _activeCount));
-		object.put("operations_initiated", _totalOpsInitiated);
-		object.put("operations_successfully_completed", _totalOpsSuccessful);
+		if (totalOpsSuccessful > 0) {
+			averageOpResponseTimeSecs = ((double) totalOpResponseTime / (double) totalOpsSuccessful) / 1000.0;
+		} else {
+			logger.warn("total ops successfull <= 0");
+		}
 
-		if (this._totalOpsSuccessful > 0)
-			object.put("average_operation_response_time(s)", (((double) _totalOpResponseTime / (double) _totalOpsSuccessful) / 1000.0));
-		else
-			object.put("average_operation_response_time(s)", 0d);
+		// Create result object
+		JSONObject result = new JSONObject();
+		result.put("track", trackName);
+		result.put("interval_name", name);
+		result.put("active_count", activeCount);
 
-		object.put("operations_late", _totalOpsLate);
-		object.put("oeprations_failed", _totalOpsFailed);
-		object.put("async_ops", _totalOpsAsync);
-		object.put("async_ops(%)", (((double) _totalOpsAsync / (double) totalOperations) * 100d));
-		object.put("sync_ops", _totalOpsSync);
-		object.put("sync_ops(%)", (((double) _totalOpsSync / (double) totalOperations) * 100));
+		result.put("total_ops_successful", totalOpsSuccessful);
+		result.put("total_operations_failed", totalOpsFailed);
+		result.put("total_actions_successfulo", totalActionsSuccessful);
+		result.put("total_ops_async", totalOpsAsync);
+		result.put("total_ops_sync", totalOpsSync);
+		result.put("total_ops_initiated", totalOpsInitiated);
+		result.put("total_ops_late", totalOpsLate);
+		result.put("total_op_response_time", totalOpResponseTime);
+		result.put("interval_duration", intervalDuration);
+		result.put("number_of_users", numberOfUsers);
+		result.put("total_operations", totalOperations);
+		result.put("offered_load_ops", offeredLoadOps);
+		result.put("effective_load_ops", effectiveLoadOps);
+		result.put("effective_load_req", effectiveLoadRequests);
+		result.put("average_operation_response_time_secs", averageOpResponseTimeSecs);
 
-		object.put("operational", getOperationalStatistics(false));
+		result.put("operational", getOperationalStatistics(false));
 
-		return object;
+		return result;
+	}
+
+	public JSONObject getIntervalStatistics() throws JSONException {
+		JSONObject result = getScoreboardStats(intervalDuration);
+		return result;
 	}
 
 	public void printStatistics(PrintStream out) {
-		long totalOperations = this._totalOpsSuccessful + this._totalOpsFailed;
+		long totalOperations = this.totalOpsSuccessful + this.totalOpsFailed;
 
 		double offeredLoadOps = 0.0;
 		if (totalOperations > 0) {
-			offeredLoadOps = (double) this._totalOpsInitiated / this._intervalDuration;
+			offeredLoadOps = (double) this.totalOpsInitiated / this.intervalDuration;
 		}
 
 		double effectiveLoadOps = 0.0;
-		if (this._totalOpsSuccessful > 0) {
-			effectiveLoadOps = (double) this._totalOpsSuccessful / this._intervalDuration;
+		if (this.totalOpsSuccessful > 0) {
+			effectiveLoadOps = (double) this.totalOpsSuccessful / this.intervalDuration;
 		}
 
 		double effectiveLoadRequests = 0.0;
-		if (this._totalActionsSuccessful > 0) {
-			effectiveLoadRequests = (double) this._totalActionsSuccessful / this._intervalDuration;
+		if (this.totalActionsSuccessful > 0) {
+			effectiveLoadRequests = (double) this.totalActionsSuccessful / this.intervalDuration;
 		}
 
 		/*
 		 * Show... - average ops per second generated (load offered) - total ops/duration - average ops per second completed
 		 * (effective load)- total successful ops/duration - average requests per second - async % vs. sync %
 		 */
-		out.println(this + " Interval name                      : " + this._name);
-		out.println(this + " Active users                       : " + this._formatter.format(this._numberOfUsers));
-		out.println(this + " Activation count                   : " + this._formatter.format(this._activeCount));
-		out.println(this + " Offered load (ops/sec)             : " + this._formatter.format(offeredLoadOps / (double) this._activeCount));
-		out.println(this + " Effective load (ops/sec)           : " + this._formatter.format(effectiveLoadOps / (double) this._activeCount));
-		out.println(this + " Effective load (requests/sec)      : " + this._formatter.format(effectiveLoadRequests / (double) this._activeCount));
-		out.println(this + " Operations initiated               : " + this._totalOpsInitiated);
-		out.println(this + " Operations successfully completed  : " + this._totalOpsSuccessful);
+		out.println(this + " Interval name                      : " + this.name);
+		out.println(this + " Active users                       : " + this.formatter.format(this.numberOfUsers));
+		out.println(this + " Activation count                   : " + this.formatter.format(this.activeCount));
+		out.println(this + " Offered load (ops/sec)             : " + this.formatter.format(offeredLoadOps / (double) this.activeCount));
+		out.println(this + " Effective load (ops/sec)           : " + this.formatter.format(effectiveLoadOps / (double) this.activeCount));
+		out.println(this + " Effective load (requests/sec)      : " + this.formatter.format(effectiveLoadRequests / (double) this.activeCount));
+		out.println(this + " Operations initiated               : " + this.totalOpsInitiated);
+		out.println(this + " Operations successfully completed  : " + this.totalOpsSuccessful);
 		// Avg response time per operation
-		if (this._totalOpsSuccessful > 0)
+		if (this.totalOpsSuccessful > 0)
 			out.println(this + " Average operation response time (s): "
-					+ this._formatter.format(((double) this._totalOpResponseTime / (double) this._totalOpsSuccessful) / 1000.0));
+					+ this.formatter.format(((double) this.totalOpResponseTime / (double) this.totalOpsSuccessful) / 1000.0));
 		else
 			out.println(this + " Average operation response time (s): 0.0000");
-		out.println(this + " Operations late                    : " + this._totalOpsLate);
-		out.println(this + " Operations failed                  : " + this._totalOpsFailed);
-		out.println(this + " Async Ops                          : " + this._totalOpsAsync + " "
-				+ this._formatter.format((((double) this._totalOpsAsync / (double) totalOperations) * 100)) + "%");
-		out.println(this + " Sync Ops                           : " + this._totalOpsSync + " "
-				+ this._formatter.format((((double) this._totalOpsSync / (double) totalOperations) * 100)) + "%");
+		out.println(this + " Operations late                    : " + this.totalOpsLate);
+		out.println(this + " Operations failed                  : " + this.totalOpsFailed);
+		out.println(this + " Async Ops                          : " + this.totalOpsAsync + " "
+				+ this.formatter.format((((double) this.totalOpsAsync / (double) totalOperations) * 100)) + "%");
+		out.println(this + " Sync Ops                           : " + this.totalOpsSync + " "
+				+ this.formatter.format((((double) this.totalOpsSync / (double) totalOperations) * 100)) + "%");
 
 		// out.println( this + " Mean response time sample interval : " + this._meanResponseTimeSamplingInterval +
 		// " (using Poisson sampling)");
@@ -284,70 +299,62 @@ public class Scorecard {
 	}
 
 	private JSONObject getOperationalStatistics(boolean purgePercentileData) throws JSONException {
-		JSONObject object = new JSONObject();
+		JSONObject result = new JSONObject();
 		JSONArray operationArr = new JSONArray();
-		object.put("operations", operationArr);
+		result.put("operations", operationArr);
 
-		long totalOperations = this._totalOpsSuccessful + this._totalOpsFailed;
-		double totalAvgResponseTime = 0.0;
-		double totalResponseTime = 0.0;
-		long totalSuccesses = 0;
+		synchronized (operationMap) {
 
-		synchronized (_operationMap) {
-			// Show operation proportions, response time: avg, max, min, stdev (op1 = x%, op2 = y%...)
-			for (Iterator<String> keys = _operationMap.keySet().iterator(); keys.hasNext();) {
-				String opName = keys.next();
-				OperationSummary summary = _operationMap.get(opName);
+			long totalOperations = totalOpsSuccessful + totalOpsFailed;
+			double totalAvgResponseTime = 0.0;
+			double totalResponseTime = 0.0;
+			long totalSuccesses = 0;
 
-				totalAvgResponseTime += summary.getAverageResponseTime();
-				totalResponseTime += summary.totalResponseTime;
-				totalSuccesses += summary.succeeded;
+			for (Iterator<String> keys = operationMap.keySet().iterator(); keys.hasNext();) {
+				String operationName = keys.next();
+				OperationSummary operationSummary = operationMap.get(operationName);
 
-				// If there were no successes, then the min and max response times would not have been set
-				// so make them to 0
-				if (summary.minResponseTime == Long.MAX_VALUE)
-					summary.minResponseTime = 0;
+				// Update global counters
+				totalAvgResponseTime += operationSummary.getAverageResponseTime();
+				totalResponseTime += operationSummary.totalResponseTime;
+				totalSuccesses += operationSummary.succeeded;
 
-				if (summary.maxResponseTime == Long.MIN_VALUE)
-					summary.maxResponseTime = 0;
+				if (operationSummary.minResponseTime == Long.MAX_VALUE)
+					operationSummary.minResponseTime = 0;
+
+				if (operationSummary.maxResponseTime == Long.MIN_VALUE)
+					operationSummary.maxResponseTime = 0;
+
+				// Calculations
+				double proportion = (double) (operationSummary.succeeded + operationSummary.failed) / (double) totalOperations;
 
 				// Print out the operation summary.
-				JSONObject operation = new JSONObject();
+				JSONObject operation = operationSummary.getJSONStats();
 				operationArr.put(operation);
-
-				operation.put("opname", opName);
-				operation.put("proportion", (((double) (summary.succeeded + summary.failed) / (double) totalOperations) * 100.0));
-				operation.put("success", summary.succeeded);
-				operation.put("failures", summary.failed);
-				operation.put("avg_response", summary.getAverageResponseTime() / 1000.0);
-				operation.put("min_response", summary.minResponseTime / 1000.0);
-				operation.put("max_response", summary.maxResponseTime / 1000.0);
-				operation.put("90th (s)", summary.getNthPercentileResponseTime(90) / 1000.0);
-				operation.put("99th (s)", summary.getNthPercentileResponseTime(99) / 1000.0);
-				operation.put("sample_collected", summary.getSamplesCollected());
-				operation.put("samples_seen", summary.getSamplesSeen());
+				operation.put("operation_name", operationName);
+				operation.put("proportion", proportion);
 
 				if (purgePercentileData)
-					summary.resetSamples();
+					operationSummary.resetSamples();
 			}
+
+			// Add totals
+			result.put("total_avg_response_time", totalAvgResponseTime);
+			result.put("total_response_time", totalResponseTime);
+			result.put("total_successes", totalSuccesses);
 		}
 
-		object.put("totalOperations", totalOperations);
-		object.put("totalAvgResponseTime", totalAvgResponseTime);
-		object.put("totalResponseTime", totalResponseTime);
-		object.put("totalSuccesses", totalSuccesses);
-
-		return object;
+		return result;
 	}
 
 	@SuppressWarnings("unused")
 	private void printOperationStatistics(PrintStream out, boolean purgePercentileData) {
-		long totalOperations = this._totalOpsSuccessful + this._totalOpsFailed;
+		long totalOperations = this.totalOpsSuccessful + this.totalOpsFailed;
 		double totalAvgResponseTime = 0.0;
 		double totalResponseTime = 0.0;
 		long totalSuccesses = 0;
 
-		synchronized (this._operationMap) {
+		synchronized (this.operationMap) {
 			try {
 				// Make this thing "prettier", using fixed width columns
 				String outputFormatSpec = "|%20s|%10s|%10s|%10s|%12s|%12s|%12s|%10s|%10s|%10s|";
@@ -365,10 +372,10 @@ public class Scorecard {
 
 				// Show operation proportions, response time: avg, max, min, stdev (op1 = x%, op2 = y%...)
 				// Enumeration<String> keys = this._operationMap.keys();
-				Iterator<String> keys = this._operationMap.keySet().iterator();
+				Iterator<String> keys = this.operationMap.keySet().iterator();
 				while (keys.hasNext()) {
 					String opName = keys.next();
-					OperationSummary summary = this._operationMap.get(opName);
+					OperationSummary summary = this.operationMap.get(opName);
 
 					totalAvgResponseTime += summary.getAverageResponseTime();
 					totalResponseTime += summary.totalResponseTime;
@@ -383,15 +390,12 @@ public class Scorecard {
 
 					// Print out the operation summary.
 					out.println(this
-							+ String.format(
-									outputFormatSpec,
-									opName,
-									this._formatter.format((((double) (summary.succeeded + summary.failed) / (double) totalOperations) * 100)) + "% ",
-									summary.succeeded, summary.failed, this._formatter.format(summary.getAverageResponseTime() / 1000.0),
-									this._formatter.format(summary.minResponseTime / 1000.0),
-									this._formatter.format(summary.maxResponseTime / 1000.0),
-									this._formatter.format(summary.getNthPercentileResponseTime(90) / 1000.0),
-									this._formatter.format(summary.getNthPercentileResponseTime(99) / 1000.0), summary.getSamplesCollected() + "/"
+							+ String.format(outputFormatSpec, opName,
+									this.formatter.format((((double) (summary.succeeded + summary.failed) / (double) totalOperations) * 100)) + "% ",
+									summary.succeeded, summary.failed, this.formatter.format(summary.getAverageResponseTime() / 1000.0),
+									this.formatter.format(summary.minResponseTime / 1000.0), this.formatter.format(summary.maxResponseTime / 1000.0),
+									this.formatter.format(summary.getNthPercentileResponseTime(90) / 1000.0),
+									this.formatter.format(summary.getNthPercentileResponseTime(99) / 1000.0), summary.getSamplesCollected() + "/"
 											+ summary.getSamplesSeen()));
 
 					if (purgePercentileData)
@@ -416,36 +420,36 @@ public class Scorecard {
 		// We expect to merge only "final" scorecards
 
 		// For merges the activeCount is always set to 1
-		this._activeCount = 1;
+		this.activeCount = 1;
 		// Merge another scorecard with "me"
 		// Let's compute total operations
-		this._totalOpsSuccessful += rhs._totalOpsSuccessful;
-		this._totalOpsFailed += rhs._totalOpsFailed;
-		this._totalActionsSuccessful += rhs._totalActionsSuccessful;
-		this._totalOpsAsync += rhs._totalOpsAsync;
-		this._totalOpsSync += rhs._totalOpsSync;
-		this._totalOpsInitiated += rhs._totalOpsInitiated;
-		this._totalOpsLate += rhs._totalOpsLate;
-		this._totalOpResponseTime += rhs._totalOpResponseTime;
-		this._numberOfUsers += rhs._numberOfUsers;
+		this.totalOpsSuccessful += rhs.totalOpsSuccessful;
+		this.totalOpsFailed += rhs.totalOpsFailed;
+		this.totalActionsSuccessful += rhs.totalActionsSuccessful;
+		this.totalOpsAsync += rhs.totalOpsAsync;
+		this.totalOpsSync += rhs.totalOpsSync;
+		this.totalOpsInitiated += rhs.totalOpsInitiated;
+		this.totalOpsLate += rhs.totalOpsLate;
+		this.totalOpResponseTime += rhs.totalOpResponseTime;
+		this.numberOfUsers += rhs.numberOfUsers;
 
 		// Merge operation maps
-		for (String opName : rhs._operationMap.keySet()) {
+		for (String opName : rhs.operationMap.keySet()) {
 			OperationSummary lhsOpSummary = null;
-			OperationSummary rhsOpSummary = rhs._operationMap.get(opName);
+			OperationSummary rhsOpSummary = rhs.operationMap.get(opName);
 			// Do we have an operationSummary for this operation yet?
 			// If we don't have one, initialize an OperationSummary with a Null/dummy sampler that will
 			// simply accept all of the samples from the rhs' sampler
-			if (this._operationMap.containsKey(opName))
-				lhsOpSummary = this._operationMap.get(opName);
+			if (this.operationMap.containsKey(opName))
+				lhsOpSummary = this.operationMap.get(opName);
 			else
 				lhsOpSummary = new OperationSummary(new NullSamplingStrategy());
 			lhsOpSummary.merge(rhsOpSummary);
-			this._operationMap.put(opName, lhsOpSummary);
+			this.operationMap.put(opName, lhsOpSummary);
 		}
 	}
 
 	public String toString() {
-		return "[SCOREBOARD TRACK: " + this._trackName + "]";
+		return "[SCOREBOARD TRACK: " + this.trackName + "]";
 	}
 }
