@@ -168,19 +168,19 @@ public class Scoreboard implements Runnable, IScoreboard {
 	}
 
 	@Override
-	public void dropOffWaitTime(long time, String opName, long waitTime) {
+	public void dropOffWaitTime(long time, String operationName, long waitTime) {
 		if (isDone())
 			return;
 		if (!this.isSteadyState(time))
 			return;
 
 		synchronized (this.waitTimeDropOffLock) {
-			WaitTimeSummary waitTimeSummary = this.waitTimeMap.get(opName);
+			WaitTimeSummary waitTimeSummary = this.waitTimeMap.get(operationName);
 
 			// Create wait time summary if it does not exist
 			if (waitTimeSummary == null) {
 				waitTimeSummary = new WaitTimeSummary(new PoissonSamplingStrategy(this.meanResponseTimeSamplingInterval));
-				this.waitTimeMap.put(opName, waitTimeSummary);
+				this.waitTimeMap.put(operationName, waitTimeSummary);
 			}
 
 			waitTimeSummary.dropOff(waitTime);
@@ -208,9 +208,8 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 			// Update internal dropoff statistics
 			this.totalDropOffWaitTime += dropOffWaitTime;
+			this.maxDropOffWaitTime = Math.max(maxDropOffWaitTime, dropOffWaitTime);
 			this.totalDropoffs++;
-			if (dropOffWaitTime > this.maxDropOffWaitTime)
-				this.maxDropOffWaitTime = dropOffWaitTime;
 
 			// Put this result into the dropoff queue
 			this.dropOffQ.add(result);
@@ -484,6 +483,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 				// Print out the operation summary.
 				JSONObject wait = waitSummary.getStatistics();
+				waits.put(wait);
 				wait.put("operation_name", operationName);
 
 				if (purgePercentileData)
@@ -529,7 +529,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 					proportion = (double) (operationSummary.opsSuccessful + operationSummary.opsFailed) / (double) totalOperations;
 
 				// Print out the operation summary.
-				JSONObject operation = operationSummary.getJSONStats();
+				JSONObject operation = operationSummary.getStatistics();
 				operations.put(operation);
 				operation.put("operation_name", operationName);
 				operation.put("proportion", proportion);

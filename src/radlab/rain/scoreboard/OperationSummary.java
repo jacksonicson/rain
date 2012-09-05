@@ -57,7 +57,7 @@ public class OperationSummary {
 		responseTimeSampler = strategy;
 	}
 
-	JSONObject getJSONStats() throws JSONException {
+	JSONObject getStatistics() throws JSONException {
 		JSONObject operation = new JSONObject();
 		operation.put("samples_collected", getSamplesCollected());
 		operation.put("samples_seen", getSamplesSeen());

@@ -199,8 +199,8 @@ public class Scorecard {
 
 	private JSONObject getOperationalStatistics(boolean purgePercentileData) throws JSONException {
 		JSONObject result = new JSONObject();
-		JSONArray operationArr = new JSONArray();
-		result.put("operations", operationArr);
+		JSONArray operations = new JSONArray();
+		result.put("operations", operations);
 
 		synchronized (operationMap) {
 
@@ -228,8 +228,8 @@ public class Scorecard {
 				double proportion = (double) (operationSummary.opsSuccessful + operationSummary.opsFailed) / (double) totalOperations;
 
 				// Print out the operation summary.
-				JSONObject operation = operationSummary.getJSONStats();
-				operationArr.put(operation);
+				JSONObject operation = operationSummary.getStatistics();
+				operations.put(operation);
 				operation.put("operation_name", operationName);
 				operation.put("proportion", proportion);
 
