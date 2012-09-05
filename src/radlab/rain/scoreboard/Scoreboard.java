@@ -71,7 +71,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 	// Who owns this scoreboard
 	private String trackName;
 	private String trackTargetHost;
-	private ScenarioTrack _owner = null;
+	private ScenarioTrack scenarioTrack = null;
 
 	// If true, this scoreboard will refuse any new results.
 	// Indicates the thread status (started or stopped)
@@ -229,8 +229,8 @@ public class Scoreboard implements Runnable, IScoreboard {
 		}
 
 		// ATTENTION: Return operation object to pool
-		if (this._owner.getObjectPool().isActive())
-			this._owner.getObjectPool().returnObject(result.getOperation());
+		if (this.scenarioTrack.getObjectPool().isActive())
+			this.scenarioTrack.getObjectPool().returnObject(result.getOperation());
 	}
 
 	private final boolean isDone() {
@@ -554,11 +554,27 @@ public class Scoreboard implements Runnable, IScoreboard {
 	}
 
 	@Override
-	public void setScenarioTrack(ScenarioTrack owner) {
-		this._owner = owner;
+	public void setScenarioTrack(ScenarioTrack scenarioTrack) {
+		this.scenarioTrack = scenarioTrack;
+	}
+
+	@Override
+	public long getStartTimestamp() {
+		return startTime;
+	}
+
+	@Override
+	public long getEndTimestamp() {
+		return endTime;
+	}
+
+	@Override
+	public ScenarioTrack getScenarioTrack() {
+		return scenarioTrack;
 	}
 
 	public String toString() {
 		return "[SCOREBOARD TRACK: " + this.trackName + "]";
 	}
+
 }

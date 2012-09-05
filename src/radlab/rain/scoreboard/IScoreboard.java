@@ -87,4 +87,10 @@ public interface IScoreboard {
 	Scorecard getFinalScorecard();
 
 	JSONObject getStatistics() throws JSONException;
+
+	long getStartTimestamp();
+
+	long getEndTimestamp();
+
+	ScenarioTrack getScenarioTrack();
 }
