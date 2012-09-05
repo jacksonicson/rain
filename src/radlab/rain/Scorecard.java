@@ -1,8 +1,5 @@
 package radlab.rain;
 
-import java.io.PrintStream;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.TreeMap;
 
@@ -14,8 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import radlab.rain.util.NullSamplingStrategy;
 import radlab.rain.util.PoissonSamplingStrategy;
-//import java.util.Enumeration;
-//import java.util.Hashtable;
 
 // Not even going to try to make Scorecards thread-safe, the Scoreboard must do "the right thing"(tm)
 public class Scorecard {
@@ -26,32 +21,29 @@ public class Scorecard {
 	// The Scoreboard will maintain/manage a hashtable of Scorecards.
 
 	// All scorecards are named with the interval they are generated in
-	public String name = "";
+	String name = "";
 
 	// What track does this scorecard belong to
-	public String trackName = "";
+	String trackName = "";
 
 	// What goes on the scorecard?
-	public long totalOpsSuccessful = 0;
-	public long totalOpsFailed = 0;
-	public long totalActionsSuccessful = 0;
-	public long totalOpsAsync = 0;
-	public long totalOpsSync = 0;
-	public long totalOpsInitiated = 0;
-	public long totalOpsLate = 0;
-	public long totalOpResponseTime = 0;
+	long totalOpsSuccessful = 0;
+	long totalOpsFailed = 0;
+	long totalActionsSuccessful = 0;
+	long totalOpsAsync = 0;
+	long totalOpsSync = 0;
+	long totalOpsInitiated = 0;
+	long totalOpsLate = 0;
+	long totalOpResponseTime = 0;
 
-	public double intervalDuration = 0;
-	public double numberOfUsers = 0.0;
-	public double activeCount = 1.0;
+	long intervalDuration = 0;
+	double numberOfUsers = 0.0;
+	double activeCount = 1.0;
 
 	// A mapping of each operation with its summary
-	public TreeMap<String, OperationSummary> operationMap = new TreeMap<String, OperationSummary>();
+	TreeMap<String, OperationSummary> operationMap = new TreeMap<String, OperationSummary>();
 
-	// Format numbers
-	private NumberFormat formatter = new DecimalFormat("#0.0000");
-
-	public Scorecard(String name, double intervalDurationInSecs, String trackName) {
+	public Scorecard(String name, long intervalDurationInSecs, String trackName) {
 		this.name = name;
 		this.intervalDuration = intervalDurationInSecs;
 		this.trackName = trackName;
@@ -80,11 +72,10 @@ public class Scorecard {
 		totalOpsLate++;
 	}
 
-	void processSteadyStateResult(OperationExecution result, double meanResponseTimeSamplingInterval) {
+	void processResult(OperationExecution result, double meanResponseTimeSamplingInterval) {
+		// Update global counters counters
 		String operationName = result._operationName;
-
 		totalOpsInitiated++;
-
 		if (result.isAsynchronous())
 			totalOpsAsync++;
 		else
@@ -92,7 +83,6 @@ public class Scorecard {
 
 		// Do the accounting for the final score card
 		OperationSummary operationSummary = operationMap.get(operationName);
-
 		// Create operation summary if needed
 		if (operationSummary == null) {
 			operationSummary = new OperationSummary(new PoissonSamplingStrategy(meanResponseTimeSamplingInterval));
@@ -101,18 +91,29 @@ public class Scorecard {
 
 		if (result.isFailed()) {
 			totalOpsFailed++;
-			operationSummary.failed++;
+			operationSummary.opsFailed++;
 		} else { // Result successful
 			totalOpsSuccessful++;
-			operationSummary.succeeded++;
+			operationSummary.opsSuccessful++;
 
 			totalActionsSuccessful += result.getActionsPerformed();
-			operationSummary.totalActions += result.getActionsPerformed();
+			operationSummary.actionsSuccessful += result.getActionsPerformed();
 
+			// Count operations
 			if (result.isAsynchronous())
-				operationSummary.totalAsyncInvocations++;
+				operationSummary.asyncInvocations++;
 			else
-				operationSummary.totalSyncInvocations++;
+				operationSummary.syncInvocations++;
+
+			// Intervals passed in seconds, convert to milliseconds
+			long profileLengthMsecs = result._generatedDuring._interval * 1000;
+			long profileEndMsecs = result._profileStartTime + profileLengthMsecs;
+
+			// Result returned after profile interval ended
+			if (result.getTimeFinished() > profileEndMsecs) {
+				totalOpsLate++;
+			} else { // Did the result occur before the profile interval ended
+			}
 
 			if (result.isInteractive()) {
 				long responseTime = result.getExecutionTime();
@@ -129,65 +130,10 @@ public class Scorecard {
 		}
 	}
 
-	void processPerIntervalResult(OperationExecution result, double meanResponseTimeSamplingInterval) {
-		String operationName = result._operationName;
+	void processProfileResult(OperationExecution result, double meanResponseTimeSamplingInterval) {
 		LoadProfile activeProfile = result._generatedDuring;
-
-		// Operation summary
-		OperationSummary operationSummary = operationMap.get(operationName);
-		// Create new operation summary if needed
-		if (operationSummary == null) {
-			operationSummary = new OperationSummary(new PoissonSamplingStrategy(meanResponseTimeSamplingInterval));
-			operationMap.put(operationName, operationSummary);
-		}
-
-		// Update global counters counters
 		activeCount = activeProfile._activeCount;
-		totalOpsInitiated += 1;
-
-		// Failed result
-		if (result.isFailed()) {
-			totalOpsFailed++;
-			operationSummary.failed++;
-		} else // Successful result
-		{
-			// Intervals passed in seconds, convert to milliseconds
-			long profileLengthMsecs = result._generatedDuring._interval * 1000;
-			long profileEndMsecs = result._profileStartTime + profileLengthMsecs;
-
-			// Result returned after profile interval ended
-			if (result.getTimeFinished() > profileEndMsecs) {
-				totalOpsLate++;
-			} else { // Did the result occur before the profile interval ended
-			}
-			// Count operations
-			if (result.isAsynchronous()) {
-				totalOpsAsync++;
-				operationSummary.totalAsyncInvocations++;
-			} else {
-				totalOpsSync++;
-				operationSummary.totalSyncInvocations++;
-			}
-
-			totalOpsSuccessful++;
-			operationSummary.succeeded++;
-			totalActionsSuccessful += result.getActionsPerformed();
-			operationSummary.totalActions += result.getActionsPerformed();
-
-			// If interactive, look at the total response time.
-			if (result.isInteractive()) {
-				long responseTime = result.getExecutionTime();
-				operationSummary.acceptSample(responseTime);
-
-				// Response time
-				operationSummary.totalResponseTime += responseTime;
-				totalOpResponseTime += responseTime;
-
-				// Update max and min response time
-				operationSummary.maxResponseTime = Math.max(operationSummary.maxResponseTime, responseTime);
-				operationSummary.minResponseTime = Math.min(operationSummary.minResponseTime, responseTime);
-			}
-		}
+		processResult(result, meanResponseTimeSamplingInterval);
 	}
 
 	JSONObject getStatistics(double runDuration) throws JSONException {
@@ -209,7 +155,7 @@ public class Scorecard {
 		}
 
 		if (totalOpsSuccessful > 0) {
-			averageOpResponseTimeSecs = ((double) totalOpResponseTime / (double) totalOpsSuccessful) / 1000.0;
+			averageOpResponseTimeSecs = (double) totalOpResponseTime / (double) totalOpsSuccessful;
 		} else {
 			logger.warn("total ops successfull <= 0");
 		}
@@ -265,7 +211,7 @@ public class Scorecard {
 				// Update global counters
 				totalAvgResponseTime += operationSummary.getAverageResponseTime();
 				totalResponseTime += operationSummary.totalResponseTime;
-				totalSuccesses += operationSummary.succeeded;
+				totalSuccesses += operationSummary.opsSuccessful;
 
 				if (operationSummary.minResponseTime == Long.MAX_VALUE)
 					operationSummary.minResponseTime = 0;
@@ -274,7 +220,7 @@ public class Scorecard {
 					operationSummary.maxResponseTime = 0;
 
 				// Calculations
-				double proportion = (double) (operationSummary.succeeded + operationSummary.failed) / (double) totalOperations;
+				double proportion = (double) (operationSummary.opsSuccessful + operationSummary.opsFailed) / (double) totalOperations;
 
 				// Print out the operation summary.
 				JSONObject operation = operationSummary.getJSONStats();

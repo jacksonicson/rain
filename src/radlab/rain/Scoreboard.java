@@ -31,9 +31,6 @@
 
 package radlab.rain;
 
-import java.io.PrintStream;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Random;
@@ -103,7 +100,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 	// Final scorecard
 	// Basically holds all counters relevant for aggregated result statistics
-	Scorecard finalCard = null;
+	private Scorecard finalCard = null;
 
 	// Scorecards: For each profile (= interval) there is one scorecard
 	// Each element of a workload profile is a profile in rain
@@ -128,9 +125,6 @@ public class Scoreboard implements Runnable, IScoreboard {
 	private Thread workerThread = null;
 	private SnapshotWriterThread snapshotThread = null;
 
-	// Formatter is used for the output
-	private NumberFormat formatter = new DecimalFormat("#0.0000");
-
 	/**
 	 * Creates a new Scoreboard with the track name specified. The Scoreboard returned must be initialized by calling
 	 * <code>initialize</code>.
@@ -146,7 +140,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 		this.startTime = startTime;
 		this.endTime = endTime;
 
-		double runDuration = (double) (this.endTime - this.startTime) / 1000.0;
+		long runDuration = this.endTime - this.startTime;
 		finalCard = new Scorecard("final", runDuration, this._trackName);
 
 		reset();
@@ -400,12 +394,12 @@ public class Scoreboard implements Runnable, IScoreboard {
 				}
 
 				// Process statistics
-				profileScorecard.processPerIntervalResult(result, meanResponseTimeSamplingInterval);
+				profileScorecard.processProfileResult(result, meanResponseTimeSamplingInterval);
 			}
 		}
 
 		// Process statistics
-		finalCard.processSteadyStateResult(result, meanResponseTimeSamplingInterval);
+		finalCard.processResult(result, meanResponseTimeSamplingInterval);
 
 		// If interactive, look at the total response time.
 		if (!result.isFailed() && result.isInteractive()) {
@@ -441,7 +435,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 	public JSONObject getJSONStatistics() throws JSONException {
 		// Run duration in seconds
-		double runDuration = (double) (this.endTime - this.startTime) / 1000.0;
+		double runDuration = (double) (this.endTime - this.startTime);
 
 		JSONObject result = new JSONObject();
 		result.put("track", _trackName);
@@ -483,15 +477,15 @@ public class Scoreboard implements Runnable, IScoreboard {
 				// Print out the operation summary.
 				JSONObject wait = new JSONObject();
 				wait.put("operation", opName);
-				wait.put("avg_wait", summary.getAverageWaitTime() / 1000.0);
-				wait.put("min_wait", summary.minWaitTime / 1000.0);
-				wait.put("max_wait", summary.maxWaitTime / 1000.0);
-				wait.put("90th(s)", summary.getNthPercentileResponseTime(90) / 1000.0);
-				wait.put("99th(s)", summary.getNthPercentileResponseTime(99) / 1000.0);
+				wait.put("avg_wait", summary.getAverageWaitTime());
+				wait.put("min_wait", summary.minWaitTime);
+				wait.put("max_wait", summary.maxWaitTime);
+				wait.put("90th(s)", summary.getNthPercentileResponseTime(90));
+				wait.put("99th(s)", summary.getNthPercentileResponseTime(99));
 				wait.put("samples_collected", summary.getSamplesCollected());
 				wait.put("samples_seen", summary.getSamplesSeen());
-				wait.put("sample_mean", summary.getSampleMean() / 1000.0);
-				wait.put("std_dev", summary.getSampleStandardDeviation() / 1000.0);
+				wait.put("sample_mean", summary.getSampleMean());
+				wait.put("std_dev", summary.getSampleStandardDeviation());
 				wait.put("t_val", summary.getTvalue(summary.getAverageWaitTime()));
 
 				if (purgePercentileData)
@@ -521,7 +515,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 				// Update global counters
 				totalAvgResponseTime += operationSummary.getAverageResponseTime();
 				totalResponseTime += operationSummary.totalResponseTime;
-				totalSuccesses += operationSummary.succeeded;
+				totalSuccesses += operationSummary.opsSuccessful;
 
 				// If there were no successes, then the min and max response times would not have been set
 				// so make them to 0
@@ -535,18 +529,19 @@ public class Scoreboard implements Runnable, IScoreboard {
 				JSONObject operation = new JSONObject();
 				operations.put(operation);
 				operation.put("operation", opName);
-				operation.put("proportion", ((double) (operationSummary.succeeded + operationSummary.failed) / (double) totalOperations) * 100d);
-				operation.put("successes", operationSummary.succeeded);
-				operation.put("failures", operationSummary.failed);
-				operation.put("avg_response", operationSummary.getAverageResponseTime() / 1000.0);
-				operation.put("min_response", operationSummary.minResponseTime / 1000.0);
-				operation.put("max_response", operationSummary.maxResponseTime / 1000.0);
-				operation.put("90th(s)", operationSummary.getNthPercentileResponseTime(90) / 1000.0);
-				operation.put("99th(s)", operationSummary.getNthPercentileResponseTime(99) / 1000.0);
+				operation.put("proportion",
+						((double) (operationSummary.opsSuccessful + operationSummary.opsFailed) / (double) totalOperations) * 100d);
+				operation.put("successes", operationSummary.opsSuccessful);
+				operation.put("failures", operationSummary.opsFailed);
+				operation.put("avg_response", operationSummary.getAverageResponseTime());
+				operation.put("min_response", operationSummary.minResponseTime);
+				operation.put("max_response", operationSummary.maxResponseTime);
+				operation.put("90th(s)", operationSummary.getNthPercentileResponseTime(90));
+				operation.put("99th(s)", operationSummary.getNthPercentileResponseTime(99));
 				operation.put("samples_collected", operationSummary.getSamplesCollected());
 				operation.put("samples_seen", operationSummary.getSamplesSeen());
-				operation.put("sample_mean", operationSummary.getSampleMean() / 1000.0);
-				operation.put("sample_stdev", operationSummary.getSampleStandardDeviation() / 1000.0);
+				operation.put("sample_mean", operationSummary.getSampleMean());
+				operation.put("sample_stdev", operationSummary.getSampleStandardDeviation());
 				operation.put("avg_resp_time", operationSummary.getTvalue(operationSummary.getAverageResponseTime()));
 
 				if (purgePercentileData)
