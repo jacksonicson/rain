@@ -187,6 +187,7 @@ public class Benchmark {
 
 		// Set up for stats aggregation across tracks based on the generators used
 		TreeMap<String, Scorecard> aggStats = new TreeMap<String, Scorecard>();
+		Scorecard globalCard = new Scorecard("global", "global", endSteadyState - startSteadyState);
 
 		// Shutdown the scoreboards and tally up the results.
 		for (ScenarioTrack track : scenario.getTracks().values()) {
@@ -202,7 +203,6 @@ public class Benchmark {
 			JSONObject stats = track.getScoreboard().getStatistics();
 			String strStats = stats.toString();
 			logger.info("Track metrics: " + strStats);
-			logger.info("Track scorecard: " + track.getScoreboard().getFinalScorecard().getIntervalStatistics().toString());
 
 			// Get the name of the generator active for this track
 			String generatorClassName = track.getGeneratorClassName();
@@ -221,6 +221,9 @@ public class Benchmark {
 			// Collect scoreboard results
 			// Collect object pool results
 
+			// Merge global card
+			globalCard.merge(finalScorecard);
+
 			track.getObjectPool().shutdown();
 		}
 
@@ -238,6 +241,9 @@ public class Benchmark {
 				String strStats = stats.toString();
 				logger.info("Rain metrics: " + strStats);
 			}
+
+			// Dump global card
+			logger.info("Global metrics: " + globalCard.getIntervalStatistics().toString());
 		}
 
 		// Shutdown the shared threadpool

@@ -34,102 +34,133 @@ package radlab.rain;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class LoadProfile 
-{
-	public static String CFG_LOAD_PROFILE_INTERVAL_KEY        = "interval";
+public class LoadProfile {
+	public static String CFG_LOAD_PROFILE_INTERVAL_KEY = "interval";
 	public static String CFG_LOAD_PROFILE_TRANSITION_TIME_KEY = "transitionTime";
-	public static String CFG_LOAD_PROFILE_USERS_KEY           = "users";
-	public static String CFG_LOAD_PROFILE_MIX_KEY             = "mix";
-	public static String CFG_LOAD_PROFILE_NAME_KEY			  = "name";
-	public static String CFG_OPEN_LOOP_MAX_OPS_PER_SEC_KEY	  = "openLoopMaxOpsPerSec";	
+	public static String CFG_LOAD_PROFILE_USERS_KEY = "users";
+	public static String CFG_LOAD_PROFILE_MIX_KEY = "mix";
+	public static String CFG_LOAD_PROFILE_NAME_KEY = "name";
+	public static String CFG_OPEN_LOOP_MAX_OPS_PER_SEC_KEY = "openLoopMaxOpsPerSec";
 	// Allow LoadProfile intervals to have names (no getter/setter)
 	public String _name = "";
-	
-	public long   _interval;
-	protected long   _transitionTime;
-	public int    _numberOfUsers;
+
+	public long _interval;
+	protected long _transitionTime;
+	public int _numberOfUsers;
 	protected String _mixName = "";
 	public long _activeCount = 0; // How often has this interval become active, the load scheduler updates this
-	protected int _openLoopMaxOpsPerSec	= 0; // Rate limit on async operations. A value of 0 means no rate limiting.
+	protected int _openLoopMaxOpsPerSec = 0; // Rate limit on async operations. A value of 0 means no rate limiting.
 	protected JSONObject _config = null; // Save the original configuration object if its passed
-	
+
 	private long _timeStarted = -1; // LoadManagerThreads need to update this every time they advance the "clock"
 
-	public LoadProfile( JSONObject profileObj ) throws JSONException
-	{
-		this._interval = profileObj.getLong( CFG_LOAD_PROFILE_INTERVAL_KEY );
-		this._numberOfUsers = profileObj.getInt( CFG_LOAD_PROFILE_USERS_KEY );
-		this._mixName = profileObj.getString( CFG_LOAD_PROFILE_MIX_KEY );
+	public LoadProfile(JSONObject profileObj) throws JSONException {
+		this._interval = profileObj.getLong(CFG_LOAD_PROFILE_INTERVAL_KEY);
+		this._numberOfUsers = profileObj.getInt(CFG_LOAD_PROFILE_USERS_KEY);
+		this._mixName = profileObj.getString(CFG_LOAD_PROFILE_MIX_KEY);
 
 		// Load the transition time (if specified)
-		if ( profileObj.has( CFG_LOAD_PROFILE_TRANSITION_TIME_KEY ) )
-			this._transitionTime = profileObj.getLong( CFG_LOAD_PROFILE_TRANSITION_TIME_KEY );
-		
+		if (profileObj.has(CFG_LOAD_PROFILE_TRANSITION_TIME_KEY))
+			this._transitionTime = profileObj.getLong(CFG_LOAD_PROFILE_TRANSITION_TIME_KEY);
+
 		// Load the interval name (if specified)
-		if( profileObj.has( CFG_LOAD_PROFILE_NAME_KEY) )
-			this._name = profileObj.getString( CFG_LOAD_PROFILE_NAME_KEY );
-		
+		if (profileObj.has(CFG_LOAD_PROFILE_NAME_KEY))
+			this._name = profileObj.getString(CFG_LOAD_PROFILE_NAME_KEY);
+
 		// Open loop rate limiting (if that's configured). By default there's no rate limiting
-		if( profileObj.has( CFG_OPEN_LOOP_MAX_OPS_PER_SEC_KEY) )
-		{
-			this._openLoopMaxOpsPerSec = profileObj.getInt( CFG_OPEN_LOOP_MAX_OPS_PER_SEC_KEY );
-			if( this._openLoopMaxOpsPerSec < 0 )
+		if (profileObj.has(CFG_OPEN_LOOP_MAX_OPS_PER_SEC_KEY)) {
+			this._openLoopMaxOpsPerSec = profileObj.getInt(CFG_OPEN_LOOP_MAX_OPS_PER_SEC_KEY);
+			if (this._openLoopMaxOpsPerSec < 0)
 				this._openLoopMaxOpsPerSec = 0;
 		}
-		
+
 		this._config = profileObj;
 	}
 
-	public LoadProfile( long interval, int numberOfUsers, String mixName )
-	{
+	public LoadProfile(long interval, int numberOfUsers, String mixName) {
 		this(interval, numberOfUsers, mixName, 0);
 	}
-	
-	public LoadProfile( long interval, int numberOfUsers, String mixName, long transitionTime )
-	{
+
+	public LoadProfile(long interval, int numberOfUsers, String mixName, long transitionTime) {
 		this._interval = interval;
 		this._numberOfUsers = numberOfUsers;
 		this._mixName = mixName;
 		this._transitionTime = transitionTime;
 	}
-	
-	public LoadProfile( long interval, int numberOfUsers, String mixName, long transitionTime, String name )
-	{
+
+	public LoadProfile(long interval, int numberOfUsers, String mixName, long transitionTime, String name) {
 		this._interval = interval;
 		this._numberOfUsers = numberOfUsers;
 		this._mixName = mixName;
 		this._transitionTime = transitionTime;
-		this._name = name; 
+		this._name = name;
 	}
-	
+
 	// Converts to milliseconds
-	public long getInterval() { return ( this._interval * 1000 ); }
-	public void setInterval( long val ) { this._interval = val; }
-	
-	public int getNumberOfUsers() { return this._numberOfUsers; }
-	public void setNumberOfUsers( int val ) { this._numberOfUsers = val; }
-	
-	public String getMixName() { return this._mixName; }
-	public void setMixName( String val ) { this._mixName = val; }
-	
-	public long getTransitionTime() { return ( this._transitionTime * 1000 ); }
-	public void setTransitionTime( long val ) { this._transitionTime = val; }
-	
-	public long getTimeStarted() { return this._timeStarted; }
-	public void setTimeStarted( long val ) { this._timeStarted = val; }
-	
-	public JSONObject getConfig() { return this._config; }
-	public void setConfig( JSONObject val ) { this._config = val; }
-	
-	public int getOpenLoopMaxOpsPerSec() { return this._openLoopMaxOpsPerSec; }
-	public void setOpenLoopMaxOpsPerSec( int val ) { this._openLoopMaxOpsPerSec = val; }
-	
-	public String toString()
-	{
+	public long getInterval() {
+		return (this._interval * 1000);
+	}
+
+	public void setInterval(long val) {
+		this._interval = val;
+	}
+
+	public int getNumberOfUsers() {
+		return this._numberOfUsers;
+	}
+
+	public void setNumberOfUsers(int val) {
+		this._numberOfUsers = val;
+	}
+
+	public String getMixName() {
+		return this._mixName;
+	}
+
+	public void setMixName(String val) {
+		this._mixName = val;
+	}
+
+	public long getTransitionTime() {
+		return (this._transitionTime * 1000);
+	}
+
+	public void setTransitionTime(long val) {
+		this._transitionTime = val;
+	}
+
+	public long getTimeStarted() {
+		return this._timeStarted;
+	}
+
+	public void setTimeStarted(long val) {
+		this._timeStarted = val;
+	}
+
+	public JSONObject getConfig() {
+		return this._config;
+	}
+
+	public void setConfig(JSONObject val) {
+		this._config = val;
+	}
+
+	public int getOpenLoopMaxOpsPerSec() {
+		return this._openLoopMaxOpsPerSec;
+	}
+
+	public void setOpenLoopMaxOpsPerSec(int val) {
+		this._openLoopMaxOpsPerSec = val;
+	}
+
+	public String toString() {
 		StringBuffer buf = new StringBuffer();
-		if( this._name == null || this._name.trim().length() == 0 )
-			buf.append( "[Duration: " + this._interval + " Users: " + this._numberOfUsers + " Mix: " + this._mixName + " Transition time: " + this._transitionTime + "]");
-		else buf.append( "[Duration: " + this._interval + " Users: " + this._numberOfUsers + " Mix: " + this._mixName + " Transition time: " + this._transitionTime + " Name: " + this._name + "]");
+		if (this._name == null || this._name.trim().length() == 0)
+			buf.append("[Duration: " + this._interval + " Users: " + this._numberOfUsers + " Mix: " + this._mixName + " Transition time: "
+					+ this._transitionTime + "]");
+		else
+			buf.append("[Duration: " + this._interval + " Users: " + this._numberOfUsers + " Mix: " + this._mixName + " Transition time: "
+					+ this._transitionTime + " Name: " + this._name + "]");
 		return buf.toString();
 	}
 }

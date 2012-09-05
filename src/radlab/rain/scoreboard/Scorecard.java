@@ -40,7 +40,7 @@ public class Scorecard {
 	private long totalOpsLate = 0;
 	private long totalOpResponseTime = 0;
 	private long intervalDuration = 0;
-	private double numberOfUsers = 0.0;
+	private long numberOfUsers = 0;
 	private double activeCount = 1.0;
 	private long minResponseTime = Long.MAX_VALUE;
 	private long maxResponseTime = 0;
@@ -73,7 +73,6 @@ public class Scorecard {
 		this.totalOpsLate = 0;
 		this.totalOpResponseTime = 0;
 		this.activeCount = 0.0;
-		this.numberOfUsers = 0.0;
 		this.maxResponseTime = 0;
 		this.minResponseTime = Long.MAX_VALUE;
 	}
@@ -318,7 +317,7 @@ public class Scorecard {
 		return totalOpResponseTime;
 	}
 
-	public double getNumberOfUsers() {
+	public long getNumberOfUsers() {
 		return numberOfUsers;
 	}
 

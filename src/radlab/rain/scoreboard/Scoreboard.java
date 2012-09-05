@@ -146,7 +146,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 		long runDuration = this.endTime - this.startTime;
 		log.debug("run duration: " + runDuration);
 
-		finalCard = new Scorecard("final", trackName, maxUsers);
+		finalCard = new Scorecard("final", trackName, runDuration, maxUsers);
 		reset();
 	}
 
