@@ -76,16 +76,56 @@ public class Scorecard {
 	}
 
 	void processSteadyStateResult(OperationExecution result, double meanResponseTimeSamplingInterval) {
+		String operationName = result._operationName;
+
 		if (result.isAsynchronous())
 			_totalOpsAsync++;
 		else
 			_totalOpsSync++;
+
+		// Do the accounting for the final score card
+		OperationSummary operationSummary = _operationMap.get(operationName);
+
+		// Create operation summary if needed
+		if (operationSummary == null) {
+			operationSummary = new OperationSummary(new PoissonSamplingStrategy(meanResponseTimeSamplingInterval));
+			_operationMap.put(operationName, operationSummary);
+		}
+
+		if (result.isFailed()) {
+			_totalOpsFailed++;
+			operationSummary.failed++;
+		} else { // Result successful
+			_totalOpsSuccessful++;
+			operationSummary.succeeded++;
+
+			_totalActionsSuccessful += result.getActionsPerformed();
+			operationSummary.totalActions += result.getActionsPerformed();
+
+			if (result.isAsynchronous())
+				operationSummary.totalAsyncInvocations++;
+			else
+				operationSummary.totalSyncInvocations++;
+
+			if (result.isInteractive()) {
+				long responseTime = result.getExecutionTime();
+				operationSummary.acceptSample(responseTime);
+
+				// Response time
+				operationSummary.totalResponseTime += responseTime;
+				_totalOpResponseTime += responseTime;
+
+				// Update max and min response time
+				operationSummary.maxResponseTime = Math.max(operationSummary.maxResponseTime, responseTime);
+				operationSummary.minResponseTime = Math.min(operationSummary.minResponseTime, responseTime);
+			}
+		}
 	}
 
 	void processPerIntervalResult(OperationExecution result, double meanResponseTimeSamplingInterval) {
 		String operationName = result._operationName;
 		LoadProfile activeProfile = result._generatedDuring;
-		
+
 		// Operation summary
 		OperationSummary operationSummary = _operationMap.get(operationName);
 		// Create new operation summary if needed

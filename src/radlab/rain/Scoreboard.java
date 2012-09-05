@@ -387,8 +387,6 @@ public class Scoreboard implements Runnable, IScoreboard {
 	 *            The operation execution result to process.
 	 */
 	private void processSteadyStateResult(OperationExecution result) {
-		String operationName = result._operationName;
-
 		// Update per-interval (profile) cards
 		LoadProfile activeProfile = result._generatedDuring;
 		if (activeProfile != null) {
@@ -403,79 +401,44 @@ public class Scoreboard implements Runnable, IScoreboard {
 					profileScorecards.put(profileName, profileScorecard);
 				}
 
-				profileScorecard.processPerIntervalResult(result, meanResponseTimeSamplingInterval); 
+				// Process statistics
+				profileScorecard.processPerIntervalResult(result, meanResponseTimeSamplingInterval);
 			}
 		}
 
-		// Update final card
-		
-		
-		// Do the accounting for the final score card
-		OperationSummary operationSummary = finalCard._operationMap.get(operationName);
+		// Process statistics
+		finalCard.processSteadyStateResult(result, meanResponseTimeSamplingInterval);
 
-		// Create operation summary if needed
-		if (operationSummary == null) {
-			operationSummary = new OperationSummary(new PoissonSamplingStrategy(this.meanResponseTimeSamplingInterval));
-			finalCard._operationMap.put(operationName, operationSummary);
+		// If interactive, look at the total response time.
+		if (!result.isFailed() && result.isInteractive()) {
+			// Do metric SNAPSHOTS (record all response times)
+			// Only save response times if we're doing metric snapshots
+			// This reduces memory leakage
+			if (this.usingMetricSnapshots)
+				issueMetricSnapshot(result);
 		}
+	}
 
-		// Update final card
-		
+	private void issueMetricSnapshot(OperationExecution result) {
+		long responseTime = result.getExecutionTime();
+		ResponseTimeStat responseTimeStat = this.snapshotThread.provisionRTSObject();
+		if (responseTimeStat == null)
+			responseTimeStat = new ResponseTimeStat();
 
-		// Result failed
-		if (result.isFailed()) {
-			finalCard._totalOpsFailed++;
-			operationSummary.failed++;
-		} else { // Result successful
-			this.finalCard._totalOpsSuccessful++;
-			operationSummary.succeeded++;
+		// Fill response time stat
+		responseTimeStat._timestamp = result.getTimeFinished();
+		responseTimeStat._responseTime = responseTime;
+		responseTimeStat._totalResponseTime = this.finalCard._totalOpResponseTime;
+		responseTimeStat._numObservations = this.finalCard._totalOpsSuccessful;
+		responseTimeStat._operationName = result._operationName;
+		responseTimeStat._trackName = this._trackName;
+		responseTimeStat._operationRequest = result._operationRequest;
 
-			this.finalCard._totalActionsSuccessful += result.getActionsPerformed();
-			operationSummary.totalActions += result.getActionsPerformed();
+		if (result._generatedDuring != null)
+			responseTimeStat._generatedDuring = result._generatedDuring._name;
 
-			if (result.isAsynchronous())
-				operationSummary.totalAsyncInvocations++;
-			else
-				operationSummary.totalSyncInvocations++;
-
-			// If interactive, look at the total response time.
-			if (result.isInteractive()) {
-				long responseTime = result.getExecutionTime();
-				operationSummary.acceptSample(responseTime);
-
-				// Response time
-				operationSummary.totalResponseTime += responseTime;
-				this.finalCard._totalOpResponseTime += responseTime;
-
-				// Update max and min response time
-				operationSummary.maxResponseTime = Math.max(operationSummary.maxResponseTime, responseTime);
-				operationSummary.minResponseTime = Math.min(operationSummary.minResponseTime, responseTime);
-
-				// Do metric SNAPSHOTS (record all response times)
-				// Only save response times if we're doing metric snapshots
-				// This reduces memory leakage
-				if (this.usingMetricSnapshots) {
-					ResponseTimeStat responseTimeStat = this.snapshotThread.provisionRTSObject();
-					if (responseTimeStat == null)
-						responseTimeStat = new ResponseTimeStat();
-
-					// Fill response time stat
-					responseTimeStat._timestamp = result.getTimeFinished();
-					responseTimeStat._responseTime = responseTime;
-					responseTimeStat._totalResponseTime = this.finalCard._totalOpResponseTime;
-					responseTimeStat._numObservations = this.finalCard._totalOpsSuccessful;
-					responseTimeStat._operationName = result._operationName;
-					responseTimeStat._trackName = this._trackName;
-					responseTimeStat._operationRequest = result._operationRequest;
-
-					if (result._generatedDuring != null)
-						responseTimeStat._generatedDuring = result._generatedDuring._name;
-
-					// Push this stat onto a Queue for the snapshot thread
-					this.snapshotThread.accept(responseTimeStat);
-				}
-			}
-		}
+		// Push this stat onto a Queue for the snapshot thread
+		this.snapshotThread.accept(responseTimeStat);
 	}
 
 	public JSONObject getJSONStatistics() throws JSONException {
