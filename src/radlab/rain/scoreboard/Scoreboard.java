@@ -377,6 +377,8 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 	private void processSteadyStateResult(OperationExecution result) {
 		// Update per-interval (profile) cards
+		// This code is still here and the data is logged but the data is NOT required for specj
+		// and it is therefore not in the JSON reports!
 		LoadProfile activeProfile = result._generatedDuring;
 		if (activeProfile != null) {
 			if ((activeProfile._name != null && activeProfile._name.length() > 0)) {
