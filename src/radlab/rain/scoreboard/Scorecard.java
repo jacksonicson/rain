@@ -229,6 +229,7 @@ public class Scorecard {
 			result.put("total_avg_response_time", totalAvgResponseTime);
 			result.put("total_response_time", totalResponseTime);
 			result.put("total_successes", totalSuccesses);
+			result.put("total_operations", totalOperations);
 		}
 
 		return result;

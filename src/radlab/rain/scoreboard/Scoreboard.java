@@ -447,7 +447,6 @@ public class Scoreboard implements Runnable, IScoreboard {
 		result.put("final_scorecard", finalCard.getStatistics(runDuration));
 
 		// Add other statistics
-		result.put("operation_stats", getOperationStatistics(false));
 		result.put("wait_stats", getWaitTimeStatistics(false));
 
 		return result;
@@ -473,51 +472,6 @@ public class Scoreboard implements Runnable, IScoreboard {
 					waitSummary.resetSamples();
 			}
 		}
-
-		return result;
-	}
-
-	private JSONObject getOperationStatistics(boolean purgePercentileData) throws JSONException {
-		JSONObject result = new JSONObject();
-
-		long totalOperations = finalCard.getTotalSteadyOperations();
-		double totalAvgResponseTime = 0.0;
-		double totalResponseTime = 0.0;
-		long totalSuccesses = 0;
-
-		synchronized (this.finalCard) {
-			JSONArray operations = new JSONArray();
-			result.put("operations", operations);
-
-			for (Iterator<String> keys = finalCard.getOperationMap().keySet().iterator(); keys.hasNext();) {
-				String operationName = keys.next();
-				OperationSummary operationSummary = finalCard.getOperationMap().get(operationName);
-
-				// Update global counters
-				totalAvgResponseTime += operationSummary.getAverageResponseTime();
-				totalResponseTime += operationSummary.getTotalResponseTime();
-				totalSuccesses += operationSummary.getOpsSuccessful();
-
-				// Calculations
-				double proportion = 0;
-				if (totalOperations > 0)
-					proportion = (double) operationSummary.getTotalSteadyOperations() / (double) totalOperations;
-
-				// Print out the operation summary.
-				JSONObject operation = operationSummary.getStatistics();
-				operations.put(operation);
-				operation.put("operation_name", operationName);
-				operation.put("proportion", proportion);
-
-				if (purgePercentileData)
-					operationSummary.resetSamples();
-			}
-		}
-
-		result.put("total_operations", totalOperations);
-		result.put("total_avg_response_time", totalAvgResponseTime);
-		result.put("total_response_time", totalResponseTime);
-		result.put("total_successes", totalSuccesses);
 
 		return result;
 	}
