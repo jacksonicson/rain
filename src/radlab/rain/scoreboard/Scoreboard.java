@@ -440,7 +440,10 @@ public class Scoreboard implements Runnable, IScoreboard {
 		result.put("track", trackName);
 		result.put("target_host", trackTargetHost);
 		result.put("run_duration", runDuration);
-		result.put("total_drop_offs", totalDropoffs);
+		result.put("start_time", startTime); 
+		result.put("end_time", endTime);
+		result.put("total_dropoff_wait_time", totalDropOffWaitTime);
+		result.put("total_dropoffs", totalDropoffs);
 		result.put("average_drop_off_q_time", averageDropOffQTime);
 		result.put("max_drop_off_q_time", maxDropOffWaitTime);
 		result.put("mean_response_time_sample_interval", meanResponseTimeSamplingInterval);
