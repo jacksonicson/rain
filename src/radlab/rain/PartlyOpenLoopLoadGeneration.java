@@ -54,12 +54,6 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy {
 	/** The random number generator used to decide which loop to use. */
 	protected Random _random = new Random();
 
-	/** Log writer registered to the scoreboard. */
-	protected FileWriter _logWriter;
-
-	/** Error log writer registered to the scoreboard. */
-	protected FileWriter _errorLogWriter;
-
 	/** Statistic: number of synchronous operations run. */
 	protected long _synchOperations = 0;
 
