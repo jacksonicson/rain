@@ -70,8 +70,6 @@ public class SonarMetricWriter extends MetricWriter {
 			double avgResponseTime = stat._totalResponseTime / stat._numObservations;
 			double davgResponseTime = (stat._totalResponseTime - lastTotalResponseTime) / (stat._numObservations - lastNumObservations);
 
-			System.out.println("response_time " + avgResponseTime + " " + HOSTNAME + " " + stat._timestamp);
-
 			Identifier id = new Identifier();
 			id.setHostname(HOSTNAME);
 			id.setSensor("rain.avgrtime." + stat._trackName);
