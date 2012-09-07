@@ -124,6 +124,7 @@ public class Benchmark {
 		logger.info("Schedule: " + schedule.toString());
 
 		logger.info("Initializing " + scenario.getTracks().size() + " tracks");
+		long totalMaxUsers = 0;
 		for (ScenarioTrack track : scenario.getTracks().values()) {
 			// Start the scoreboard. It needs to know the timings because we only
 			// want to retain metrics generated during the steady state interval.
@@ -143,6 +144,7 @@ public class Benchmark {
 			// 2) whether to forge ahead
 
 			long maxUsers = track.getMaxUsers();
+			totalMaxUsers += maxUsers;
 			logger.info("Creating " + maxUsers + " threads for " + track);
 
 			// Create enough threads for maximum users needed by the scenario.
@@ -169,6 +171,8 @@ public class Benchmark {
 				lgThread.start();
 			}
 		}
+
+		logger.info("Total user threads: " + totalMaxUsers);
 
 		// Wait for all user threads to finish
 		for (LoadGenerationStrategy lgThread : threads) {
