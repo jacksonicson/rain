@@ -325,7 +325,6 @@ public class DefaultScenarioTrack extends ScenarioTrack {
 			}
 
 			logger.info("Ramp up finished");
-			System.out.flush();
 
 			cal.setTimeInMillis(now);
 			logger.debug(this + " current time: " + formatter.format(cal.getTime()) + " (" + now + ") " + this._track._currentLoadProfile.toString());
