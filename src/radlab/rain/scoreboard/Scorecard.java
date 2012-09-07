@@ -141,7 +141,7 @@ public class Scorecard {
 		double effectiveLoadRequests = 0; // Actions successful per second
 		double averageOpResponseTime = 0; // Average response time of an operation in seconds
 
-		// Calculations
+		// Calculations (per second)
 		if (runDuration > 0) {
 			offeredLoadOps = (double) totalOpsInitiated / toSeconds(runDuration);
 			effectiveLoadOps = (double) totalOpsSuccessful / toSeconds(runDuration);
@@ -161,7 +161,7 @@ public class Scorecard {
 		result.put("track", trackName);
 		result.put("interval_name", name);
 		result.put("active_count", activeCount);
-
+		result.put("run_duration", runDuration);
 		result.put("total_ops_successful", totalOpsSuccessful);
 		result.put("total_operations_failed", totalOpsFailed);
 		result.put("total_actions_successful", totalActionsSuccessful);
