@@ -139,19 +139,19 @@ public class Scorecard {
 		double offeredLoadOps = 0;// Operations initiated per second
 		double effectiveLoadOps = 0; // Operations successful per second
 		double effectiveLoadRequests = 0; // Actions successful per second
-		double averageOpResponseTimeSecs = 0; // Average response time of an operation in seconds
+		double averageOpResponseTime = 0; // Average response time of an operation in seconds
 
 		// Calculations
 		if (runDuration > 0) {
-			offeredLoadOps = (double) totalOpsInitiated / runDuration;
-			effectiveLoadOps = (double) totalOpsSuccessful / runDuration;
-			effectiveLoadRequests = (double) totalActionsSuccessful / runDuration;
+			offeredLoadOps = (double) totalOpsInitiated / toSeconds(runDuration);
+			effectiveLoadOps = (double) totalOpsSuccessful / toSeconds(runDuration);
+			effectiveLoadRequests = (double) totalActionsSuccessful / toSeconds(runDuration);
 		} else {
 			logger.warn("run duration <= 0");
 		}
 
 		if (totalOpsSuccessful > 0) {
-			averageOpResponseTimeSecs = (double) totalOpResponseTime / (double) totalOpsSuccessful;
+			averageOpResponseTime = (double) totalOpResponseTime / (double) totalOpsSuccessful;
 		} else {
 			logger.warn("total ops successfull <= 0");
 		}
@@ -178,7 +178,7 @@ public class Scorecard {
 		result.put("effective_load_req", effectiveLoadRequests);
 		result.put("max_response_time", maxResponseTime);
 		result.put("min_response_time", minResponseTime);
-		result.put("average_operation_response_time", averageOpResponseTimeSecs);
+		result.put("average_operation_response_time", averageOpResponseTime);
 
 		// Operational statistics
 		result.put("operational", getOperationalStatistics(false));
@@ -186,6 +186,11 @@ public class Scorecard {
 		return result;
 	}
 
+	private final double toSeconds(double milliseconds)
+	{
+		return milliseconds / 1000d; 
+	}
+	
 	public JSONObject getIntervalStatistics() throws JSONException {
 		JSONObject result = getStatistics(intervalDuration);
 		return result;
