@@ -57,7 +57,7 @@ public class OperationSummary {
 	public OperationSummary(ISamplingStrategy strategy) {
 		responseTimeSampler = strategy;
 	}
-	
+
 	void resetSamples() {
 		responseTimeSampler.reset();
 	}
@@ -79,7 +79,7 @@ public class OperationSummary {
 
 			if (result.isInteractive()) {
 				long responseTime = result.getExecutionTime();
-				acceptSample(responseTime);
+				responseTimeSampler.accept(responseTime);
 
 				// Response time
 				totalResponseTime += responseTime;
@@ -91,10 +91,6 @@ public class OperationSummary {
 		}
 	}
 
-	boolean acceptSample(long respTime) {
-		return responseTimeSampler.accept(respTime);
-	}
-	
 	JSONObject getStatistics() throws JSONException {
 		// Calculations
 		long minResponseTime = this.minResponseTime;
@@ -123,12 +119,13 @@ public class OperationSummary {
 
 		return operation;
 	}
-	
+
 	double getAverageResponseTime() {
-		if (opsSuccessful == 0)
-			return 0.0;
-		else
+		if (opsSuccessful > 0)
 			return (double) totalResponseTime / (double) opsSuccessful;
+		else
+			return 0.0;
+
 	}
 
 	private ISamplingStrategy getResponseTimeSampler() {

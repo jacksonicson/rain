@@ -453,7 +453,7 @@ public abstract class ComradesOperation extends Operation
 				status._canInterview = false;
 			}
 			
-			if( !status._canInterview )
+			if(!status._canInterview )
 			{
 				StringBuffer interviewDecisionUrl = new StringBuffer();
 				//interviewDecisionUrl.append( this.getGenerator()._candidatesUrl ).append( "/" );

@@ -114,7 +114,6 @@ public class Scorecard {
 
 			if (result.isInteractive()) {
 				long responseTime = result.getExecutionTime();
-				operationSummary.acceptSample(responseTime);
 
 				// Response time
 				totalOpResponseTime += responseTime;

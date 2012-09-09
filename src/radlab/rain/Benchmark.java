@@ -74,7 +74,7 @@ public class Benchmark {
 
 	public boolean waitingForStartSignal = false;
 
-	public static Benchmark getBenchmarkInstance() {
+	public synchronized static Benchmark getBenchmarkInstance() {
 		if (BenchmarkInstance == null)
 			BenchmarkInstance = new Benchmark();
 
