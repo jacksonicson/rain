@@ -162,6 +162,7 @@ public class Scorecard {
 		result.put("interval_name", name);
 		result.put("active_count", activeCount);
 		result.put("run_duration", runDuration);
+		result.put("interval_duration", intervalDuration);
 		result.put("total_ops_successful", totalOpsSuccessful);
 		result.put("total_operations_failed", totalOpsFailed);
 		result.put("total_actions_successful", totalActionsSuccessful);
@@ -170,7 +171,6 @@ public class Scorecard {
 		result.put("total_ops_initiated", totalOpsInitiated);
 		result.put("total_ops_late", totalOpsLate);
 		result.put("total_op_response_time", totalOpResponseTime);
-		result.put("interval_duration", intervalDuration);
 		result.put("number_of_users", numberOfUsers);
 		result.put("total_operations", totalOperations);
 		result.put("offered_load_ops", offeredLoadOps);

@@ -103,6 +103,7 @@ public class OperationSummary {
 		operation.put("samples_seen", getSamplesSeen());
 		operation.put("ops_successful", opsSuccessful);
 		operation.put("ops_failed", opsFailed);
+		operation.put("total_response_time", totalResponseTime);
 		operation.put("average_response_time", getAverageResponseTime());
 		operation.put("min_response_time", minResponseTime);
 		operation.put("max_response_time", maxResponseTime);
@@ -185,28 +186,7 @@ public class OperationSummary {
 		return opsFailed;
 	}
 
-	public long getActionsSuccessful() {
-		return actionsSuccessful;
-	}
-
 	public long getTotalResponseTime() {
 		return totalResponseTime;
 	}
-
-	public long getAsyncInvocations() {
-		return asyncInvocations;
-	}
-
-	public long getSyncInvocations() {
-		return syncInvocations;
-	}
-
-	public long getMinResponseTime() {
-		return minResponseTime;
-	}
-
-	public long getMaxResponseTime() {
-		return maxResponseTime;
-	}
-
 }

@@ -58,41 +58,14 @@ public class WaitTimeSummary {
 		waitTimeSampler.accept(waitTime);
 	}
 
-	public long getNthPercentileResponseTime(int pct) {
-		return this.waitTimeSampler.getNthPercentile(pct);
-	}
-
-	public void resetSamples() {
+	void resetSamples() {
 		this.waitTimeSampler.reset();
 	}
-
-	public int getSamplesSeen() {
-		return this.waitTimeSampler.getSamplesSeen();
+	
+	private long getNthPercentileResponseTime(int pct) {
+		return this.waitTimeSampler.getNthPercentile(pct);
 	}
-
-	public int getSamplesCollected() {
-		return this.waitTimeSampler.getSamplesCollected();
-	}
-
-	public double getAverageWaitTime() {
-		if (this.count == 0)
-			return 0.0;
-		else
-			return (double) this.totalWaitTime / (double) this.count;
-	}
-
-	public double getSampleMean() {
-		return this.waitTimeSampler.getSampleMean();
-	}
-
-	public double getSampleStandardDeviation() {
-		return this.waitTimeSampler.getSampleStandardDeviation();
-	}
-
-	public double getTvalue(double averageWaitTime) {
-		return this.waitTimeSampler.getTvalue(averageWaitTime);
-	}
-
+	
 	public JSONObject getStatistics() throws JSONException {
 		// Calculations
 		long minWaitTime = this.minWaitTime;
@@ -103,18 +76,26 @@ public class WaitTimeSummary {
 		if (maxWaitTime == Long.MIN_VALUE)
 			maxWaitTime = 0;
 
+		double avgWaitTime = 0; 
+		if(count > 0)
+			avgWaitTime = (double) this.totalWaitTime / (double) this.count;
+		
+		double tvalue = waitTimeSampler.getTvalue(avgWaitTime);
+		double sampleStdDev = waitTimeSampler.getSampleStandardDeviation();
+		
 		// Results
 		JSONObject wait = new JSONObject();
-		wait.put("average_wait_time", getAverageWaitTime());
+		wait.put("average_wait_time", avgWaitTime);
+		wait.put("total_wait_time", totalWaitTime);
 		wait.put("min_wait_time", minWaitTime);
 		wait.put("max_wait_time", maxWaitTime);
-		wait.put("90th_percentile_response_time", getNthPercentileResponseTime(90));
-		wait.put("99th_percentile_response_time", getNthPercentileResponseTime(99));
-		wait.put("samples_collected", getSamplesCollected());
-		wait.put("samples_seen", getSamplesSeen());
-		wait.put("sample_mean", getSampleMean());
-		wait.put("sample_standard_deviation", getSampleStandardDeviation());
-		wait.put("tvalue_average_wait_time", getTvalue(getAverageWaitTime()));
+		wait.put("90th_percentile_wait_time", getNthPercentileResponseTime(90));
+		wait.put("99th_percentile_wait_time", getNthPercentileResponseTime(99));
+		wait.put("samples_collected", waitTimeSampler.getSamplesCollected());
+		wait.put("samples_seen", waitTimeSampler.getSamplesSeen());
+		wait.put("sample_mean", waitTimeSampler.getSampleMean());
+		wait.put("sample_standard_deviation", sampleStdDev);
+		wait.put("tvalue_average_wait_time", tvalue);
 
 		return wait;
 	}
