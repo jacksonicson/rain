@@ -48,14 +48,14 @@ public class Scorecard {
 	// A mapping of each operation with its summary
 	private TreeMap<String, OperationSummary> operationMap = new TreeMap<String, OperationSummary>();
 
-	public Scorecard(String name, String trackName, long intervalDurationInSecs) {
-		this(name, trackName, intervalDurationInSecs, 0);
+	public Scorecard(String name, String trackName, long intervalDuration) {
+		this(name, trackName, intervalDuration, 0);
 	}
 
-	public Scorecard(String name, String trackName, long intervalDurationInSecs, long numberOfUsers) {
+	public Scorecard(String name, String trackName, long intervalDuration, long numberOfUsers) {
 		this.name = name;
 		this.trackName = trackName;
-		this.intervalDuration = intervalDurationInSecs;
+		this.intervalDuration = intervalDuration;
 		this.numberOfUsers = numberOfUsers;
 	}
 
