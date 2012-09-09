@@ -57,6 +57,10 @@ public class OperationSummary {
 	public OperationSummary(ISamplingStrategy strategy) {
 		responseTimeSampler = strategy;
 	}
+	
+	void resetSamples() {
+		responseTimeSampler.reset();
+	}
 
 	void processResult(OperationExecution result, double meanResponseTimeSamplingInterval) {
 		if (result.isFailed()) {
@@ -87,6 +91,10 @@ public class OperationSummary {
 		}
 	}
 
+	boolean acceptSample(long respTime) {
+		return responseTimeSampler.accept(respTime);
+	}
+	
 	JSONObject getStatistics() throws JSONException {
 		// Calculations
 		long minResponseTime = this.minResponseTime;
@@ -99,67 +107,31 @@ public class OperationSummary {
 
 		// Results
 		JSONObject operation = new JSONObject();
-		operation.put("samples_collected", getSamplesCollected());
-		operation.put("samples_seen", getSamplesSeen());
+		operation.put("samples_collected", responseTimeSampler.getSamplesCollected());
+		operation.put("samples_seen", responseTimeSampler.getSamplesSeen());
 		operation.put("ops_successful", opsSuccessful);
 		operation.put("ops_failed", opsFailed);
 		operation.put("total_response_time", totalResponseTime);
 		operation.put("average_response_time", getAverageResponseTime());
 		operation.put("min_response_time", minResponseTime);
 		operation.put("max_response_time", maxResponseTime);
-		operation.put("90_percentile_response_time", getNthPercentileResponseTime(90));
-		operation.put("99_percentile_response_time", getNthPercentileResponseTime(99));
-		operation.put("sample_mean", getSampleMean());
-		operation.put("sample_stdev", getSampleStandardDeviation());
-		operation.put("tvalue_avg_resp_time", getTvalue(getAverageResponseTime()));
+		operation.put("90_percentile_response_time", responseTimeSampler.getNthPercentile(90));
+		operation.put("99_percentile_response_time", responseTimeSampler.getNthPercentile(99));
+		operation.put("sample_mean", responseTimeSampler.getSampleMean());
+		operation.put("sample_stdev", responseTimeSampler.getSampleStandardDeviation());
+		operation.put("tvalue_avg_resp_time", responseTimeSampler.getTvalue(getAverageResponseTime()));
 
 		return operation;
 	}
-
-	public final long getTotalSteadyOperations() {
-		return opsSuccessful + opsFailed;
-	}
-
-	public long getNthPercentileResponseTime(int pct) {
-		return responseTimeSampler.getNthPercentile(pct);
-	}
-
-	public boolean acceptSample(long respTime) {
-		return responseTimeSampler.accept(respTime);
-	}
-
-	public void resetSamples() {
-		responseTimeSampler.reset();
-	}
-
-	public int getSamplesSeen() {
-		return responseTimeSampler.getSamplesSeen();
-	}
-
-	public int getSamplesCollected() {
-		return responseTimeSampler.getSamplesCollected();
-	}
-
-	public double getAverageResponseTime() {
+	
+	double getAverageResponseTime() {
 		if (opsSuccessful == 0)
 			return 0.0;
 		else
 			return (double) totalResponseTime / (double) opsSuccessful;
 	}
 
-	public double getSampleMean() {
-		return responseTimeSampler.getSampleMean();
-	}
-
-	public double getSampleStandardDeviation() {
-		return responseTimeSampler.getSampleStandardDeviation();
-	}
-
-	public double getTvalue(double averageResponseTime) {
-		return responseTimeSampler.getTvalue(averageResponseTime);
-	}
-
-	protected ISamplingStrategy getResponseTimeSampler() {
+	private ISamplingStrategy getResponseTimeSampler() {
 		return responseTimeSampler;
 	}
 
