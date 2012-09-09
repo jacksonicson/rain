@@ -275,7 +275,7 @@ public class Scorecard {
 		}
 	}
 
-	public final long getTotalSteadyOperations() {
+	private final long getTotalSteadyOperations() {
 		return totalOpsSuccessful + totalOpsFailed;
 	}
 
