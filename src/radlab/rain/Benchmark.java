@@ -177,6 +177,7 @@ public class Benchmark {
 		// Wait for all user threads to finish
 		for (LoadGenerationStrategy lgThread : threads) {
 			try {
+				logger.info("Thread joined: " + lgThread.getName());
 				lgThread.join();
 			} catch (InterruptedException ie) {
 				logger.error("Main thread interrupted... exiting!");
