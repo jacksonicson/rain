@@ -27,6 +27,8 @@ public class SonarMetricWriter extends MetricWriter {
 	private long lastTotalResponseTime = 0;
 	private long lastNumObservations = 0;
 
+	private long[] thrBuffer = new long[10];
+
 	public SonarMetricWriter(JSONObject config) throws Exception {
 		super(config);
 
@@ -64,6 +66,12 @@ public class SonarMetricWriter extends MetricWriter {
 			lastNumObservations = stat._numObservations;
 		}
 
+		if (stat._responseTime < (thrBuffer.length - 1)) {
+			thrBuffer[(int) stat._responseTime]++;
+		} else {
+			thrBuffer[thrBuffer.length - 1]++;
+		}
+
 		long delta = (System.currentTimeMillis() - lastSnapshotLog);
 		if (delta > 3000) {
 
@@ -82,22 +90,31 @@ public class SonarMetricWriter extends MetricWriter {
 			id.setSensor("rain.rtime." + stat._trackName);
 			value.setValue(davgResponseTime);
 			client.logMetric(id, value);
-			
+
 			id.setSensor("rain.dobservations." + stat._trackName);
 			value.setValue(observations);
 			client.logMetric(id, value);
-			
+
 			id.setSensor("rain.observations." + stat._trackName);
 			value.setValue(stat._numObservations);
 			client.logMetric(id, value);
-			
+
 			id.setSensor("rain.trtime." + stat._trackName);
 			value.setValue(stat._totalResponseTime);
 			client.logMetric(id, value);
 
+			// Log thrBuffer
+			for (int i = 0; i < thrBuffer.length; i++) {
+				id.setSensor("rain.thr-" + i + "." + stat._trackName);
+				value.setValue(thrBuffer[i]);
+				client.logMetric(id, value);
+			}
+
 			lastSnapshotLog = System.currentTimeMillis();
 			lastTotalResponseTime = stat._totalResponseTime;
 			lastNumObservations = stat._numObservations;
+			for (int i = 0; i < thrBuffer.length; i++)
+				thrBuffer[i] = 0;
 		}
 
 		return false;
