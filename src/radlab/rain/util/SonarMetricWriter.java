@@ -76,32 +76,44 @@ public class SonarMetricWriter extends MetricWriter {
 		long delta = (System.currentTimeMillis() - lastSnapshotLog);
 		if (delta > 3000) {
 
-			double avgResponseTime = stat._totalResponseTime / stat._numObservations;
-			double observations = stat._numObservations - lastNumObservations;
-			double davgResponseTime = (stat._totalResponseTime - lastTotalResponseTime) / observations;
-
 			Identifier id = new Identifier();
 			id.setHostname(HOSTNAME);
-			id.setSensor("rain.avgrtime." + stat._trackName);
 			id.setTimestamp(stat._timestamp / 1000);
 			MetricReading value = new MetricReading();
-			value.setValue(avgResponseTime);
+			
+			double totalAveragegResponseTime = stat._totalResponseTime / stat._numObservations;
+			double deltaObservations = stat._numObservations - lastNumObservations;
+			double deltaResponseTime = stat._totalResponseTime - lastTotalResponseTime;
+			double deltaAverageResponseTime = deltaResponseTime / deltaObservations;
+			
+			// Total average response time
+			id.setSensor("rain.avgrtime." + stat._trackName);
+			value.setValue(totalAveragegResponseTime);
 			client.logMetric(id, value);
 
+			// Delta average response time
 			id.setSensor("rain.rtime." + stat._trackName);
-			value.setValue(davgResponseTime);
+			value.setValue(deltaAverageResponseTime);
 			client.logMetric(id, value);
 
-			id.setSensor("rain.dobservations." + stat._trackName);
-			value.setValue(observations);
-			client.logMetric(id, value);
-
-			id.setSensor("rain.observations." + stat._trackName);
+			// Total observations
+			id.setSensor("rain.tobservations." + stat._trackName);
 			value.setValue(stat._numObservations);
 			client.logMetric(id, value);
-
+			
+			// Delta observations
+			id.setSensor("rain.dobservations." + stat._trackName);
+			value.setValue(deltaObservations);
+			client.logMetric(id, value);
+			
+			// Total response time
 			id.setSensor("rain.trtime." + stat._trackName);
 			value.setValue(stat._totalResponseTime);
+			client.logMetric(id, value);
+			
+			// Delta response time
+			id.setSensor("rain.drtime." + stat._trackName);
+			value.setValue(deltaResponseTime);
 			client.logMetric(id, value);
 
 			// Log thrBuffer
@@ -111,9 +123,12 @@ public class SonarMetricWriter extends MetricWriter {
 				client.logMetric(id, value);
 			}
 
+			// Update deltas
 			lastSnapshotLog = System.currentTimeMillis();
 			lastTotalResponseTime = stat._totalResponseTime;
 			lastNumObservations = stat._numObservations;
+			
+			// Clear buffers
 			for (int i = 0; i < thrBuffer.length; i++)
 				thrBuffer[i] = 0;
 		}
