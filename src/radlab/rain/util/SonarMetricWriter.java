@@ -83,9 +83,17 @@ public class SonarMetricWriter extends MetricWriter {
 			value.setValue(davgResponseTime);
 			client.logMetric(id, value);
 			
-			id.setSensor("rain.observations." + stat._trackName);
+			id.setSensor("rain.dobservations." + stat._trackName);
 			value.setValue(observations);
-			client.logMetric(id, value); 
+			client.logMetric(id, value);
+			
+			id.setSensor("rain.observations." + stat._trackName);
+			value.setValue(stat._numObservations);
+			client.logMetric(id, value);
+			
+			id.setSensor("rain.trtime." + stat._trackName);
+			value.setValue(stat._totalResponseTime);
+			client.logMetric(id, value);
 
 			lastSnapshotLog = System.currentTimeMillis();
 			lastTotalResponseTime = stat._totalResponseTime;
