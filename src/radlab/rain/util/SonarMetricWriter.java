@@ -68,7 +68,8 @@ public class SonarMetricWriter extends MetricWriter {
 		if (delta > 3000) {
 
 			double avgResponseTime = stat._totalResponseTime / stat._numObservations;
-			double davgResponseTime = (stat._totalResponseTime - lastTotalResponseTime) / (stat._numObservations - lastNumObservations);
+			double observations = stat._numObservations - lastNumObservations;
+			double davgResponseTime = (stat._totalResponseTime - lastTotalResponseTime) / observations;
 
 			Identifier id = new Identifier();
 			id.setHostname(HOSTNAME);
@@ -81,6 +82,10 @@ public class SonarMetricWriter extends MetricWriter {
 			id.setSensor("rain.rtime." + stat._trackName);
 			value.setValue(davgResponseTime);
 			client.logMetric(id, value);
+			
+			id.setSensor("rain.observations." + stat._trackName);
+			value.setValue(observations);
+			client.logMetric(id, value); 
 
 			lastSnapshotLog = System.currentTimeMillis();
 			lastTotalResponseTime = stat._totalResponseTime;
