@@ -66,8 +66,9 @@ public class SonarMetricWriter extends MetricWriter {
 			lastNumObservations = stat._numObservations;
 		}
 
-		if (stat._responseTime < (thrBuffer.length - 1)) {
-			thrBuffer[(int) stat._responseTime]++;
+		int responseTime = (int) (stat._responseTime / 1000);
+		if (responseTime < (thrBuffer.length - 1)) {
+			thrBuffer[responseTime]++;
 		} else {
 			thrBuffer[thrBuffer.length - 1]++;
 		}
