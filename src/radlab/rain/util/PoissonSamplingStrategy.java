@@ -134,6 +134,12 @@ public class PoissonSamplingStrategy implements ISamplingStrategy {
 			// logger.info( "Random exp: " + randExp );
 			this._nextSampleToAccept = this._currentSample + (int) Math.ceil(randExp);
 			// logger.info("Next sample to accept: " + this._nextSampleToAccept);
+			
+			// TODO: Sonar logging - async
+			// TODO: File buffer
+			// TODO: Rain memory allocation
+			
+			
 			return true;
 		}
 		return false;
