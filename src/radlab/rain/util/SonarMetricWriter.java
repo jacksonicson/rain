@@ -3,6 +3,7 @@ package radlab.rain.util;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
+import radlab.rain.RainConfig;
 import radlab.rain.scoreboard.ResponseTimeStat;
 import de.tum.in.sonar.collector.Identifier;
 import de.tum.in.sonar.collector.MetricReading;
@@ -25,8 +26,8 @@ public class SonarMetricWriter extends MetricWriter {
 		System.out.println("Start SonarMetricWriter");
 
 		// Read configuration
-		String sonarServer = config.getString("sonarServer");
-		logger.debug("sonar server: " + sonarServer);
+		String sonarServer = RainConfig.getInstance()._sonarHost;
+		logger.debug("Sonar server: " + sonarServer);
 		sonarRecorder = new SonarRecorder(sonarServer);
 	}
 

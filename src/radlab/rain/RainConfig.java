@@ -51,8 +51,8 @@ public class RainConfig {
 	public String _zooKeeper = "";
 	public String _zkPath = "";
 
-	public String _sonarHost = ""; 
-	
+	public String _sonarHost = "monitor0";
+
 	private static Object configLock = new Object();
 	private static volatile RainConfig config = null;
 
