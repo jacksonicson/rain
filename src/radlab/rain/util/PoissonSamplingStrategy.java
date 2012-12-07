@@ -31,10 +31,44 @@
 
 package radlab.rain.util;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.LinkedList;
 
+import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.transport.TTransport;
+import org.apache.thrift.transport.TTransportException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import radlab.rain.Benchmark;
+import de.tum.in.sonar.collector.CollectService;
+import de.tum.in.sonar.collector.Identifier;
+import de.tum.in.sonar.collector.MetricReading;
+
 public class PoissonSamplingStrategy implements ISamplingStrategy {
+
+	private static Logger logger = LoggerFactory.getLogger(Benchmark.class);
+
+	private final String HOSTNAME;
+
+	private CollectService.Client client;
+	private TTransport transport;
+	private String operation;
+	private Identifier id;
+	private MetricReading mvalue;
+
+	private LinkedList<Long> _samples = new LinkedList<Long>();
+	private int _nextSampleToAccept = 1;
+	private int _currentSample = 0;
+	private double _meanSamplingInterval = 1.0;
+	private NegativeExponential _expRandom = null;
+	private long _sampleSum = 0;
+
 	public static long getNthPercentile(int pct, LinkedList<Long> samples) {
 		if (samples.size() == 0)
 			return 0;
@@ -46,17 +80,39 @@ public class PoissonSamplingStrategy implements ISamplingStrategy {
 			return samples.get(samples.size() - 1); // Return the second last sample
 	}
 
-	private LinkedList<Long> _samples = new LinkedList<Long>();
-	private int _nextSampleToAccept = 1;
-	private int _currentSample = 0;
-	private double _meanSamplingInterval = 1.0;
-	private NegativeExponential _expRandom = null;
-	private long _sampleSum = 0;
-
-	public PoissonSamplingStrategy(double meanSamplingInterval) {
+	public PoissonSamplingStrategy(String sonarServer, String operation, double meanSamplingInterval) throws TTransportException {
 		this._meanSamplingInterval = meanSamplingInterval;
 		this._expRandom = new NegativeExponential(this._meanSamplingInterval);
+		this.operation = operation;
 		this.reset();
+
+		// Get hostname
+		InetAddress addr = null;
+		try {
+			addr = InetAddress.getLocalHost();
+		} catch (UnknownHostException e) {
+
+			e.printStackTrace();
+		} finally {
+			if (addr != null)
+				this.HOSTNAME = addr.getHostName();
+			else
+				this.HOSTNAME = "unkonwn";
+		}
+
+		// Get Sonar connection
+		transport = new TSocket(sonarServer, 7921);
+		transport.open();
+
+		TProtocol protocol = new TBinaryProtocol(transport);
+
+		// Create new client
+		client = new CollectService.Client(protocol);
+
+		// Create objects for logging
+		id = new Identifier();
+		id.setSensor("rain.rtime.sampler." + this.operation);
+		mvalue = new MetricReading();
 	}
 
 	public double getMeanSamplingInterval() {
@@ -118,7 +174,7 @@ public class PoissonSamplingStrategy implements ISamplingStrategy {
 			return 0.0;
 
 		double ret = (this.getSampleMean() - populationMean) / (this.getSampleStandardDeviation() / Math.sqrt(this.getSamplesCollected()));
-		if(Double.isNaN(ret))
+		if (Double.isNaN(ret))
 			ret = 0;
 		return ret;
 	}
@@ -134,12 +190,16 @@ public class PoissonSamplingStrategy implements ISamplingStrategy {
 			// logger.info( "Random exp: " + randExp );
 			this._nextSampleToAccept = this._currentSample + (int) Math.ceil(randExp);
 			// logger.info("Next sample to accept: " + this._nextSampleToAccept);
-			
-			// TODO: Sonar logging - async
-			// TODO: File buffer
-			// TODO: Rain memory allocation
-			
-			
+
+			id.setHostname(HOSTNAME);
+			id.setTimestamp(System.currentTimeMillis() / 1000);
+			mvalue.setValue(value);
+			try {
+				client.logMetric(id, mvalue);
+			} catch (TException e) {
+				logger.debug("Error while writing sonar TS metric", e);
+			}
+
 			return true;
 		}
 		return false;
@@ -148,87 +208,4 @@ public class PoissonSamplingStrategy implements ISamplingStrategy {
 	public LinkedList<Long> getRawSamples() {
 		return this._samples;
 	};
-
-	/*
-	 * public static void main(String[] args) { // Generate 11,000,000 numbers - try uniform random and expRandom numbers // Sort
-	 * them and compute the 90th and 99th percentiles for the ground truth // Pass each random number generated to a sampler and
-	 * let it keep the ones it chooses and compute the percentiles on the captured samples // Compare the ground truth 90th and
-	 * 99th percentiles with those computed by the sampler int maxNumbers = 1000000; //100000;//1000000; double
-	 * meanSamplingInterval = 1000.0; LinkedList<Long> allSamplesUniform = new LinkedList<Long>(); LinkedList<Long> allSamplesExp
-	 * = new LinkedList<Long>(); // Sampling strategies to compare PoissonSamplingStrategy expSamplerAllUniform = new
-	 * PoissonSamplingStrategy( meanSamplingInterval ); PoissonSamplingStrategy expSamplerExp = new PoissonSamplingStrategy(
-	 * meanSamplingInterval );
-	 * 
-	 * // Random number generators double populationSampleMean = 1000.0; Random random = new Random(); NegativeExponential
-	 * expRandom = new NegativeExponential( populationSampleMean );
-	 * 
-	 * long totalUniform = 0; long maxUniform = Long.MIN_VALUE; long minUniform = Long.MAX_VALUE;
-	 * 
-	 * long totalExp = 0; long maxExp = Long.MIN_VALUE; long minExp = Long.MAX_VALUE;
-	 * 
-	 * // Generate numbers (according to a uniform and exponential distribution) with same mean for( int i = 0; i < maxNumbers;
-	 * i++ ) { long valUniform = Math.round( random.nextDouble()*(2*populationSampleMean) ); totalUniform += valUniform; if(
-	 * valUniform > maxUniform ) maxUniform = valUniform; if( valUniform < minUniform ) minUniform = valUniform;
-	 * 
-	 * 
-	 * // Sample uniformly distributed numbers // expSamplerAllUniform.accept( valUniform ); allSamplesUniform.add( valUniform );
-	 * 
-	 * long valExp = (long) Math.ceil( expRandom.nextDouble() ); totalExp += valExp; if( valExp > maxExp ) maxExp = valExp; if(
-	 * valExp < minExp ) minExp = valExp;
-	 * 
-	 * // Sample exp distributed numbers // expSamplerExp.accept( valExp ); allSamplesExp.add( valExp ); }
-	 * 
-	 * double meanUniform = (double)totalUniform/(double)maxNumbers; double meanExp = (double)totalExp/(double)maxNumbers;
-	 * 
-	 * // Compute percentiles for normally distributed numbers and exponentially distributed numbers long uniform90th =
-	 * PoissonSamplingStrategy.getNthPercentile( 90, allSamplesUniform ); long uniform99th =
-	 * PoissonSamplingStrategy.getNthPercentile( 90, allSamplesUniform ); long exp90th = PoissonSamplingStrategy.getNthPercentile(
-	 * 90, allSamplesExp ); long exp99th = PoissonSamplingStrategy.getNthPercentile( 99, allSamplesExp );
-	 * 
-	 * logger.info( "Max uniform      : " + maxUniform ); logger.info( "Mean uniform     : " + meanUniform ); logger.info(
-	 * "Min uniform      : " + minUniform ); logger.info( "90th uniform gt  : " + uniform90th ); logger.info(
-	 * "90th uniform smp : " + expSamplerAllUniform.getNthPercentile( 90 ) ); logger.info( "99th uniform gt  : " + uniform99th );
-	 * logger.info( "99th uniform smp : " + expSamplerAllUniform.getNthPercentile( 99 ) ); logger.info( "# samples seen   : " +
-	 * expSamplerAllUniform.getSamplesSeen() ); logger.info( "# samples saved  : " + expSamplerAllUniform.getSamplesCollected() );
-	 * 
-	 * logger.info( "" ); logger.info( "Max exp          : " + maxExp ); logger.info( "Mean exp         : " + meanExp );
-	 * logger.info( "Min exp          : " + minExp ); logger.info( "90th exp gt      : " + exp90th ); logger.info(
-	 * "90th uniform smp : " + expSamplerExp.getNthPercentile( 90 ) ); logger.info( "99th exp gt      : " + exp99th );
-	 * logger.info( "99th uniform smp : " + expSamplerExp.getNthPercentile( 99 ) ); logger.info( "# samples seen   : " +
-	 * expSamplerExp.getSamplesSeen() ); logger.info( "# samples saved  : " + expSamplerExp.getSamplesCollected() );
-	 * 
-	 * // Use bootstrapping to quantify the variance in our samples int numTrials = 1000; long[] arrU90 = new long[numTrials];
-	 * long[] arrU99 = new long[numTrials]; long[] arrE90 = new long[numTrials]; long[] arrE99 = new long[numTrials];
-	 * 
-	 * long[] arrE90Usample = new long[numTrials]; long[] arrE99Usample = new long[numTrials];
-	 * 
-	 * LinkedList<Long> randomSamples = new LinkedList<Long>();
-	 * 
-	 * logger.info( "Starting bootstrapping..." ); for( int i = 0; i < numTrials; i++ ) { logger.info( "Trial: " + i ); // Create
-	 * samplers randomSamples.clear(); expSamplerAllUniform.reset(); expSamplerExp.reset();
-	 * 
-	 * // Go through the datasets allSamplesUniform and allSamplesExp and select a sample, for( int j = 0; j < maxNumbers; j++ ) {
-	 * if( j%100000 == 0 ) logger.info( "Number: " + j );
-	 * 
-	 * expSamplerAllUniform.accept( allSamplesUniform.get(j) ); expSamplerExp.accept( allSamplesExp.get( j ) );
-	 * 
-	 * double randomVal = random.nextDouble(); if( randomVal <= 0.001 ) randomSamples.add( allSamplesExp.get( j ) ); }
-	 * 
-	 * logger.info( "Computing percentiles for trial: " + i ); arrU90[i] = expSamplerAllUniform.getNthPercentile( 90 ); arrU99[i]
-	 * = expSamplerAllUniform.getNthPercentile( 99 ); arrE90[i] = expSamplerExp.getNthPercentile( 90 ); arrE99[i] =
-	 * expSamplerExp.getNthPercentile( 99 ); arrE90Usample[i] = PoissonSamplingStrategy.getNthPercentile( 90, randomSamples );
-	 * arrE99Usample[i] = PoissonSamplingStrategy.getNthPercentile( 99, randomSamples );
-	 * 
-	 * logger.info( "Poisson sampler uniform data : " + expSamplerAllUniform.getSamplesCollected() ); logger.info(
-	 * "Poisson sampler exp data     : " + expSamplerExp.getSamplesCollected() ); logger.info( "Uniform sampler exp data     : " +
-	 * randomSamples.size() ); logger.info( arrU90[i] + " " + arrU99[i] + " " + arrE90[i] + " " + arrE99[i] + " " +
-	 * arrE90Usample[i] + " " + arrE99Usample[i] ); }
-	 * 
-	 * logger.info( "Final results..." ); logger.info( "Poisson sampler uniform data : " +
-	 * expSamplerAllUniform.getSamplesCollected() ); logger.info( "Poisson sampler exp data     : " +
-	 * expSamplerExp.getSamplesCollected() ); logger.info( "Uniform sampler exp data     : " + randomSamples.size() );
-	 * 
-	 * for( int i = 0; i < numTrials; i++ ) { logger.info( arrU90[i] + " " + arrU99[i] + " " + arrE90[i] + " " + arrE99[i] + " " +
-	 * arrE90Usample[i] + " " + arrE99Usample[i] ); } }
-	 */
 }

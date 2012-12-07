@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.thrift.transport.TTransportException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -91,8 +92,12 @@ public class Scorecard {
 		OperationSummary operationSummary = operationMap.get(operationName);
 		// Create operation summary if needed
 		if (operationSummary == null) {
-			operationSummary = new OperationSummary(new PoissonSamplingStrategy(meanResponseTimeSamplingInterval));
-			operationMap.put(operationName, operationSummary);
+			try {
+				operationSummary = new OperationSummary(new PoissonSamplingStrategy("sonar", operationName + ".summary", meanResponseTimeSamplingInterval));
+				operationMap.put(operationName, operationSummary);
+			} catch (TTransportException e) {
+				// TODO: Logging
+			}
 		}
 
 		// Process result for the operation

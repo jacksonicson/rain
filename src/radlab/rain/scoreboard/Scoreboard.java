@@ -36,6 +36,7 @@ import java.util.LinkedList;
 import java.util.Random;
 import java.util.TreeMap;
 
+import org.apache.thrift.transport.TTransportException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -185,8 +186,12 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 			// Create wait time summary if it does not exist
 			if (waitTimeSummary == null) {
-				waitTimeSummary = new WaitTimeSummary(new PoissonSamplingStrategy(this.meanResponseTimeSamplingInterval));
-				this.waitTimeMap.put(operationName, waitTimeSummary);
+				try {
+					waitTimeSummary = new WaitTimeSummary(new PoissonSamplingStrategy("server", operationName, this.meanResponseTimeSamplingInterval));
+					this.waitTimeMap.put(operationName, waitTimeSummary);
+				} catch (TTransportException e) {
+					log.warn("Could not create wait time summary", e); 
+				}
 			}
 
 			waitTimeSummary.dropOff(waitTime);
