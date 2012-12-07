@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.thrift.transport.TTransportException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,6 +15,7 @@ import radlab.rain.LoadProfile;
 import radlab.rain.OperationExecution;
 import radlab.rain.util.NullSamplingStrategy;
 import radlab.rain.util.PoissonSamplingStrategy;
+import radlab.rain.util.SonarRecorder;
 
 /**
  * Eventually all stats reporting will be done using Scorecards. There will be per-interval Scorecards as well as a final
@@ -30,9 +30,9 @@ public class Scorecard {
 
 	// What track does this scorecard belong to
 	private String trackName = "";
-	
-	// Sonar loggin host
-	private String sonarHost; 
+
+	// Sonar recorder
+	private SonarRecorder sonarRecorder;
 
 	// What goes on the scorecard?
 	private long totalOpsSuccessful = 0;
@@ -52,16 +52,16 @@ public class Scorecard {
 	// A mapping of each operation with its summary
 	private TreeMap<String, OperationSummary> operationMap = new TreeMap<String, OperationSummary>();
 
-	public Scorecard(String name, String trackName, long intervalDuration, String sonarHost) {
-		this(name, trackName, intervalDuration, 0, sonarHost);
+	public Scorecard(SonarRecorder sonarRecorder, String name, String trackName, long intervalDuration) {
+		this(sonarRecorder, name, trackName, intervalDuration, 0);
 	}
 
-	public Scorecard(String name, String trackName, long intervalDuration, long numberOfUsers, String sonarHost) {
+	public Scorecard(SonarRecorder sonarRecorder, String name, String trackName, long intervalDuration, long numberOfUsers) {
 		this.name = name;
 		this.trackName = trackName;
 		this.intervalDuration = intervalDuration;
 		this.numberOfUsers = numberOfUsers;
-		this.sonarHost = sonarHost;
+		this.sonarRecorder = sonarRecorder;
 	}
 
 	public void reset() {
@@ -96,12 +96,9 @@ public class Scorecard {
 		OperationSummary operationSummary = operationMap.get(operationName);
 		// Create operation summary if needed
 		if (operationSummary == null) {
-			try {
-				operationSummary = new OperationSummary(new PoissonSamplingStrategy(sonarHost, operationName + ".summary", meanResponseTimeSamplingInterval));
-				operationMap.put(operationName, operationSummary);
-			} catch (TTransportException e) {
-				// TODO: Logging
-			}
+			operationSummary = new OperationSummary(new PoissonSamplingStrategy(sonarRecorder, operationName + ".summary",
+					meanResponseTimeSamplingInterval));
+			operationMap.put(operationName, operationSummary);
 		}
 
 		// Process result for the operation
@@ -194,11 +191,10 @@ public class Scorecard {
 		return result;
 	}
 
-	private final double toSeconds(double milliseconds)
-	{
-		return milliseconds / 1000d; 
+	private final double toSeconds(double milliseconds) {
+		return milliseconds / 1000d;
 	}
-	
+
 	public JSONObject getIntervalStatistics() throws JSONException {
 		JSONObject result = getStatistics(intervalDuration);
 		return result;

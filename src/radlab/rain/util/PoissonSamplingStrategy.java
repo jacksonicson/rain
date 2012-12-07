@@ -31,22 +31,14 @@
 
 package radlab.rain.util;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.LinkedList;
 
-import org.apache.thrift.TException;
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.transport.TSocket;
-import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import radlab.rain.Benchmark;
-import de.tum.in.sonar.collector.CollectService;
 import de.tum.in.sonar.collector.Identifier;
 import de.tum.in.sonar.collector.MetricReading;
 
@@ -54,13 +46,9 @@ public class PoissonSamplingStrategy implements ISamplingStrategy {
 
 	private static Logger logger = LoggerFactory.getLogger(Benchmark.class);
 
-	private String HOSTNAME;
-	private String sonarHost;
-	private CollectService.Client client;
-	private TTransport transport;
+	// Sonar recorder
+	private SonarRecorder sonarRecorder;
 	private String operation;
-	private Identifier id;
-	private MetricReading mvalue;
 
 	private LinkedList<Long> _samples = new LinkedList<Long>();
 	private int _nextSampleToAccept = 1;
@@ -80,42 +68,12 @@ public class PoissonSamplingStrategy implements ISamplingStrategy {
 			return samples.get(samples.size() - 1); // Return the second last sample
 	}
 
-	public PoissonSamplingStrategy(String sonarServer, String operation, double meanSamplingInterval) throws TTransportException {
+	public PoissonSamplingStrategy(SonarRecorder sonarRecorder, String operation, double meanSamplingInterval) {
 		this._meanSamplingInterval = meanSamplingInterval;
 		this._expRandom = new NegativeExponential(this._meanSamplingInterval);
+		this.sonarRecorder = sonarRecorder;
 		this.operation = operation;
-		this.sonarHost = sonarServer;
 		this.reset();
-
-		if (sonarServer != null) {
-			// Get hostname
-			InetAddress addr = null;
-			try {
-				addr = InetAddress.getLocalHost();
-			} catch (UnknownHostException e) {
-
-				e.printStackTrace();
-			} finally {
-				if (addr != null)
-					this.HOSTNAME = addr.getHostName();
-				else
-					this.HOSTNAME = "unkonwn";
-			}
-
-			// Get Sonar connection
-			transport = new TSocket(sonarServer, 7921);
-			transport.open();
-
-			TProtocol protocol = new TBinaryProtocol(transport);
-
-			// Create new client
-			client = new CollectService.Client(protocol);
-
-			// Create objects for logging
-			id = new Identifier();
-			id.setSensor("rain.rtime.sampler." + this.operation);
-			mvalue = new MetricReading();
-		}
 	}
 
 	public double getMeanSamplingInterval() {
@@ -194,15 +152,15 @@ public class PoissonSamplingStrategy implements ISamplingStrategy {
 			this._nextSampleToAccept = this._currentSample + (int) Math.ceil(randExp);
 			// logger.info("Next sample to accept: " + this._nextSampleToAccept);
 
-			if (sonarHost != null) {
-				id.setHostname(HOSTNAME);
+			if (sonarRecorder != null) {
+				Identifier id = new Identifier();
+				id.setSensor("rain.rtime.sampler." + this.operation);
 				id.setTimestamp(System.currentTimeMillis() / 1000);
+
+				MetricReading mvalue = new MetricReading();
 				mvalue.setValue(value);
-				try {
-					client.logMetric(id, mvalue);
-				} catch (TException e) {
-					logger.debug("Error while writing sonar TS metric", e);
-				}
+
+				sonarRecorder.record(id, mvalue);
 			}
 
 			return true;

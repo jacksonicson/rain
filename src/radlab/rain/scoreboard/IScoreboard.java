@@ -37,6 +37,7 @@ import org.json.JSONObject;
 import radlab.rain.OperationExecution;
 import radlab.rain.ScenarioTrack;
 import radlab.rain.util.MetricWriter;
+import radlab.rain.util.SonarRecorder;
 
 /**
  * The IScoreboard interface allows an implemented scoreboard to interface with the benchmark architecture.<br />
@@ -50,7 +51,7 @@ public interface IScoreboard {
 	 * Bootstrapping and initialization
 	 */
 	void initialize(long startRecordingTime, long endRecordingTime);
-	
+
 	void initialize(long startRecordingTime, long endRecordingTime, long maxUsers);
 
 	void setScenarioTrack(ScenarioTrack val);
@@ -96,5 +97,5 @@ public interface IScoreboard {
 
 	ScenarioTrack getScenarioTrack();
 
-	void setSonarHost(String _sonarHost);
+	void setSonarRecorder(SonarRecorder sonarRecorder);
 }

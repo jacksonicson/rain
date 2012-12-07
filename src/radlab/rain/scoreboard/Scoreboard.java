@@ -36,7 +36,6 @@ import java.util.LinkedList;
 import java.util.Random;
 import java.util.TreeMap;
 
-import org.apache.thrift.transport.TTransportException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -48,6 +47,7 @@ import radlab.rain.OperationExecution;
 import radlab.rain.ScenarioTrack;
 import radlab.rain.util.MetricWriter;
 import radlab.rain.util.PoissonSamplingStrategy;
+import radlab.rain.util.SonarRecorder;
 
 /**
  * The Scoreboard class implements the IScoreboard interface. Each Scoreboard is specific to a single instantiation of a track
@@ -74,8 +74,8 @@ public class Scoreboard implements Runnable, IScoreboard {
 	private String trackTargetHost;
 	private ScenarioTrack scenarioTrack = null;
 
-	// Hostname of the Sonar monitoring system
-	private String sonarHost;
+	// Sonar recording
+	private SonarRecorder sonarRecorder;
 
 	// If true, this scoreboard will refuse any new results.
 	// Indicates the thread status (started or stopped)
@@ -150,7 +150,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 		long runDuration = this.endTime - this.startTime;
 		log.debug("run duration: " + runDuration);
 
-		finalCard = new Scorecard("final", trackName, runDuration, maxUsers, sonarHost);
+		finalCard = new Scorecard(sonarRecorder, "final", trackName, runDuration, maxUsers);
 		reset();
 	}
 
@@ -189,13 +189,9 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 			// Create wait time summary if it does not exist
 			if (waitTimeSummary == null) {
-				try {
-					waitTimeSummary = new WaitTimeSummary(
-							new PoissonSamplingStrategy(sonarHost, operationName, this.meanResponseTimeSamplingInterval));
-					this.waitTimeMap.put(operationName, waitTimeSummary);
-				} catch (TTransportException e) {
-					log.warn("Could not create wait time summary", e);
-				}
+				waitTimeSummary = new WaitTimeSummary(
+						new PoissonSamplingStrategy(sonarRecorder, operationName, this.meanResponseTimeSamplingInterval));
+				this.waitTimeMap.put(operationName, waitTimeSummary);
 			}
 
 			waitTimeSummary.dropOff(waitTime);
@@ -396,7 +392,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 				Scorecard profileScorecard = this.profileScorecards.get(profileName);
 				// Create a new scorecard if needed
 				if (profileScorecard == null) {
-					profileScorecard = new Scorecard(profileName, trackName, activeProfile._interval, activeProfile._numberOfUsers, sonarHost);
+					profileScorecard = new Scorecard(sonarRecorder, profileName, trackName, activeProfile._interval, activeProfile._numberOfUsers);
 					profileScorecards.put(profileName, profileScorecard);
 				}
 
@@ -551,8 +547,8 @@ public class Scoreboard implements Runnable, IScoreboard {
 	}
 
 	@Override
-	public void setSonarHost(String _sonarHost) {
-		this.sonarHost = _sonarHost;
+	public void setSonarRecorder(SonarRecorder sonarRecorder) {
+		this.sonarRecorder = sonarRecorder;
 	}
 
 }

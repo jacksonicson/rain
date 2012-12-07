@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 
 import radlab.rain.communication.RainPipe;
 import radlab.rain.util.ConfigUtil;
+import radlab.rain.util.SonarRecorder;
 //import java.util.Hashtable;
 //import java.util.LinkedList;
 
@@ -60,6 +61,7 @@ public class Scenario {
 	public static String CFG_DURATION_KEY = "duration";
 	public static String CFG_RAMP_DOWN_KEY = "rampDown";
 	public static String CFG_VERBOSE_ERRORS_KEY = "verboseErrors";
+	public static String CFG_SONAR_HOSTNAME = "sonarHost";
 	public static String CFG_USE_PIPE = "usePipe";
 	public static String CFG_USE_THRIFT = "useThrift";
 	public static String CFG_PIPE_PORT = "pipePort";
@@ -83,7 +85,11 @@ public class Scenario {
 	/** Max number of threads to keep in the shared threadpool */
 	private int _maxSharedThreads = DEFAULT_MAX_SHARED_THREADS;
 
+	// Log aggregated stats
 	private boolean _aggregateStats = DEFAULT_AGGREGATE_STATS;
+
+	// Sonar recorder
+	private SonarRecorder sonarRecorder;
 
 	/** The instantiated tracks specified by the JSON configuration. */
 	// Use Hashtable instead of flat list
@@ -188,6 +194,14 @@ public class Scenario {
 				boolean val = jsonConfig.getBoolean(Scenario.CFG_VERBOSE_ERRORS_KEY);
 				RainConfig.getInstance()._verboseErrors = val;
 			}
+
+			// Setup sonar recorder
+			if (jsonConfig.has(Scenario.CFG_SONAR_HOSTNAME)) {
+				String host = jsonConfig.getString(Scenario.CFG_SONAR_HOSTNAME);
+				RainConfig.getInstance()._sonarHost = host;
+				this.sonarRecorder = new SonarRecorder(host);
+			}
+
 			// Figure out whether we're using communication pipes
 
 			// Figure out whether we're waiting for a start signal from an
@@ -305,6 +319,7 @@ public class Scenario {
 				String trackClassName = trackConfig.getString(ScenarioTrack.CFG_TRACK_CLASS_KEY);
 				ScenarioTrack track = this.createTrack(trackClassName, trackName);
 				track.setName(trackName);
+				track.setSonarRecorder(sonarRecorder);
 				track.initialize(trackConfig);
 
 				this._tracks.put(track._name, track);

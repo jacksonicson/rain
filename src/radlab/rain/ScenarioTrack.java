@@ -43,6 +43,7 @@ import org.json.JSONObject;
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.util.MetricWriter;
 import radlab.rain.util.MetricWriterFactory;
+import radlab.rain.util.SonarRecorder;
 
 /**
  * The ScenarioTrack abstract class represents a single workload among potentially many that are simultaneously run under a single
@@ -118,12 +119,14 @@ public abstract class ScenarioTrack {
 	protected double _logSamplingProbability = 1.0; // Log every executed request seen by the Scoreboard
 	protected double _metricSnapshotInterval = 60.0; // (seconds)
 	protected boolean _useMetricSnapshots = false;
-	protected String _sonarHost = "monitor0.dfg";
 	protected MetricWriter _metricWriter = null;
 	protected String _metricSnapshotFileSuffix = "";
 	protected ObjectPool _objPool = null;
 	protected long _meanResponseTimeSamplingInterval = DEFAULT_MEAN_RESPONSE_TIME_SAMPLE_INTERVAL;
 	protected int _maxUsersFromConfig = 0;
+
+	// Sonar recorder
+	private SonarRecorder sonarRecorder;
 
 	/**
 	 * Create a new scenario track that will be benchmarked as part of the provided <code>Scenario</code>.
@@ -181,6 +184,10 @@ public abstract class ScenarioTrack {
 
 	public void setInteractive(boolean val) {
 		this._interactive = val;
+	}
+
+	public void setSonarRecorder(SonarRecorder sonarRecorder) {
+		this.sonarRecorder = sonarRecorder;
 	}
 
 	public String getLoadGenerationStrategyClassName() {
@@ -415,20 +422,19 @@ public abstract class ScenarioTrack {
 				// Extract the metricwriter config, create an instance and pass it to the scoreboard
 				if (config.has(ScenarioTrack.CFG_METRIC_SNAPSHOT_CONFIG)) {
 					JSONObject metricWriterConfig = config.getJSONObject(ScenarioTrack.CFG_METRIC_SNAPSHOT_CONFIG);
-					this._metricWriter = MetricWriterFactory.createMetricWriter(
-							metricWriterConfig.getString(MetricWriter.CFG_TYPE_KEY), metricWriterConfig);
+					this._metricWriter = MetricWriterFactory.createMetricWriter(metricWriterConfig.getString(MetricWriter.CFG_TYPE_KEY),
+							metricWriterConfig);
 				} else {
 					// Default to file writer
 					StringBuffer buf = new StringBuffer();
-					buf.append("metrics-snapshots-").append(this._name).append("-").append(this._metricSnapshotFileSuffix)
-							.append(".log");
+					buf.append("metrics-snapshots-").append(this._name).append("-").append(this._metricSnapshotFileSuffix).append(".log");
 					String metricSnapshotFileName = buf.toString();
 
 					JSONObject metricWriterConfig = new JSONObject();
 					metricWriterConfig.put(MetricWriter.CFG_TYPE_KEY, MetricWriterFactory.FILE_WRITER_TYPE);
 					metricWriterConfig.put(MetricWriter.CFG_FILENAME_KEY, metricSnapshotFileName);
-					this._metricWriter = MetricWriterFactory.createMetricWriter(
-							metricWriterConfig.getString(MetricWriter.CFG_TYPE_KEY), metricWriterConfig);
+					this._metricWriter = MetricWriterFactory.createMetricWriter(metricWriterConfig.getString(MetricWriter.CFG_TYPE_KEY),
+							metricWriterConfig);
 				}
 			}
 		}
@@ -504,20 +510,18 @@ public abstract class ScenarioTrack {
 		scoreboard.setScenarioTrack(this);
 		scoreboard.setUsingMetricSnapshots(this._useMetricSnapshots);
 		scoreboard.setMeanResponseTimeSamplingInterval(this._meanResponseTimeSamplingInterval);
-		scoreboard.setSonarHost(this._sonarHost); 
+		scoreboard.setSonarRecorder(this.sonarRecorder);
 		return scoreboard;
 	}
 
 	@SuppressWarnings("unchecked")
-	public LoadGenerationStrategy createLoadGenerationStrategy(String loadGenerationStrategyClassName,
-			JSONObject loadGenerationStrategyParams, Generator generator, int id) throws Exception {
+	public LoadGenerationStrategy createLoadGenerationStrategy(String loadGenerationStrategyClassName, JSONObject loadGenerationStrategyParams,
+			Generator generator, int id) throws Exception {
 		LoadGenerationStrategy loadGenStrategy = null;
-		Class<LoadGenerationStrategy> loadGenStrategyClass = (Class<LoadGenerationStrategy>) Class
-				.forName(loadGenerationStrategyClassName);
-		Constructor<LoadGenerationStrategy> loadGenStrategyCtor = loadGenStrategyClass.getConstructor(new Class[] {
-				Generator.class, long.class, JSONObject.class });
-		loadGenStrategy = (LoadGenerationStrategy) loadGenStrategyCtor.newInstance(new Object[] { generator, id,
-				loadGenerationStrategyParams });
+		Class<LoadGenerationStrategy> loadGenStrategyClass = (Class<LoadGenerationStrategy>) Class.forName(loadGenerationStrategyClassName);
+		Constructor<LoadGenerationStrategy> loadGenStrategyCtor = loadGenStrategyClass.getConstructor(new Class[] { Generator.class, long.class,
+				JSONObject.class });
+		loadGenStrategy = (LoadGenerationStrategy) loadGenStrategyCtor.newInstance(new Object[] { generator, id, loadGenerationStrategyParams });
 		return loadGenStrategy;
 	}
 

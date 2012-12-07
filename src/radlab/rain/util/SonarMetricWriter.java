@@ -1,16 +1,9 @@
 package radlab.rain.util;
 
-import java.net.InetAddress;
-
 import org.apache.log4j.Logger;
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.transport.TSocket;
-import org.apache.thrift.transport.TTransport;
 import org.json.JSONObject;
 
 import radlab.rain.scoreboard.ResponseTimeStat;
-import de.tum.in.sonar.collector.CollectService;
 import de.tum.in.sonar.collector.Identifier;
 import de.tum.in.sonar.collector.MetricReading;
 
@@ -18,10 +11,7 @@ public class SonarMetricWriter extends MetricWriter {
 
 	private static final Logger logger = Logger.getLogger(SonarMetricWriter.class);
 
-	private final String HOSTNAME;
-
-	private CollectService.Client client;
-	private TTransport transport;
+	private SonarRecorder sonarRecorder;
 
 	private long lastSnapshotLog = 0;
 	private long lastTotalResponseTime = 0;
@@ -37,19 +27,7 @@ public class SonarMetricWriter extends MetricWriter {
 		// Read configuration
 		String sonarServer = config.getString("sonarServer");
 		logger.debug("sonar server: " + sonarServer);
-
-		// Get hostname
-		InetAddress addr = InetAddress.getLocalHost();
-		this.HOSTNAME = addr.getHostName();
-
-		// Get Sonar connection
-		transport = new TSocket(sonarServer, 7921);
-		transport.open();
-
-		TProtocol protocol = new TBinaryProtocol(transport);
-
-		// Create new client
-		client = new CollectService.Client(protocol);
+		sonarRecorder = new SonarRecorder(sonarServer);
 	}
 
 	@Override
@@ -77,57 +55,56 @@ public class SonarMetricWriter extends MetricWriter {
 		if (delta > 3000) {
 
 			Identifier id = new Identifier();
-			id.setHostname(HOSTNAME);
 			id.setTimestamp(stat._timestamp / 1000);
 			MetricReading value = new MetricReading();
-			
+
 			double totalAveragegResponseTime = stat._totalResponseTime / stat._numObservations;
 			double deltaObservations = stat._numObservations - lastNumObservations;
 			double deltaResponseTime = stat._totalResponseTime - lastTotalResponseTime;
 			double deltaAverageResponseTime = deltaResponseTime / deltaObservations;
-			
+
 			// Total average response time
 			id.setSensor("rain.avgrtime." + stat._trackName);
 			value.setValue(totalAveragegResponseTime);
-			client.logMetric(id, value);
+			sonarRecorder.record(id, value);
 
 			// Delta average response time
 			id.setSensor("rain.rtime." + stat._trackName);
 			value.setValue(deltaAverageResponseTime);
-			client.logMetric(id, value);
+			sonarRecorder.record(id, value);
 
 			// Total observations
 			id.setSensor("rain.tobservations." + stat._trackName);
 			value.setValue(stat._numObservations);
-			client.logMetric(id, value);
-			
+			sonarRecorder.record(id, value);
+
 			// Delta observations
 			id.setSensor("rain.dobservations." + stat._trackName);
 			value.setValue(deltaObservations);
-			client.logMetric(id, value);
-			
+			sonarRecorder.record(id, value);
+
 			// Total response time
 			id.setSensor("rain.trtime." + stat._trackName);
 			value.setValue(stat._totalResponseTime);
-			client.logMetric(id, value);
-			
+			sonarRecorder.record(id, value);
+
 			// Delta response time
 			id.setSensor("rain.drtime." + stat._trackName);
 			value.setValue(deltaResponseTime);
-			client.logMetric(id, value);
+			sonarRecorder.record(id, value);
 
 			// Log thrBuffer
 			for (int i = 0; i < thrBuffer.length; i++) {
 				id.setSensor("rain.thr-" + i + "." + stat._trackName);
 				value.setValue(thrBuffer[i]);
-				client.logMetric(id, value);
+				sonarRecorder.record(id, value);
 			}
 
 			// Update deltas
 			lastSnapshotLog = System.currentTimeMillis();
 			lastTotalResponseTime = stat._totalResponseTime;
 			lastNumObservations = stat._numObservations;
-			
+
 			// Clear buffers
 			for (int i = 0; i < thrBuffer.length; i++)
 				thrBuffer[i] = 0;
@@ -138,7 +115,7 @@ public class SonarMetricWriter extends MetricWriter {
 
 	@Override
 	public void close() throws Exception {
-		transport.close();
+		sonarRecorder.disconnect();
 	}
 
 }
