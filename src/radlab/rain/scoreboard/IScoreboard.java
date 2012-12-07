@@ -95,4 +95,6 @@ public interface IScoreboard {
 	long getEndTimestamp();
 
 	ScenarioTrack getScenarioTrack();
+
+	void setSonarHost(String _sonarHost);
 }

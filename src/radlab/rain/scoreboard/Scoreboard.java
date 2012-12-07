@@ -74,6 +74,9 @@ public class Scoreboard implements Runnable, IScoreboard {
 	private String trackTargetHost;
 	private ScenarioTrack scenarioTrack = null;
 
+	// Hostname of the Sonar monitoring system
+	private String sonarHost;
+
 	// If true, this scoreboard will refuse any new results.
 	// Indicates the thread status (started or stopped)
 	private boolean done = false;
@@ -147,7 +150,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 		long runDuration = this.endTime - this.startTime;
 		log.debug("run duration: " + runDuration);
 
-		finalCard = new Scorecard("final", trackName, runDuration, maxUsers);
+		finalCard = new Scorecard("final", trackName, runDuration, maxUsers, sonarHost);
 		reset();
 	}
 
@@ -187,10 +190,11 @@ public class Scoreboard implements Runnable, IScoreboard {
 			// Create wait time summary if it does not exist
 			if (waitTimeSummary == null) {
 				try {
-					waitTimeSummary = new WaitTimeSummary(new PoissonSamplingStrategy("server", operationName, this.meanResponseTimeSamplingInterval));
+					waitTimeSummary = new WaitTimeSummary(
+							new PoissonSamplingStrategy(sonarHost, operationName, this.meanResponseTimeSamplingInterval));
 					this.waitTimeMap.put(operationName, waitTimeSummary);
 				} catch (TTransportException e) {
-					log.warn("Could not create wait time summary", e); 
+					log.warn("Could not create wait time summary", e);
 				}
 			}
 
@@ -392,7 +396,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 				Scorecard profileScorecard = this.profileScorecards.get(profileName);
 				// Create a new scorecard if needed
 				if (profileScorecard == null) {
-					profileScorecard = new Scorecard(profileName, trackName, activeProfile._interval, activeProfile._numberOfUsers);
+					profileScorecard = new Scorecard(profileName, trackName, activeProfile._interval, activeProfile._numberOfUsers, sonarHost);
 					profileScorecards.put(profileName, profileScorecard);
 				}
 
@@ -544,6 +548,11 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 	public String toString() {
 		return "[SCOREBOARD TRACK: " + this.trackName + "]";
+	}
+
+	@Override
+	public void setSonarHost(String _sonarHost) {
+		this.sonarHost = _sonarHost;
 	}
 
 }

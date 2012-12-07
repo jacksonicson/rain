@@ -118,6 +118,7 @@ public abstract class ScenarioTrack {
 	protected double _logSamplingProbability = 1.0; // Log every executed request seen by the Scoreboard
 	protected double _metricSnapshotInterval = 60.0; // (seconds)
 	protected boolean _useMetricSnapshots = false;
+	protected String _sonarHost = "monitor0.dfg";
 	protected MetricWriter _metricWriter = null;
 	protected String _metricSnapshotFileSuffix = "";
 	protected ObjectPool _objPool = null;
@@ -503,6 +504,7 @@ public abstract class ScenarioTrack {
 		scoreboard.setScenarioTrack(this);
 		scoreboard.setUsingMetricSnapshots(this._useMetricSnapshots);
 		scoreboard.setMeanResponseTimeSamplingInterval(this._meanResponseTimeSamplingInterval);
+		scoreboard.setSonarHost(this._sonarHost); 
 		return scoreboard;
 	}
 

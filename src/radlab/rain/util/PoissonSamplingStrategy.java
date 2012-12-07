@@ -54,8 +54,8 @@ public class PoissonSamplingStrategy implements ISamplingStrategy {
 
 	private static Logger logger = LoggerFactory.getLogger(Benchmark.class);
 
-	private final String HOSTNAME;
-
+	private String HOSTNAME;
+	private String sonarHost;
 	private CollectService.Client client;
 	private TTransport transport;
 	private String operation;
@@ -84,35 +84,38 @@ public class PoissonSamplingStrategy implements ISamplingStrategy {
 		this._meanSamplingInterval = meanSamplingInterval;
 		this._expRandom = new NegativeExponential(this._meanSamplingInterval);
 		this.operation = operation;
+		this.sonarHost = sonarServer;
 		this.reset();
 
-		// Get hostname
-		InetAddress addr = null;
-		try {
-			addr = InetAddress.getLocalHost();
-		} catch (UnknownHostException e) {
+		if (sonarServer != null) {
+			// Get hostname
+			InetAddress addr = null;
+			try {
+				addr = InetAddress.getLocalHost();
+			} catch (UnknownHostException e) {
 
-			e.printStackTrace();
-		} finally {
-			if (addr != null)
-				this.HOSTNAME = addr.getHostName();
-			else
-				this.HOSTNAME = "unkonwn";
+				e.printStackTrace();
+			} finally {
+				if (addr != null)
+					this.HOSTNAME = addr.getHostName();
+				else
+					this.HOSTNAME = "unkonwn";
+			}
+
+			// Get Sonar connection
+			transport = new TSocket(sonarServer, 7921);
+			transport.open();
+
+			TProtocol protocol = new TBinaryProtocol(transport);
+
+			// Create new client
+			client = new CollectService.Client(protocol);
+
+			// Create objects for logging
+			id = new Identifier();
+			id.setSensor("rain.rtime.sampler." + this.operation);
+			mvalue = new MetricReading();
 		}
-
-		// Get Sonar connection
-		transport = new TSocket(sonarServer, 7921);
-		transport.open();
-
-		TProtocol protocol = new TBinaryProtocol(transport);
-
-		// Create new client
-		client = new CollectService.Client(protocol);
-
-		// Create objects for logging
-		id = new Identifier();
-		id.setSensor("rain.rtime.sampler." + this.operation);
-		mvalue = new MetricReading();
 	}
 
 	public double getMeanSamplingInterval() {
@@ -191,13 +194,15 @@ public class PoissonSamplingStrategy implements ISamplingStrategy {
 			this._nextSampleToAccept = this._currentSample + (int) Math.ceil(randExp);
 			// logger.info("Next sample to accept: " + this._nextSampleToAccept);
 
-			id.setHostname(HOSTNAME);
-			id.setTimestamp(System.currentTimeMillis() / 1000);
-			mvalue.setValue(value);
-			try {
-				client.logMetric(id, mvalue);
-			} catch (TException e) {
-				logger.debug("Error while writing sonar TS metric", e);
+			if (sonarHost != null) {
+				id.setHostname(HOSTNAME);
+				id.setTimestamp(System.currentTimeMillis() / 1000);
+				mvalue.setValue(value);
+				try {
+					client.logMetric(id, mvalue);
+				} catch (TException e) {
+					logger.debug("Error while writing sonar TS metric", e);
+				}
 			}
 
 			return true;

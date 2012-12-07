@@ -192,7 +192,7 @@ public class Benchmark {
 
 		// Set up for stats aggregation across tracks based on the generators used
 		TreeMap<String, Scorecard> aggStats = new TreeMap<String, Scorecard>();
-		Scorecard globalCard = new Scorecard("global", "global", endSteadyState - startSteadyState);
+		Scorecard globalCard = new Scorecard("global", "global", endSteadyState - startSteadyState, null);
 
 		// Shutdown the scoreboards and tally up the results.
 		for (ScenarioTrack track : scenario.getTracks().values()) {
@@ -214,7 +214,7 @@ public class Benchmark {
 			// Get the final scorecard for this track
 			Scorecard finalScorecard = track.getScoreboard().getFinalScorecard();
 			if (!aggStats.containsKey(generatorClassName)) {
-				Scorecard aggCard = new Scorecard("aggregated", generatorClassName, finalScorecard.getIntervalDuration());
+				Scorecard aggCard = new Scorecard("aggregated", generatorClassName, finalScorecard.getIntervalDuration(), null);
 				aggStats.put(generatorClassName, aggCard);
 			}
 			// Get the current aggregated scorecard for this generator
