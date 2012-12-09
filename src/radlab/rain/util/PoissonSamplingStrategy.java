@@ -34,7 +34,6 @@ package radlab.rain.util;
 import java.util.Collections;
 import java.util.LinkedList;
 
-import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,12 +67,13 @@ public class PoissonSamplingStrategy implements ISamplingStrategy {
 			return samples.get(samples.size() - 1); // Return the second last sample
 	}
 
-	public PoissonSamplingStrategy(SonarRecorder sonarRecorder, String operation, double meanSamplingInterval) {
+	public PoissonSamplingStrategy(String operation, double meanSamplingInterval) {
 		this._meanSamplingInterval = meanSamplingInterval;
 		this._expRandom = new NegativeExponential(this._meanSamplingInterval);
-		this.sonarRecorder = sonarRecorder;
 		this.operation = operation;
 		this.reset();
+
+		this.sonarRecorder = SonarRecorder.getInstance();
 	}
 
 	public double getMeanSamplingInterval() {

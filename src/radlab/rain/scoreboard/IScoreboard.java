@@ -96,6 +96,4 @@ public interface IScoreboard {
 	long getEndTimestamp();
 
 	ScenarioTrack getScenarioTrack();
-
-	void setSonarRecorder(SonarRecorder sonarRecorder);
 }

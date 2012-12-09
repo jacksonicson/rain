@@ -88,9 +88,6 @@ public class Scenario {
 	// Log aggregated stats
 	private boolean _aggregateStats = DEFAULT_AGGREGATE_STATS;
 
-	// Sonar recorder
-	private SonarRecorder sonarRecorder;
-
 	/** The instantiated tracks specified by the JSON configuration. */
 	// Use Hashtable instead of flat list
 	// private LinkedList<ScenarioTrack> _tracks = new
@@ -199,7 +196,6 @@ public class Scenario {
 			if (jsonConfig.has(Scenario.CFG_SONAR_HOSTNAME)) {
 				String host = jsonConfig.getString(Scenario.CFG_SONAR_HOSTNAME);
 				RainConfig.getInstance()._sonarHost = host;
-				this.sonarRecorder = SonarRecorder.getInstance(); 
 			}
 
 			// Figure out whether we're using communication pipes
@@ -319,7 +315,6 @@ public class Scenario {
 				String trackClassName = trackConfig.getString(ScenarioTrack.CFG_TRACK_CLASS_KEY);
 				ScenarioTrack track = this.createTrack(trackClassName, trackName);
 				track.setName(trackName);
-				track.setSonarRecorder(sonarRecorder);
 				track.initialize(trackConfig);
 
 				this._tracks.put(track._name, track);

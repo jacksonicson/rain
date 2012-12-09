@@ -74,9 +74,6 @@ public class Scoreboard implements Runnable, IScoreboard {
 	private String trackTargetHost;
 	private ScenarioTrack scenarioTrack = null;
 
-	// Sonar recording
-	private SonarRecorder sonarRecorder;
-
 	// If true, this scoreboard will refuse any new results.
 	// Indicates the thread status (started or stopped)
 	private boolean done = false;
@@ -150,7 +147,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 		long runDuration = this.endTime - this.startTime;
 		log.debug("run duration: " + runDuration);
 
-		finalCard = new Scorecard(sonarRecorder, "final", trackName, runDuration, maxUsers);
+		finalCard = new Scorecard("final", trackName, runDuration, maxUsers);
 		reset();
 	}
 
@@ -189,7 +186,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 			// Create wait time summary if it does not exist
 			if (waitTimeSummary == null) {
-				waitTimeSummary = new WaitTimeSummary(new PoissonSamplingStrategy(sonarRecorder, trackName + "." + operationName,
+				waitTimeSummary = new WaitTimeSummary(new PoissonSamplingStrategy(trackName + "." + operationName,
 						this.meanResponseTimeSamplingInterval));
 				this.waitTimeMap.put(operationName, waitTimeSummary);
 			}
@@ -394,7 +391,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 				Scorecard profileScorecard = this.profileScorecards.get(profileName);
 				// Create a new scorecard if needed
 				if (profileScorecard == null) {
-					profileScorecard = new Scorecard(sonarRecorder, profileName, trackName, activeProfile._interval, activeProfile._numberOfUsers);
+					profileScorecard = new Scorecard(profileName, trackName, activeProfile._interval, activeProfile._numberOfUsers);
 					profileScorecards.put(profileName, profileScorecard);
 				}
 
@@ -546,11 +543,6 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 	public String toString() {
 		return "[SCOREBOARD TRACK: " + this.trackName + "]";
-	}
-
-	@Override
-	public void setSonarRecorder(SonarRecorder sonarRecorder) {
-		this.sonarRecorder = sonarRecorder;
 	}
 
 }

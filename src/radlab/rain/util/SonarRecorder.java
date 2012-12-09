@@ -18,7 +18,7 @@ import de.tum.in.sonar.collector.CollectService;
 import de.tum.in.sonar.collector.Identifier;
 import de.tum.in.sonar.collector.MetricReading;
 
-public class SonarRecorder {
+public class SonarRecorder extends Thread {
 
 	private static Logger logger = LoggerFactory.getLogger(Scorecard.class);
 
@@ -30,6 +30,8 @@ public class SonarRecorder {
 
 	private static SonarRecorder singleton;
 
+	private boolean running = true;
+	
 	private SonarRecorder(String sonarHost) {
 		this.SONAR_HOST = sonarHost;
 
@@ -44,7 +46,7 @@ public class SonarRecorder {
 
 	public static SonarRecorder getInstance() {
 		if (SonarRecorder.singleton == null) {
-			String sonarHost = RainConfig.getInstance()._sonarHost; 
+			String sonarHost = RainConfig.getInstance()._sonarHost;
 			SonarRecorder.singleton = new SonarRecorder(sonarHost);
 		}
 
@@ -72,6 +74,14 @@ public class SonarRecorder {
 
 	public void disconnect() {
 		this.transport.close();
+	}
+	
+	public void run()
+	{
+		while(running)
+		{
+			
+		}
 	}
 
 	public synchronized void record(Identifier id, MetricReading value) {

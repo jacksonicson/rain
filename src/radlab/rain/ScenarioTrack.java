@@ -125,9 +125,6 @@ public abstract class ScenarioTrack {
 	protected long _meanResponseTimeSamplingInterval = DEFAULT_MEAN_RESPONSE_TIME_SAMPLE_INTERVAL;
 	protected int _maxUsersFromConfig = 0;
 
-	// Sonar recorder
-	private SonarRecorder sonarRecorder;
-
 	/**
 	 * Create a new scenario track that will be benchmarked as part of the provided <code>Scenario</code>.
 	 * 
@@ -184,10 +181,6 @@ public abstract class ScenarioTrack {
 
 	public void setInteractive(boolean val) {
 		this._interactive = val;
-	}
-
-	public void setSonarRecorder(SonarRecorder sonarRecorder) {
-		this.sonarRecorder = sonarRecorder;
 	}
 
 	public String getLoadGenerationStrategyClassName() {
@@ -510,7 +503,6 @@ public abstract class ScenarioTrack {
 		scoreboard.setScenarioTrack(this);
 		scoreboard.setUsingMetricSnapshots(this._useMetricSnapshots);
 		scoreboard.setMeanResponseTimeSamplingInterval(this._meanResponseTimeSamplingInterval);
-		scoreboard.setSonarRecorder(this.sonarRecorder);
 		return scoreboard;
 	}
 

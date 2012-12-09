@@ -31,9 +31,6 @@ public class Scorecard {
 	// What track does this scorecard belong to
 	private String trackName = "";
 
-	// Sonar recorder
-	private SonarRecorder sonarRecorder;
-
 	// What goes on the scorecard?
 	private long totalOpsSuccessful = 0;
 	private long totalOpsFailed = 0;
@@ -52,16 +49,15 @@ public class Scorecard {
 	// A mapping of each operation with its summary
 	private TreeMap<String, OperationSummary> operationMap = new TreeMap<String, OperationSummary>();
 
-	public Scorecard(SonarRecorder sonarRecorder, String name, String trackName, long intervalDuration) {
-		this(sonarRecorder, name, trackName, intervalDuration, 0);
+	public Scorecard(String name, String trackName, long intervalDuration) {
+		this(name, trackName, intervalDuration, 0);
 	}
 
-	public Scorecard(SonarRecorder sonarRecorder, String name, String trackName, long intervalDuration, long numberOfUsers) {
+	public Scorecard(String name, String trackName, long intervalDuration, long numberOfUsers) {
 		this.name = name;
 		this.trackName = trackName;
 		this.intervalDuration = intervalDuration;
 		this.numberOfUsers = numberOfUsers;
-		this.sonarRecorder = sonarRecorder;
 	}
 
 	public void reset() {
@@ -96,7 +92,7 @@ public class Scorecard {
 		OperationSummary operationSummary = operationMap.get(operationName);
 		// Create operation summary if needed
 		if (operationSummary == null) {
-			operationSummary = new OperationSummary(new PoissonSamplingStrategy(sonarRecorder, name + "." + trackName + "." + operationName,
+			operationSummary = new OperationSummary(new PoissonSamplingStrategy(name + "." + trackName + "." + operationName,
 					meanResponseTimeSamplingInterval));
 			operationMap.put(operationName, operationSummary);
 		}
