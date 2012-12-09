@@ -96,7 +96,7 @@ public class Scorecard {
 		OperationSummary operationSummary = operationMap.get(operationName);
 		// Create operation summary if needed
 		if (operationSummary == null) {
-			operationSummary = new OperationSummary(new PoissonSamplingStrategy(sonarRecorder, operationName + ".summary",
+			operationSummary = new OperationSummary(new PoissonSamplingStrategy(sonarRecorder, name + "." + trackName + "." + operationName,
 					meanResponseTimeSamplingInterval));
 			operationMap.put(operationName, operationSummary);
 		}

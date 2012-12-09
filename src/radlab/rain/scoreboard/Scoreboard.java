@@ -189,8 +189,8 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 			// Create wait time summary if it does not exist
 			if (waitTimeSummary == null) {
-				waitTimeSummary = new WaitTimeSummary(
-						new PoissonSamplingStrategy(sonarRecorder, operationName, this.meanResponseTimeSamplingInterval));
+				waitTimeSummary = new WaitTimeSummary(new PoissonSamplingStrategy(sonarRecorder, trackName + "." + operationName,
+						this.meanResponseTimeSamplingInterval));
 				this.waitTimeMap.put(operationName, waitTimeSummary);
 			}
 
