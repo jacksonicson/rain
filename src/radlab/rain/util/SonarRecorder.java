@@ -2,6 +2,11 @@ package radlab.rain.util;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -18,7 +23,7 @@ import de.tum.in.sonar.collector.CollectService;
 import de.tum.in.sonar.collector.Identifier;
 import de.tum.in.sonar.collector.MetricReading;
 
-public class SonarRecorder extends Thread {
+public class SonarRecorder {
 
 	private static Logger logger = LoggerFactory.getLogger(Scorecard.class);
 
@@ -29,8 +34,6 @@ public class SonarRecorder extends Thread {
 	private String hostname;
 
 	private static SonarRecorder singleton;
-
-	private boolean running = true;
 	
 	private SonarRecorder(String sonarHost) {
 		this.SONAR_HOST = sonarHost;
@@ -76,14 +79,6 @@ public class SonarRecorder extends Thread {
 		this.transport.close();
 	}
 	
-	public void run()
-	{
-		while(running)
-		{
-			
-		}
-	}
-
 	public synchronized void record(Identifier id, MetricReading value) {
 		id.setHostname(this.hostname);
 		try {
