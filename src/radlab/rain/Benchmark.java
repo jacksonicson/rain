@@ -52,6 +52,7 @@ import radlab.rain.communication.thrift.ThriftService;
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.scoreboard.Scorecard;
 import radlab.rain.util.ConfigUtil;
+import radlab.rain.util.SonarRecorder;
 
 /**
  * The Benchmark class provides a framework to initialize and run a benchmark specified by a provided scenario.
@@ -192,7 +193,7 @@ public class Benchmark {
 
 		// Set up for stats aggregation across tracks based on the generators used
 		TreeMap<String, Scorecard> aggStats = new TreeMap<String, Scorecard>();
-		Scorecard globalCard = new Scorecard(null, "global", "global", endSteadyState - startSteadyState);
+		Scorecard globalCard = new Scorecard("global", "global", endSteadyState - startSteadyState);
 
 		// Shutdown the scoreboards and tally up the results.
 		for (ScenarioTrack track : scenario.getTracks().values()) {
@@ -214,7 +215,7 @@ public class Benchmark {
 			// Get the final scorecard for this track
 			Scorecard finalScorecard = track.getScoreboard().getFinalScorecard();
 			if (!aggStats.containsKey(generatorClassName)) {
-				Scorecard aggCard = new Scorecard(null, "aggregated", generatorClassName, finalScorecard.getIntervalDuration());
+				Scorecard aggCard = new Scorecard("aggregated", generatorClassName, finalScorecard.getIntervalDuration());
 				aggStats.put(generatorClassName, aggCard);
 			}
 			// Get the current aggregated scorecard for this generator
@@ -250,6 +251,9 @@ public class Benchmark {
 			// Dump global card
 			logger.info("Global metrics: " + globalCard.getIntervalStatistics().toString());
 		}
+
+		// Shutdown Sonar monitoring
+		SonarRecorder.getInstance().shutdown();
 
 		// Shutdown the shared threadpool
 		pool.shutdown();

@@ -2,9 +2,6 @@ package radlab.rain.util;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -17,13 +14,15 @@ import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import radlab.rain.ObjectPoolGeneric;
+import radlab.rain.Poolable;
 import radlab.rain.RainConfig;
 import radlab.rain.scoreboard.Scorecard;
 import de.tum.in.sonar.collector.CollectService;
 import de.tum.in.sonar.collector.Identifier;
 import de.tum.in.sonar.collector.MetricReading;
 
-public class SonarRecorder {
+public class SonarRecorder extends Thread {
 
 	private static Logger logger = LoggerFactory.getLogger(Scorecard.class);
 
@@ -34,7 +33,26 @@ public class SonarRecorder {
 	private String hostname;
 
 	private static SonarRecorder singleton;
-	
+
+	private class Job extends Poolable {
+		Identifier id;
+		MetricReading value;
+
+		private Job(String tag) {
+			super(tag);
+		}
+
+		@Override
+		public void cleanup() {
+			id = null;
+			value = null;
+		}
+	}
+
+	private boolean running = true;
+	private ObjectPoolGeneric pool = new ObjectPoolGeneric(10000);
+	private BlockingQueue<Job> queue = new LinkedBlockingQueue<Job>();
+
 	private SonarRecorder(String sonarHost) {
 		this.SONAR_HOST = sonarHost;
 
@@ -45,6 +63,14 @@ public class SonarRecorder {
 		} catch (UnknownHostException e) {
 			logger.error("Connection with sonar failed, could not determine INet address", e);
 		}
+
+		// Launch thread
+		this.start();
+	}
+
+	public void shutdown() {
+		this.running = false;
+		this.queue.notify();
 	}
 
 	public static SonarRecorder getInstance() {
@@ -78,14 +104,34 @@ public class SonarRecorder {
 	public void disconnect() {
 		this.transport.close();
 	}
-	
-	public synchronized void record(Identifier id, MetricReading value) {
-		id.setHostname(this.hostname);
-		try {
-			client.logMetric(id, value);
-		} catch (TException e) {
-			logger.error("could not log Sonar reading", e);
+
+	public void run() {
+		while (running) {
+			try {
+				Job job = queue.take();
+				job.id.setHostname(this.hostname);
+				client.logMetric(job.id, job.value);
+
+				// Return object to pool
+				pool.returnObject(job);
+
+			} catch (InterruptedException e) {
+				logger.warn("Iterrupted sonar recorder");
+			} catch (TException e) {
+				logger.error("Sonar recorder could not log metric", e);
+			}
 		}
+	}
+
+	public synchronized void record(Identifier id, MetricReading value) {
+		// Get a new object from pool
+		Job job = (Job) pool.rentObject("metric");
+		if (job == null)
+			job = new Job("metric");
+
+		job.id = id;
+		job.value = value;
+		queue.add(job);
 	}
 
 }
