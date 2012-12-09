@@ -382,10 +382,12 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 	private void processSteadyStateResult(OperationExecution result) {
 		// Update per-interval (profile) cards
-		// This code is still here and the data is logged but the data is NOT required for specj
+		// This code is still here and the data is logged but the data is NOT required for SPECj 
 		// and it is therefore not in the JSON reports!
 		LoadProfile activeProfile = result._generatedDuring;
 		if (activeProfile != null) {
+			// For SPECj the profile names are not set. Profiles are generated based 
+			// on Times TS data. (Second condition is always false)
 			if ((activeProfile._name != null && activeProfile._name.length() > 0)) {
 				// Get scorecard for this interval
 				String profileName = activeProfile._name;
