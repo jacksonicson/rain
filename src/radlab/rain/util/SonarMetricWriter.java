@@ -26,9 +26,7 @@ public class SonarMetricWriter extends MetricWriter {
 		System.out.println("Start SonarMetricWriter");
 
 		// Read configuration
-		String sonarServer = RainConfig.getInstance()._sonarHost;
-		logger.debug("Sonar server: " + sonarServer);
-		sonarRecorder = new SonarRecorder(sonarServer);
+		sonarRecorder = SonarRecorder.getInstance(); 
 	}
 
 	@Override

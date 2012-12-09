@@ -48,7 +48,7 @@
 		</javac>
 	</target>
 
-	<target name="prepare">
+	<target name="prepare" depends="clean">
 		<mkdir dir="${build}" />
 		<mkdir dir="${build}/bin" />
 	</target>

@@ -199,7 +199,7 @@ public class Scenario {
 			if (jsonConfig.has(Scenario.CFG_SONAR_HOSTNAME)) {
 				String host = jsonConfig.getString(Scenario.CFG_SONAR_HOSTNAME);
 				RainConfig.getInstance()._sonarHost = host;
-				this.sonarRecorder = new SonarRecorder(host);
+				this.sonarRecorder = SonarRecorder.getInstance(); 
 			}
 
 			// Figure out whether we're using communication pipes

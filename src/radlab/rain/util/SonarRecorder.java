@@ -12,6 +12,7 @@ import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import radlab.rain.RainConfig;
 import radlab.rain.scoreboard.Scorecard;
 import de.tum.in.sonar.collector.CollectService;
 import de.tum.in.sonar.collector.Identifier;
@@ -21,13 +22,15 @@ public class SonarRecorder {
 
 	private static Logger logger = LoggerFactory.getLogger(Scorecard.class);
 
-	private final String SONAR_HOST;
+	private String SONAR_HOST;
 
 	private CollectService.Client client;
 	private TTransport transport;
 	private String hostname;
 
-	public SonarRecorder(String sonarHost) {
+	private static SonarRecorder singleton;
+
+	private SonarRecorder(String sonarHost) {
 		this.SONAR_HOST = sonarHost;
 
 		try {
@@ -37,6 +40,15 @@ public class SonarRecorder {
 		} catch (UnknownHostException e) {
 			logger.error("Connection with sonar failed, could not determine INet address", e);
 		}
+	}
+
+	public static SonarRecorder getInstance() {
+		if (SonarRecorder.singleton == null) {
+			String sonarHost = RainConfig.getInstance()._sonarHost; 
+			SonarRecorder.singleton = new SonarRecorder(sonarHost);
+		}
+
+		return SonarRecorder.singleton;
 	}
 
 	private void connect() throws TTransportException, UnknownHostException {
@@ -62,12 +74,12 @@ public class SonarRecorder {
 		this.transport.close();
 	}
 
-	public void record(Identifier id, MetricReading value) {
+	public synchronized void record(Identifier id, MetricReading value) {
 		id.setHostname(this.hostname);
 		try {
 			client.logMetric(id, value);
 		} catch (TException e) {
-			logger.debug("could not log Sonar reading", e);
+			logger.error("could not log Sonar reading", e);
 		}
 	}
 
