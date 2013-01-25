@@ -61,7 +61,9 @@ public class SonarRecorder extends Thread {
 		} catch (TTransportException e) {
 			logger.error("Connection with sonar failed", e);
 		} catch (UnknownHostException e) {
-			logger.error("Connection with sonar failed, could not determine INet address", e);
+			logger.error(
+					"Connection with sonar failed, could not determine INet address",
+					e);
 		}
 
 		// Launch thread
@@ -70,7 +72,6 @@ public class SonarRecorder extends Thread {
 
 	public void shutdown() {
 		this.running = false;
-		this.queue.notify();
 	}
 
 	public static SonarRecorder getInstance() {
@@ -106,7 +107,7 @@ public class SonarRecorder extends Thread {
 	}
 
 	public void run() {
-		while (running) {
+		while (running || !queue.isEmpty()) {
 			try {
 				Job job = queue.take();
 				job.id.setHostname(this.hostname);
@@ -124,6 +125,10 @@ public class SonarRecorder extends Thread {
 	}
 
 	public synchronized void record(Identifier id, MetricReading value) {
+		// Only accept new records if recorder is still running
+		if (!running)
+			return;
+
 		// Get a new object from pool
 		Job job = (Job) pool.rentObject("metric");
 		if (job == null)
