@@ -3,14 +3,14 @@ package radlab.rain.util;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
-import radlab.rain.RainConfig;
 import radlab.rain.scoreboard.ResponseTimeStat;
 import de.tum.in.sonar.collector.Identifier;
 import de.tum.in.sonar.collector.MetricReading;
 
 public class SonarMetricWriter extends MetricWriter {
 
-	private static final Logger logger = Logger.getLogger(SonarMetricWriter.class);
+	private static final Logger logger = Logger
+			.getLogger(SonarMetricWriter.class);
 
 	private SonarRecorder sonarRecorder;
 
@@ -26,7 +26,7 @@ public class SonarMetricWriter extends MetricWriter {
 		System.out.println("Start SonarMetricWriter");
 
 		// Read configuration
-		sonarRecorder = SonarRecorder.getInstance(); 
+		sonarRecorder = SonarRecorder.getInstance();
 	}
 
 	@Override
@@ -53,48 +53,73 @@ public class SonarMetricWriter extends MetricWriter {
 		long delta = (System.currentTimeMillis() - lastSnapshotLog);
 		if (delta > 3000) {
 
-			Identifier id = new Identifier();
-			id.setTimestamp(stat._timestamp / 1000);
-			MetricReading value = new MetricReading();
+			Identifier id;
+			long timestamp = stat._timestamp / 1000;
+			MetricReading value;
 
-			double totalAveragegResponseTime = stat._totalResponseTime / stat._numObservations;
-			double deltaObservations = stat._numObservations - lastNumObservations;
-			double deltaResponseTime = stat._totalResponseTime - lastTotalResponseTime;
-			double deltaAverageResponseTime = deltaResponseTime / deltaObservations;
+			double totalAveragegResponseTime = stat._totalResponseTime
+					/ stat._numObservations;
+			double deltaObservations = stat._numObservations
+					- lastNumObservations;
+			double deltaResponseTime = stat._totalResponseTime
+					- lastTotalResponseTime;
+			double deltaAverageResponseTime = deltaResponseTime
+					/ deltaObservations;
 
 			// Total average response time
+			id = new Identifier();
+			id.setTimestamp(timestamp);
 			id.setSensor("rain.avgrtime." + stat._trackName);
+			value = new MetricReading();
 			value.setValue(totalAveragegResponseTime);
 			sonarRecorder.record(id, value);
 
 			// Delta average response time
+			id = new Identifier();
+			id.setTimestamp(timestamp);
 			id.setSensor("rain.rtime." + stat._trackName);
+			value = new MetricReading();
 			value.setValue(deltaAverageResponseTime);
 			sonarRecorder.record(id, value);
 
 			// Total observations
+			id = new Identifier();
+			id.setTimestamp(timestamp);
 			id.setSensor("rain.tobservations." + stat._trackName);
+			value = new MetricReading();
 			value.setValue(stat._numObservations);
 			sonarRecorder.record(id, value);
 
 			// Delta observations
+			id = new Identifier();
+			id.setTimestamp(timestamp);
 			id.setSensor("rain.dobservations." + stat._trackName);
+			value = new MetricReading();
 			value.setValue(deltaObservations);
 			sonarRecorder.record(id, value);
 
 			// Total response time
+			id = new Identifier();
+			id.setTimestamp(timestamp);
 			id.setSensor("rain.trtime." + stat._trackName);
+			value = new MetricReading();
 			value.setValue(stat._totalResponseTime);
 			sonarRecorder.record(id, value);
 
 			// Delta response time
+			id = new Identifier();
+			id.setTimestamp(timestamp);
 			id.setSensor("rain.drtime." + stat._trackName);
+			value = new MetricReading();
 			value.setValue(deltaResponseTime);
 			sonarRecorder.record(id, value);
 
 			// Log thrBuffer
 			for (int i = 0; i < thrBuffer.length; i++) {
+				id = new Identifier();
+				id.setTimestamp(timestamp);
 				id.setSensor("rain.thr-" + i + "." + stat._trackName);
+				value = new MetricReading();
 				value.setValue(thrBuffer[i]);
 				sonarRecorder.record(id, value);
 			}
