@@ -1,0 +1,7 @@
+bin
+.DS_Store
+*.log
+*~
+aws.properties
+build
+rain.jar
