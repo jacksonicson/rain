@@ -4,6 +4,7 @@
 	<property name="src" location="src" />
 	<property name="build" location="build" />
 	<property name="lib" location="thirdparty" />
+	<property name="thrift" location="../sonar/Thrift" />
 
 	<path id="rain.git.classpath">
 		<pathelement location="build" />
@@ -67,7 +68,7 @@
 			<arg value="generated" />
 			<arg value="--gen" />
 			<arg value="java" />
-			<arg value="../../sonar/Thrift/rain.thrift" />
+			<arg value="${thrift}/rain.thrift" />
 		</exec>
 
 		<exec executable="thrift">
@@ -75,7 +76,7 @@
 			<arg value="generated" />
 			<arg value="--gen" />
 			<arg value="java" />
-			<arg value="../../sonar/Thrift/collector.thrift" />
+			<arg value="${thrift}/collector.thrift" />
 		</exec>
 	</target>
 
