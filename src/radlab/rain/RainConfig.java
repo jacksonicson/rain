@@ -47,9 +47,6 @@ public class RainConfig {
 	public int _thriftPort = ThriftService.DEFAULT_PORT;
 	// Should we wait for a start message before we start the run, default is no
 	public boolean _waitForStartSignal = false;
-	// Do we have a zookeeper address?
-	public String _zooKeeper = "";
-	public String _zkPath = "";
 
 	public String _sonarHost = "monitor0";
 

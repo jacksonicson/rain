@@ -294,39 +294,6 @@ public class Benchmark {
 			// Log startup
 			logger.info("Rain started");
 
-			// If we got 2 arguments expect a zookeeper pointer as the second
-			// parameter
-			if (args.length == 2) {
-				String zkString = args[1];
-				String zkPrefix = "zk://";
-				int zkIndex = zkString.indexOf(zkPrefix);
-				int pathIndex = -1;
-
-				if (zkIndex == -1)
-					pathIndex = zkString.indexOf(ZK_PATH_SEPARATOR);
-				else
-					pathIndex = zkString.indexOf(ZK_PATH_SEPARATOR, zkPrefix.length());
-
-				// Example ZK address
-				// zk://ec2-50-16-2-36.compute-1.amazonaws.com,ec2-174-129-105-138.compute-1.amazonaws.com/demo/apps/scadr/webServerList
-
-				if (zkIndex == -1) {
-					if (pathIndex == -1) {
-						RainConfig.getInstance()._zooKeeper = zkString;
-					} else {
-						RainConfig.getInstance()._zooKeeper = zkString.substring(0, pathIndex);
-						RainConfig.getInstance()._zkPath = zkString.substring(pathIndex);
-					}
-				} else {
-					if (pathIndex == -1) {
-						RainConfig.getInstance()._zooKeeper = zkString.substring(zkIndex + zkPrefix.length());
-					} else {
-						RainConfig.getInstance()._zooKeeper = zkString.substring(zkIndex + zkPrefix.length(), pathIndex);
-						RainConfig.getInstance()._zkPath = zkString.substring(pathIndex);
-					}
-				}
-			}
-
 			String filename = args[0];
 			JSONObject jsonConfig = null;
 
