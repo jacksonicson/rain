@@ -42,56 +42,36 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import radlab.rain.communication.RainPipe;
+import radlab.rain.configuration.ScenarioConfigs;
+import radlab.rain.configuration.TrackConfigs;
 import radlab.rain.util.ConfigUtil;
-import radlab.rain.util.SonarRecorder;
-//import java.util.Hashtable;
-//import java.util.LinkedList;
 
 /**
- * The Scenario class contains the specifications for a benchmark scenario, which includes the timings (i.e. ramp up, duration,
- * ramp down) and the different scenario tracks.
+ * The Scenario class contains the specifications for a benchmark scenario,
+ * which includes the timings (i.e. ramp up, duration, ramp down) and the
+ * different scenario tracks.
  */
 public class Scenario {
 	private static Logger logger = LoggerFactory.getLogger(Scenario.class);
-	public static String CFG_PROFILES_KEY = "profiles";
-	public static String CFG_PROFILES_CREATOR_CLASS_KEY = "profilesCreatorClass";
-	public static String CFG_PROFILES_CREATOR_CLASS_PARAMS_KEY = "profilesCreatorClassParams";
-	public static String CFG_TIMING_KEY = "timing";
-	public static String CFG_RAMP_UP_KEY = "rampUp";
-	public static String CFG_DURATION_KEY = "duration";
-	public static String CFG_RAMP_DOWN_KEY = "rampDown";
-	public static String CFG_VERBOSE_ERRORS_KEY = "verboseErrors";
-	public static String CFG_SONAR_HOSTNAME = "sonarHost";
-	public static String CFG_USE_PIPE = "usePipe";
-	public static String CFG_USE_THRIFT = "useThrift";
-	public static String CFG_PIPE_PORT = "pipePort";
-	public static String CFG_PIPE_THREADS = "pipeThreads";
-	public static String CFG_WAIT_FOR_START_SIGNAL = "waitForStartSignal";
-	public static String CFG_MAX_SHARED_THREADS = "maxSharedThreads";
-	public static String CFG_AGGREGATE_STATS = "aggregateStats";
-
 	public static final int DEFAULT_MAX_SHARED_THREADS = 10;
 	public static final boolean DEFAULT_AGGREGATE_STATS = false;
 
-	/** Ramp up time in seconds. */
+	// Ramp up time in seconds.
 	private long _rampUp;
 
-	/** Duration of the run in seconds. */
+	// Duration of the run in seconds.
 	private long _duration;
 
-	/** Ramp down time in seconds. */
+	// Ramp down time in seconds.
 	private long _rampDown;
 
-	/** Max number of threads to keep in the shared threadpool */
+	// Max number of threads to keep in the shared threadpool
 	private int _maxSharedThreads = DEFAULT_MAX_SHARED_THREADS;
 
 	// Log aggregated stats
 	private boolean _aggregateStats = DEFAULT_AGGREGATE_STATS;
 
-	/** The instantiated tracks specified by the JSON configuration. */
-	// Use Hashtable instead of flat list
-	// private LinkedList<ScenarioTrack> _tracks = new
-	// LinkedList<ScenarioTrack>();
+	// The instantiated tracks specified by the JSON configuration.
 	private TreeMap<String, ScenarioTrack> _tracks = new TreeMap<String, ScenarioTrack>();
 
 	public long getRampUp() {
@@ -143,7 +123,8 @@ public class Scenario {
 	}
 
 	/**
-	 * Create a new Scenario and load the profile specified in the given JSON configuration object.
+	 * Create a new Scenario and load the profile specified in the given JSON
+	 * configuration object.
 	 * 
 	 * @param jsonConfig
 	 *            The JSON object containing load specifications.
@@ -172,8 +153,9 @@ public class Scenario {
 	}
 
 	/**
-	 * Reads the run specifications from the provided JSON configuration object. The timings (i.e. ramp up, duration, and ramp
-	 * down) are set and the scenario tracks are created.
+	 * Reads the run specifications from the provided JSON configuration object.
+	 * The timings (i.e. ramp up, duration, and ramp down) are set and the
+	 * scenario tracks are created.
 	 * 
 	 * @param jsonConfig
 	 *            The JSON object containing load specifications.
@@ -181,20 +163,25 @@ public class Scenario {
 	public void loadProfile(JSONObject jsonConfig) throws Exception {
 		JSONObject tracksConfig = null;
 		try {
-			JSONObject timing = jsonConfig.getJSONObject(CFG_TIMING_KEY);
-			setRampUp(timing.getLong(Scenario.CFG_RAMP_UP_KEY));
-			setDuration(timing.getLong(Scenario.CFG_DURATION_KEY));
-			setRampDown(timing.getLong(Scenario.CFG_RAMP_DOWN_KEY));
+			JSONObject timing = jsonConfig
+					.getJSONObject(ScenarioConfigs.TIMING_KEY.toString());
+			setRampUp(timing.getLong(ScenarioConfigs.RAMP_UP_KEY.toString()));
+			setDuration(timing.getLong(ScenarioConfigs.DURATION_KEY.toString()));
+			setRampDown(timing
+					.getLong(ScenarioConfigs.RAMP_DOWN_KEY.toString()));
 
 			// Set up Rain configuration params (if they've been provided)
-			if (jsonConfig.has(Scenario.CFG_VERBOSE_ERRORS_KEY)) {
-				boolean val = jsonConfig.getBoolean(Scenario.CFG_VERBOSE_ERRORS_KEY);
+			if (jsonConfig.has(ScenarioConfigs.VERBOSE_ERRORS_KEY.toString())) {
+				boolean val = jsonConfig
+						.getBoolean(ScenarioConfigs.VERBOSE_ERRORS_KEY
+								.toString());
 				RainConfig.getInstance()._verboseErrors = val;
 			}
 
 			// Setup sonar recorder
-			if (jsonConfig.has(Scenario.CFG_SONAR_HOSTNAME)) {
-				String host = jsonConfig.getString(Scenario.CFG_SONAR_HOSTNAME);
+			if (jsonConfig.has(ScenarioConfigs.SONAR_HOSTNAME.toString())) {
+				String host = jsonConfig
+						.getString(ScenarioConfigs.SONAR_HOSTNAME.toString());
 				RainConfig.getInstance()._sonarHost = host;
 			}
 
@@ -202,87 +189,116 @@ public class Scenario {
 
 			// Figure out whether we're waiting for a start signal from an
 			// external controller
-			if (jsonConfig.has(Scenario.CFG_PIPE_PORT)) {
-				RainConfig.getInstance()._pipePort = jsonConfig.getInt(Scenario.CFG_PIPE_PORT);
-				RainPipe.getInstance().setPort(RainConfig.getInstance()._pipePort);
+			if (jsonConfig.has(ScenarioConfigs.PIPE_PORT.toString())) {
+				RainConfig.getInstance()._pipePort = jsonConfig
+						.getInt(ScenarioConfigs.PIPE_PORT.toString());
+				RainPipe.getInstance().setPort(
+						RainConfig.getInstance()._pipePort);
 			}
 
-			if (jsonConfig.has(Scenario.CFG_PIPE_THREADS)) {
-				RainConfig.getInstance()._pipeThreads = jsonConfig.getInt(Scenario.CFG_PIPE_THREADS);
-				RainPipe.getInstance().setNumThreads(RainConfig.getInstance()._pipeThreads);
+			if (jsonConfig.has(ScenarioConfigs.PIPE_THREADS.toString())) {
+				RainConfig.getInstance()._pipeThreads = jsonConfig
+						.getInt(ScenarioConfigs.PIPE_THREADS.toString());
+				RainPipe.getInstance().setNumThreads(
+						RainConfig.getInstance()._pipeThreads);
 			}
 
 			boolean usePipe = false;
-			if (jsonConfig.has(Scenario.CFG_USE_PIPE))
-				usePipe = jsonConfig.getBoolean(Scenario.CFG_USE_PIPE);
+			if (jsonConfig.has(ScenarioConfigs.USE_PIPE.toString()))
+				usePipe = jsonConfig.getBoolean(ScenarioConfigs.USE_PIPE
+						.toString());
 
-			// We can only wait for start signal if we're using a pipe or thrift service to the
+			// We can only wait for start signal if we're using a pipe or thrift
+			// service to the
 			// outside world.
-			// If we're not using a pipe or thrift to the outside world then just launch
+			// If we're not using a pipe or thrift to the outside world then
+			// just launch
 			// the run.
 			if (usePipe) {
 				// Set in the config that we're using pipes
 				RainConfig.getInstance()._usePipe = usePipe;
 				// Check whether we're supposed to wait for a start signal
-				if (jsonConfig.has(Scenario.CFG_WAIT_FOR_START_SIGNAL)) {
-					RainConfig.getInstance()._waitForStartSignal = jsonConfig.getBoolean(Scenario.CFG_WAIT_FOR_START_SIGNAL);
+				if (jsonConfig.has(ScenarioConfigs.WAIT_FOR_START_SIGNAL
+						.toString())) {
+					RainConfig.getInstance()._waitForStartSignal = jsonConfig
+							.getBoolean(ScenarioConfigs.WAIT_FOR_START_SIGNAL
+									.toString());
 				}
 			}
 
 			boolean useThrift = false;
-			if (jsonConfig.has(Scenario.CFG_USE_THRIFT))
-				useThrift = jsonConfig.getBoolean(Scenario.CFG_USE_THRIFT);
+			if (jsonConfig.has(ScenarioConfigs.USE_THRIFT.toString()))
+				useThrift = jsonConfig.getBoolean(ScenarioConfigs.USE_THRIFT
+						.toString());
 
-			// We can only wait for start signal if we're using a pipe or thrift service to the
+			// We can only wait for start signal if we're using a pipe or thrift
+			// service to the
 			// outside world.
-			// If we're not using a pipe or thrift to the outside world then just launch
+			// If we're not using a pipe or thrift to the outside world then
+			// just launch
 			// the run.
 			if (useThrift) {
 				// Set in the config that we're using pipes
 				RainConfig.getInstance()._useThrift = useThrift;
 
 				// Check whether we're supposed to wait for a start signal
-				if (jsonConfig.has(Scenario.CFG_WAIT_FOR_START_SIGNAL)) {
-					RainConfig.getInstance()._waitForStartSignal = jsonConfig.getBoolean(Scenario.CFG_WAIT_FOR_START_SIGNAL);
+				if (jsonConfig.has(ScenarioConfigs.WAIT_FOR_START_SIGNAL
+						.toString())) {
+					RainConfig.getInstance()._waitForStartSignal = jsonConfig
+							.getBoolean(ScenarioConfigs.WAIT_FOR_START_SIGNAL
+									.toString());
 				}
 			}
 
 			// Look for the profiles key OR the name of a class that
 			// generates the
 			// profiles.
-			if (jsonConfig.has(CFG_PROFILES_CREATOR_CLASS_KEY)) {
+			if (jsonConfig.has(ScenarioConfigs.PROFILES_CREATOR_CLASS_KEY
+					.toString())) {
 				// Programmatic generation class takes precedence
 				// Create profile creator class by reflection
-				String profileCreatorClass = jsonConfig.getString(CFG_PROFILES_CREATOR_CLASS_KEY);
-				ProfileCreator creator = this.createLoadProfileCreator(profileCreatorClass);
+				String profileCreatorClass = jsonConfig
+						.getString(ScenarioConfigs.PROFILES_CREATOR_CLASS_KEY
+								.toString());
+				ProfileCreator creator = this
+						.createLoadProfileCreator(profileCreatorClass);
 				JSONObject params = null;
 				// Look for profile creator params - if we find some then
 				// pass them
-				if (jsonConfig.has(CFG_PROFILES_CREATOR_CLASS_PARAMS_KEY))
-					params = jsonConfig.getJSONObject(CFG_PROFILES_CREATOR_CLASS_PARAMS_KEY);
+				if (jsonConfig
+						.has(ScenarioConfigs.PROFILES_CREATOR_CLASS_PARAMS_KEY
+								.toString()))
+					params = jsonConfig
+							.getJSONObject(ScenarioConfigs.PROFILES_CREATOR_CLASS_PARAMS_KEY
+									.toString());
 
 				tracksConfig = creator.createProfile(params);
 			} else // Otherwise there MUST be a profiles key in the config
 					// file
 			{
-				String filename = jsonConfig.getString(CFG_PROFILES_KEY);
+				String filename = jsonConfig
+						.getString(ScenarioConfigs.PROFILES_KEY.toString());
 				String fileContents = ConfigUtil.readFileAsString(filename);
 				tracksConfig = new JSONObject(fileContents);
 			}
 
-			if (jsonConfig.has(CFG_MAX_SHARED_THREADS)) {
-				int sharedThreads = jsonConfig.getInt(CFG_MAX_SHARED_THREADS);
+			if (jsonConfig.has(ScenarioConfigs.MAX_SHARED_THREADS.toString())) {
+				int sharedThreads = jsonConfig
+						.getInt(ScenarioConfigs.MAX_SHARED_THREADS.toString());
 				if (sharedThreads > 0)
 					this._maxSharedThreads = sharedThreads;
 			}
 
-			if (jsonConfig.has(CFG_AGGREGATE_STATS))
-				this._aggregateStats = jsonConfig.getBoolean(CFG_AGGREGATE_STATS);
+			if (jsonConfig.has(ScenarioConfigs.AGGREGATE_STATS.toString()))
+				this._aggregateStats = jsonConfig
+						.getBoolean(ScenarioConfigs.AGGREGATE_STATS.toString());
 		} catch (JSONException e) {
-			logger.info("[SCENARIO] ERROR reading JSON configuration object. Reason: " + e.toString());
+			logger.info("[SCENARIO] ERROR reading JSON configuration object. Reason: "
+					+ e.toString());
 			System.exit(1);
 		} catch (IOException e) {
-			logger.info("[SCENARIO] ERROR loading tracks configuration file. Reason: " + e.toString());
+			logger.info("[SCENARIO] ERROR loading tracks configuration file. Reason: "
+					+ e.toString());
 			System.exit(1);
 		}
 
@@ -290,16 +306,20 @@ public class Scenario {
 	}
 
 	@SuppressWarnings("unchecked")
-	public ProfileCreator createLoadProfileCreator(String name) throws Exception {
+	public ProfileCreator createLoadProfileCreator(String name)
+			throws Exception {
 		ProfileCreator creator = null;
-		Class<ProfileCreator> creatorClass = (Class<ProfileCreator>) Class.forName(name);
-		Constructor<ProfileCreator> creatorCtor = creatorClass.getConstructor(new Class[] {});
+		Class<ProfileCreator> creatorClass = (Class<ProfileCreator>) Class
+				.forName(name);
+		Constructor<ProfileCreator> creatorCtor = creatorClass
+				.getConstructor(new Class[] {});
 		creator = (ProfileCreator) creatorCtor.newInstance((Object[]) null);
 		return creator;
 	}
 
 	/**
-	 * Reads the track configuration from the provided JSON configuration object and creates each scenario track.
+	 * Reads the track configuration from the provided JSON configuration object
+	 * and creates each scenario track.
 	 * 
 	 * @param jsonConfig
 	 *            The JSON object containing load specifications.
@@ -312,19 +332,23 @@ public class Scenario {
 				String trackName = i.next();
 				JSONObject trackConfig = jsonConfig.getJSONObject(trackName);
 
-				String trackClassName = trackConfig.getString(ScenarioTrack.CFG_TRACK_CLASS_KEY);
-				ScenarioTrack track = this.createTrack(trackClassName, trackName);
+				String trackClassName = trackConfig
+						.getString(TrackConfigs.TRACK_CLASS_KEY.toString());
+				ScenarioTrack track = this.createTrack(trackClassName,
+						trackName);
 				track.setName(trackName);
 				track.initialize(trackConfig);
 
 				this._tracks.put(track._name, track);
 			}
 		} catch (JSONException e) {
-			logger.info("[SCENARIO] ERROR parsing tracks in JSON configuration file/object. Reason: " + e.toString());
+			logger.info("[SCENARIO] ERROR parsing tracks in JSON configuration file/object. Reason: "
+					+ e.toString());
 			e.printStackTrace();
 			System.exit(1);
 		} catch (Exception e) {
-			logger.info("[SCENARIO] ERROR initializing tracks. Reason: " + e.toString());
+			logger.info("[SCENARIO] ERROR initializing tracks. Reason: "
+					+ e.toString());
 			e.printStackTrace();
 			System.exit(1);
 		}
@@ -342,11 +366,15 @@ public class Scenario {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	public ScenarioTrack createTrack(String trackClassName, String trackName) throws Exception {
+	public ScenarioTrack createTrack(String trackClassName, String trackName)
+			throws Exception {
 		ScenarioTrack track = null;
-		Class<ScenarioTrack> trackClass = (Class<ScenarioTrack>) Class.forName(trackClassName);
-		Constructor<ScenarioTrack> trackCtor = trackClass.getConstructor(new Class[] { String.class, Scenario.class });
-		track = (ScenarioTrack) trackCtor.newInstance(new Object[] { trackName, this });
+		Class<ScenarioTrack> trackClass = (Class<ScenarioTrack>) Class
+				.forName(trackClassName);
+		Constructor<ScenarioTrack> trackCtor = trackClass
+				.getConstructor(new Class[] { String.class, Scenario.class });
+		track = (ScenarioTrack) trackCtor.newInstance(new Object[] { trackName,
+				this });
 		return track;
 	}
 }
