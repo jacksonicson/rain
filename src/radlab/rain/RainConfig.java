@@ -31,22 +31,19 @@
 
 package radlab.rain;
 
-import radlab.rain.communication.RainPipe;
 import radlab.rain.communication.thrift.ThriftService;
 
 // Singleton configuration class
 public class RainConfig {
 	// What can we configure?
 	public boolean _verboseErrors = true;
-	// Communication server params
-	public boolean _usePipe = false;
-	public int _pipePort = RainPipe.DEFAULT_PORT;
-	public int _pipeThreads = RainPipe.DEFAULT_NUM_THREADS;
+
 	// Thrift communication server params
 	public boolean _useThrift = false;
 	public int _thriftPort = ThriftService.DEFAULT_PORT;
+
 	// Should we wait for a start message before we start the run, default is no
-	public boolean _waitForStartSignal = false;
+	public boolean waitForStartSignal = false;
 
 	public String _sonarHost = "monitor0";
 
