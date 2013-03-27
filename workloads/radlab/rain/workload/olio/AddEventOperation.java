@@ -54,8 +54,8 @@ public class AddEventOperation extends OlioOperation
 	public AddEventOperation( boolean interactive, IScoreboard scoreboard ) 
 	{
 		super( interactive, scoreboard );
-		this._operationName = "AddEvent";
-		this._operationIndex = OlioGenerator.ADD_EVENT;
+		this.operationName = "AddEvent";
+		this.operationIndex = OlioGenerator.ADD_EVENT;
 	}
 	
 	@Override
@@ -102,7 +102,7 @@ public class AddEventOperation extends OlioOperation
 		else
 		{
 			// TODO: What's the best way to handle this case?
-			this._logger.warning( "Login required for " + this._operationName );
+			this._logger.warning( "Login required for " + this.operationName );
 		}
 		
 		this.setFailed( false );

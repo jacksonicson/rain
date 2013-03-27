@@ -50,13 +50,13 @@ public class LoginOperation extends OlioOperation
 	public LoginOperation( boolean interactive, IScoreboard scoreboard )
 	{ 
 		super( interactive, scoreboard );
-		this._operationName = "Login";
-		this._operationIndex = OlioGenerator.LOGIN;
+		this.operationName = "Login";
+		this.operationIndex = OlioGenerator.LOGIN;
 		
 		/* Logging in cannot occur asynchronously because the state of the
 		 * HTTP client changes, affecting the execution of the following
 		 * operation. */
-		this._mustBeSync = true;
+		this.enforceSync = true;
 	}
 	
 	public void execute() throws Throwable

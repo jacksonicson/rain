@@ -59,7 +59,7 @@ public abstract class RubisOperation extends Operation
 	 */
 	public RubisGenerator getGenerator()
 	{
-		return (RubisGenerator) this._generator;
+		return (RubisGenerator) this.generatedByGenerator;
 	}
 	
 	public RubisOperation( boolean interactive, IScoreboard scoreboard )
@@ -70,7 +70,7 @@ public abstract class RubisOperation extends Operation
 	@Override
 	public void prepare(Generator generator) 
 	{
-		this._generator = generator;
+		this.generatedByGenerator = generator;
 		RubisGenerator rubisGenerator = (RubisGenerator) generator;
 		
 		this._http = rubisGenerator.getHttpTransport();

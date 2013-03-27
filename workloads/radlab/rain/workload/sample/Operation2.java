@@ -41,8 +41,8 @@ public class Operation2 extends SampleOperation
 	public Operation2( boolean interactive, IScoreboard scoreboard ) 
 	{
 		super( interactive, scoreboard );
-		this._operationName = "Operation 2";
-		this._operationIndex = SampleGenerator.OPERATION2;
+		this.operationName = "Operation 2";
+		this.operationIndex = SampleGenerator.OPERATION2;
 	}
 	
 	@Override

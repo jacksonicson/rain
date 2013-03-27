@@ -41,8 +41,8 @@ public class ViewQuotesOperation extends DayTraderOperation
 	public ViewQuotesOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = DayTraderGenerator.VIEW_QUOTES;
+		this.operationName = NAME;
+		this.operationIndex = DayTraderGenerator.VIEW_QUOTES;
 	}
 
 	@Override

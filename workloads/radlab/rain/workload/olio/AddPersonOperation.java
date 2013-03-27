@@ -52,13 +52,13 @@ public class AddPersonOperation extends OlioOperation
 	public AddPersonOperation( boolean interactive, IScoreboard scoreboard ) 
 	{
 		super( interactive, scoreboard );
-		this._operationName = "AddPerson";
-		this._operationIndex = OlioGenerator.ADD_PERSON;
+		this.operationName = "AddPerson";
+		this.operationIndex = OlioGenerator.ADD_PERSON;
 		
 		/* Logging in cannot occur asynchronously because the state of the
 		 * HTTP client changes, affecting the execution of the following
 		 * operation. */
-		this._mustBeSync = true;
+		this.enforceSync = true;
 	}
 	
 	@Override

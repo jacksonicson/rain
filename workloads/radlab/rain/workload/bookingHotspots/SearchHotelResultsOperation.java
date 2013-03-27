@@ -18,9 +18,9 @@ public class SearchHotelResultsOperation extends BookingOperation
 	public SearchHotelResultsOperation( boolean interactive, IScoreboard scoreboard ) 
 	{
 		super( interactive, scoreboard );
-		this._operationName = "Search Hotel Results";
-		this._operationIndex = BookingGenerator.SEARCH_HOTEL_RESULTS;
-		this._mustBeSync = true;
+		this.operationName = "Search Hotel Results";
+		this.operationIndex = BookingGenerator.SEARCH_HOTEL_RESULTS;
+		this.enforceSync = true;
 	}
 		
 	@Override

@@ -9,8 +9,8 @@ public class RiakDeleteOperation extends RiakOperation
 	public RiakDeleteOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationIndex = RiakGenerator.DELETE;
-		this._operationName = NAME;
+		this.operationIndex = RiakGenerator.DELETE;
+		this.operationName = NAME;
 	}
 
 	@Override

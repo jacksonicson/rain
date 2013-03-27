@@ -39,9 +39,9 @@ public class PostThoughtOperation extends ScadrOperation {
 	
 	public PostThoughtOperation(boolean interactive, IScoreboard scoreboard) {
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = ScadrGenerator.POST_THOUGHT;
-		this._mustBeSync = true;
+		this.operationName = NAME;
+		this.operationIndex = ScadrGenerator.POST_THOUGHT;
+		this.enforceSync = true;
 	}
 	
 	@Override

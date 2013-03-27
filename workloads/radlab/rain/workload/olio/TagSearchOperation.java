@@ -45,8 +45,8 @@ public class TagSearchOperation extends OlioOperation
 	public TagSearchOperation( boolean interactive, IScoreboard scoreboard )
 	{
 		super( interactive, scoreboard );
-		this._operationName = "TagSearch";
-		this._operationIndex = OlioGenerator.TAG_SEARCH;
+		this.operationName = "TagSearch";
+		this.operationIndex = OlioGenerator.TAG_SEARCH;
 	}
 	
 	@Override

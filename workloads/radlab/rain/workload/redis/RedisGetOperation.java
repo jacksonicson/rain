@@ -9,8 +9,8 @@ public class RedisGetOperation extends RedisOperation
 	public RedisGetOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = RedisGenerator.GET;
+		this.operationName = NAME;
+		this.operationIndex = RedisGenerator.GET;
 	}
 
 	@Override

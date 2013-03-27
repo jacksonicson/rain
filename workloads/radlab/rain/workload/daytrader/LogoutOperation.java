@@ -40,8 +40,8 @@ public class LogoutOperation extends DayTraderOperation
 	public LogoutOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = DayTraderGenerator.LOGOUT;
+		this.operationName = NAME;
+		this.operationIndex = DayTraderGenerator.LOGOUT;
 	}
 
 	@Override

@@ -40,8 +40,8 @@ public class LogoutOperation extends ScadrOperation
 	public LogoutOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = ScadrGenerator.LOGOUT;
+		this.operationName = NAME;
+		this.operationIndex = ScadrGenerator.LOGOUT;
 	}
 
 	@Override

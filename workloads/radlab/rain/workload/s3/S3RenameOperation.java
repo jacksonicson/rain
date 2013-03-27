@@ -11,8 +11,8 @@ public class S3RenameOperation extends S3Operation
 	public S3RenameOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = S3Generator.RENAME;
+		this.operationName = NAME;
+		this.operationIndex = S3Generator.RENAME;
 
 	}
 

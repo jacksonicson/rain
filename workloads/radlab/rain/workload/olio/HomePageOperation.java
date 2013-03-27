@@ -45,8 +45,8 @@ public class HomePageOperation extends OlioOperation
 	public HomePageOperation( boolean interactive, IScoreboard scoreboard ) 
 	{
 		super( interactive, scoreboard );
-		this._operationName = "HomePage";
-		this._operationIndex = OlioGenerator.HOME_PAGE;
+		this.operationName = "HomePage";
+		this.operationIndex = OlioGenerator.HOME_PAGE;
 	}
 	
 	@Override

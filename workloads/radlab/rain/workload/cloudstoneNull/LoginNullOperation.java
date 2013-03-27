@@ -41,8 +41,8 @@ public class LoginNullOperation extends CloudstoneNullOperation
 	public LoginNullOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = LoginNullOperation.NAME;
-		this._operationIndex = CloudstoneNullGenerator.LOGIN;
+		this.operationName = LoginNullOperation.NAME;
+		this.operationIndex = CloudstoneNullGenerator.LOGIN;
 	}
 
 	@Override
@@ -54,7 +54,7 @@ public class LoginNullOperation extends CloudstoneNullOperation
 	@Override
 	public void execute() throws Throwable
 	{
-		this.trace( this._operationName );
+		this.trace( this.operationName );
 		Thread.sleep( 25 );
 		this.setFailed( false );
 	}

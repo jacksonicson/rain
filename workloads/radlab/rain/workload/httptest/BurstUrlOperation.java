@@ -21,8 +21,8 @@ public class BurstUrlOperation extends Operation
 	public BurstUrlOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = BurstUrlGenerator.PING_URL;
+		this.operationName = NAME;
+		this.operationIndex = BurstUrlGenerator.PING_URL;
 	}
 
 	/**
@@ -32,12 +32,12 @@ public class BurstUrlOperation extends Operation
 	 */
 	public BurstUrlGenerator getGenerator()
 	{
-		return (BurstUrlGenerator) this._generator;
+		return (BurstUrlGenerator) this.generatedByGenerator;
 	}
 	
 	public void setName( String val )
 	{
-		this._operationName = val;
+		this.operationName = val;
 	}
 	
 	@Override
@@ -80,7 +80,7 @@ public class BurstUrlOperation extends Operation
 	@Override
 	public void prepare(Generator generator) 
 	{
-		this._generator = generator;
+		this.generatedByGenerator = generator;
 		BurstUrlGenerator specificUrlGenerator = (BurstUrlGenerator) generator;
 		
 		LoadDefinition currentLoadProfile = generator.getLatestLoadProfile();

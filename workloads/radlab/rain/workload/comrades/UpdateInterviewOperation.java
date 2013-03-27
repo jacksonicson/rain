@@ -40,8 +40,8 @@ public class UpdateInterviewOperation extends ComradesOperation
 	public UpdateInterviewOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = ComradesGenerator.UPDATE_INTERVIEW;
+		this.operationName = NAME;
+		this.operationIndex = ComradesGenerator.UPDATE_INTERVIEW;
 	}
 
 	@Override

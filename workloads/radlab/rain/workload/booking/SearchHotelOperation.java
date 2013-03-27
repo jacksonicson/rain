@@ -33,9 +33,9 @@ public class SearchHotelOperation extends BookingOperation
 	public SearchHotelOperation( boolean interactive, IScoreboard scoreboard )
 	{
 		super( interactive, scoreboard );
-		this._operationName = NAME;
-		this._operationIndex = BookingGenerator.SEARCH_HOTEL;
-		this._mustBeSync = true;
+		this.operationName = NAME;
+		this.operationIndex = BookingGenerator.SEARCH_HOTEL;
+		this.enforceSync = true;
 	}
 
 	@Override

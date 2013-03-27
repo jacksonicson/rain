@@ -44,9 +44,9 @@ public class RegisterOperation extends RubisOperation
 	public RegisterOperation( boolean interactive, IScoreboard scoreboard ) 
 	{
 		super( interactive, scoreboard );
-		this._operationName = "Register";
-		this._operationIndex = RubisGenerator.REGISTER;
-		this._mustBeSync = true;
+		this.operationName = "Register";
+		this.operationIndex = RubisGenerator.REGISTER;
+		this.enforceSync = true;
 	}
 	
 	@Override

@@ -43,8 +43,8 @@ public class StoriesIndexOperation extends RadditOperation
 	public StoriesIndexOperation( boolean interactive, IScoreboard scoreboard ) 
 	{
 		super( interactive, scoreboard );
-		this._operationName = "StoriesIndex";
-		this._operationIndex = RadditGenerator.STORIES_INDEX;
+		this.operationName = "StoriesIndex";
+		this.operationIndex = RadditGenerator.STORIES_INDEX;
 	}
 	
 	@Override

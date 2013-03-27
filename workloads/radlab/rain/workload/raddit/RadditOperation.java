@@ -62,7 +62,7 @@ public abstract class RadditOperation extends Operation
 	 */
 	public RadditGenerator getGenerator()
 	{
-		return (RadditGenerator) this._generator;
+		return (RadditGenerator) this.generatedByGenerator;
 	}
 	
 	public RadditOperation( boolean interactive, IScoreboard scoreboard )
@@ -73,7 +73,7 @@ public abstract class RadditOperation extends Operation
 	@Override
 	public void prepare(Generator generator) 
 	{
-		this._generator = generator;
+		this.generatedByGenerator = generator;
 		RadditGenerator radditGenerator = (RadditGenerator) generator;
 		
 		this._http = radditGenerator.getHttpTransport();

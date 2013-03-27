@@ -39,7 +39,7 @@ public abstract class S3Operation extends Operation
 	@Override
 	public void prepare(Generator generator) 
 	{
-		this._generator = generator;
+		this.generatedByGenerator = generator;
 		S3Generator s3Generator = (S3Generator) generator;
 		
 		this._s3Client = s3Generator.getS3Transport();

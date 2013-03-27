@@ -32,7 +32,7 @@ public abstract class RiakOperation extends Operation
 	@Override
 	public void prepare(Generator generator) 
 	{
-		this._generator = generator;
+		this.generatedByGenerator = generator;
 		RiakGenerator riakGenerator = (RiakGenerator) generator;
 		
 		this._riak = riakGenerator.getRiakTransport();

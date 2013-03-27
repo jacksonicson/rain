@@ -9,8 +9,8 @@ public class S3DeleteOperation extends S3Operation
 	public S3DeleteOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = S3Generator.DELETE;
+		this.operationName = NAME;
+		this.operationIndex = S3Generator.DELETE;
 	}
 	
 	@Override

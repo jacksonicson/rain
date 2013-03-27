@@ -57,12 +57,12 @@ public class PredictableAppOperation extends Operation
 	{
 		super(interactive, scoreboard);
 		// Set the operation index, but don't set the name until execution time
-		this._operationIndex = PredictableAppGenerator.PREDICTABLE_OP;
+		this.operationIndex = PredictableAppGenerator.PREDICTABLE_OP;
 	}
 
 	public void setName( String val )
 	{
-		this._operationName = val;
+		this.operationName = val;
 	}
 	
 	/**
@@ -72,7 +72,7 @@ public class PredictableAppOperation extends Operation
 	 */
 	public PredictableAppGenerator getGenerator()
 	{
-		return (PredictableAppGenerator) this._generator;
+		return (PredictableAppGenerator) this.generatedByGenerator;
 	}
 	
 	@Override
@@ -113,7 +113,7 @@ public class PredictableAppOperation extends Operation
 	@Override
 	public void prepare(Generator generator) 
 	{
-		this._generator = generator;
+		this.generatedByGenerator = generator;
 		PredictableAppGenerator predictableGenerator = (PredictableAppGenerator) generator;
 		
 		LoadDefinition currentLoadProfile = generator.getLatestLoadProfile();

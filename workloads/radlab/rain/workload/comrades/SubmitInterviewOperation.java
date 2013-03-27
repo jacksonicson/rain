@@ -40,8 +40,8 @@ public class SubmitInterviewOperation extends ComradesOperation
 	public SubmitInterviewOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = ComradesGenerator.SUBMIT_INTERVIEW;
+		this.operationName = NAME;
+		this.operationIndex = ComradesGenerator.SUBMIT_INTERVIEW;
 	}
 
 	@Override

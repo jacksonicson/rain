@@ -11,8 +11,8 @@ public class S3CreateBucketOperation extends S3Operation
 	public S3CreateBucketOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = S3Generator.CREATE_BUCKET;
+		this.operationName = NAME;
+		this.operationIndex = S3Generator.CREATE_BUCKET;
 	}
 
 	@Override

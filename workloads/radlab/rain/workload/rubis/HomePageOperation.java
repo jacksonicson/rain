@@ -43,8 +43,8 @@ public class HomePageOperation extends RubisOperation
 	public HomePageOperation( boolean interactive, IScoreboard scoreboard ) 
 	{
 		super( interactive, scoreboard );
-		this._operationName = "Home Page";
-		this._operationIndex = RubisGenerator.HOME_PAGE;
+		this.operationName = "Home Page";
+		this.operationIndex = RubisGenerator.HOME_PAGE;
 	}
 	
 	@Override

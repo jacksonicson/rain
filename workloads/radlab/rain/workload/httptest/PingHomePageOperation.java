@@ -42,8 +42,8 @@ public class PingHomePageOperation extends HttpTestOperation
 	public PingHomePageOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = HttpTestGenerator.PING_HOMEPAGE;
+		this.operationName = NAME;
+		this.operationIndex = HttpTestGenerator.PING_HOMEPAGE;
 	}
 
 	@Override

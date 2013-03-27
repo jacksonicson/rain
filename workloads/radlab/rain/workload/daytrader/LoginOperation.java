@@ -41,8 +41,8 @@ public class LoginOperation extends DayTraderOperation
 	{
 		super(interactive, scoreboard);
 		
-		this._operationName = NAME;
-		this._operationIndex = DayTraderGenerator.LOGIN;
+		this.operationName = NAME;
+		this.operationIndex = DayTraderGenerator.LOGIN;
 	}
 
 	@Override

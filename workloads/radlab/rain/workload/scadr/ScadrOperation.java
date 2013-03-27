@@ -80,7 +80,7 @@ public abstract class ScadrOperation extends Operation
 
 	public ScadrGenerator getGenerator()
 	{
-		return (ScadrGenerator) this._generator;
+		return (ScadrGenerator) this.generatedByGenerator;
 	}
 	
 	@Override
@@ -93,7 +93,7 @@ public abstract class ScadrOperation extends Operation
 		if( this._appServerTarget == null || this._appServerTarget.trim().length() == 0 )
 			return;
 		
-		Track track = this._generator.getTrack();
+		Track track = this.generatedByGenerator.getTrack();
 		if( track instanceof ScadrScenarioTrack )
 			((ScadrScenarioTrack) track).requestIssue( this._appServerTarget );
 	}
@@ -104,14 +104,14 @@ public abstract class ScadrOperation extends Operation
 		if( this._appServerTarget == null || this._appServerTarget.trim().length() == 0 )
 			return;
 		
-		Track track = this._generator.getTrack();
+		Track track = this.generatedByGenerator.getTrack();
 		if( track instanceof ScadrScenarioTrack )
 			((ScadrScenarioTrack) track).requestRetire( this._appServerTarget );
 	}
 	
 	@Override
 	public void prepare(Generator generator) {
-		this._generator = generator;
+		this.generatedByGenerator = generator;
 		ScadrGenerator scadrGenerator = (ScadrGenerator) generator;
 		
 		// Save the appServer target that's currently in the generator
@@ -691,7 +691,7 @@ public abstract class ScadrOperation extends Operation
 	private String getUsername()
 	{
 		// User names can't have any periods in them
-	  return distributeUserName("user-" + this._generatedBy.replace( '.', '-'));
+	  return distributeUserName("user-" + this.generatedBy.replace( '.', '-'));
 	}
 
   //Append a hash to the beginning of usernames so they distribute better

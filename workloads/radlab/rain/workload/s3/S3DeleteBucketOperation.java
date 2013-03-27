@@ -9,8 +9,8 @@ public class S3DeleteBucketOperation extends S3Operation
 	public S3DeleteBucketOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = S3Generator.DELETE_BUCKET;
+		this.operationName = NAME;
+		this.operationIndex = S3Generator.DELETE_BUCKET;
 	}
 
 	@Override

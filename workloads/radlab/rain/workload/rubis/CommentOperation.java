@@ -44,9 +44,9 @@ public class CommentOperation extends RubisOperation
 	public CommentOperation( boolean interactive, IScoreboard scoreboard ) 
 	{
 		super( interactive, scoreboard );
-		this._operationName = "Comment";
-		this._operationIndex = RubisGenerator.COMMENT;
-		this._mustBeSync = true;
+		this.operationName = "Comment";
+		this.operationIndex = RubisGenerator.COMMENT;
+		this.enforceSync = true;
 	}
 	
 	@Override

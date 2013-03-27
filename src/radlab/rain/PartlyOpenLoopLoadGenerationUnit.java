@@ -170,7 +170,7 @@ public class PartlyOpenLoopLoadGenerationUnit extends LoadGeneratingUnit {
 		}
 
 		// Save the cycle time - if we're in the steady state
-		generator.getScoreboard().dropOffWaitTime(now, operation._operationName, cycleTime);
+		generator.getScoreboard().dropOffWaitTime(now, operation.operationName, cycleTime);
 	}
 
 	/**
@@ -204,7 +204,7 @@ public class PartlyOpenLoopLoadGenerationUnit extends LoadGeneratingUnit {
 			sleepUntil(wakeUpTime);
 
 		// Save the think time
-		generator.getScoreboard().dropOffWaitTime(now, operation._operationName, thinkTime);
+		generator.getScoreboard().dropOffWaitTime(now, operation.operationName, thinkTime);
 	}
 
 	/**

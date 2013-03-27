@@ -26,9 +26,9 @@ public class ConfirmHotelOperation extends BookingOperation
 	public ConfirmHotelOperation( boolean interactive, IScoreboard scoreboard ) 
 	{
 		super( interactive, scoreboard );
-		this._operationName = NAME;
-		this._operationIndex = BookingGenerator.CONFIRM_HOTEL;
-		this._mustBeSync = true;
+		this.operationName = NAME;
+		this.operationIndex = BookingGenerator.CONFIRM_HOTEL;
+		this.enforceSync = true;
 	}
 		
 	@Override

@@ -25,7 +25,7 @@ public abstract class HBaseOperation extends Operation
 	@Override
 	public void prepare(Generator generator) 
 	{
-		this._generator = generator;
+		this.generatedByGenerator = generator;
 		HBaseGenerator hbaseGenerator = (HBaseGenerator) generator;
 		
 		this._hbaseClient = hbaseGenerator.getHBaseTransport();
@@ -55,7 +55,7 @@ public abstract class HBaseOperation extends Operation
 	
 	public void doPut( String key, byte[] value ) throws Exception
 	{
-		this._operationRequest = key;
+		this.operationRequest = key;
 		this._hbaseClient.put( this._columnFamilyName, key, value );
 	}
 	

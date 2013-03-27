@@ -40,9 +40,9 @@ public class HomePageOperation extends ScadrOperation
 	public HomePageOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = ScadrGenerator.HOME_PAGE;
-		this._mustBeSync = true;
+		this.operationName = NAME;
+		this.operationIndex = ScadrGenerator.HOME_PAGE;
+		this.enforceSync = true;
 	}
 
 	@Override

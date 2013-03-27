@@ -13,9 +13,9 @@ public class HomePageOperation extends BookingOperation
 	public HomePageOperation( boolean interactive, IScoreboard scoreboard ) 
 	{
 		super( interactive, scoreboard );
-		this._operationName = "Home Page";
-		this._operationIndex = BookingGenerator.HOME_PAGE;
-		this._mustBeSync = true;
+		this.operationName = "Home Page";
+		this.operationIndex = BookingGenerator.HOME_PAGE;
+		this.enforceSync = true;
 	}
 	
 	@Override

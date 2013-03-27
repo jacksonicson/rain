@@ -14,8 +14,8 @@ public class S3GetOperation extends S3Operation
 	public S3GetOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = S3Generator.GET;	
+		this.operationName = NAME;
+		this.operationIndex = S3Generator.GET;	
 	}
 
 	@Override
@@ -39,7 +39,7 @@ public class S3GetOperation extends S3Operation
 			}
 			
 			// Append the bytes read to the operation name
-			this._operationName = NAME + "_" + totalBytesRead;
+			this.operationName = NAME + "_" + totalBytesRead;
 		}
 		catch( IOException ioe )
 		{

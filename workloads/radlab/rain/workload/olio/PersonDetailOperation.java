@@ -44,8 +44,8 @@ public class PersonDetailOperation extends OlioOperation
 	public PersonDetailOperation( boolean interactive, IScoreboard scoreboard ) 
 	{
 		super( interactive, scoreboard );
-		this._operationName = "PersonDetails";
-		this._operationIndex = OlioGenerator.PERSON_DETAIL;
+		this.operationName = "PersonDetails";
+		this.operationIndex = OlioGenerator.PERSON_DETAIL;
 	}
 	
 	@Override
@@ -70,7 +70,7 @@ public class PersonDetailOperation extends OlioOperation
 				this._logger.warning( "isLoggedOn() returned false but checkIsLoggedIn() returned true" );
 			}
 			// TODO: What's the best way to handle this case?
-			this._logger.warning( "Login required for " + this._operationName );
+			this._logger.warning( "Login required for " + this.operationName );
 		}
 		
 		this.setFailed( false );

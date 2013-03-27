@@ -31,9 +31,9 @@ public class ViewHotelOperation extends BookingOperation
 	public ViewHotelOperation( boolean interactive, IScoreboard scoreboard ) 
 	{
 		super( interactive, scoreboard );
-		this._operationName = "View Hotel";
-		this._operationIndex = BookingGenerator.VIEW_HOTEL;
-		this._mustBeSync = true;
+		this.operationName = "View Hotel";
+		this.operationIndex = BookingGenerator.VIEW_HOTEL;
+		this.enforceSync = true;
 	}
 		
 	@Override

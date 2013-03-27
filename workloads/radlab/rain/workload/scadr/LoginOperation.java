@@ -39,9 +39,9 @@ public class LoginOperation extends ScadrOperation {
 	
 	public LoginOperation(boolean interactive, IScoreboard scoreboard) {
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = ScadrGenerator.LOGIN;
-		this._mustBeSync = true;
+		this.operationName = NAME;
+		this.operationIndex = ScadrGenerator.LOGIN;
+		this.enforceSync = true;
 	}
 
 	@Override

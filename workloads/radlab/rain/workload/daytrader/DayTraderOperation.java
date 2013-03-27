@@ -64,7 +64,7 @@ public abstract class DayTraderOperation extends Operation
 	 */
 	public DayTraderGenerator getGenerator()
 	{
-		return (DayTraderGenerator) this._generator;
+		return (DayTraderGenerator) this.generatedByGenerator;
 	}
 	
 	public DayTraderOperation( boolean interactive, IScoreboard scoreboard )
@@ -75,7 +75,7 @@ public abstract class DayTraderOperation extends Operation
 	@Override
 	public void prepare(Generator generator) 
 	{
-		this._generator = generator;
+		this.generatedByGenerator = generator;
 		DayTraderGenerator sampleGenerator = (DayTraderGenerator) generator;
 		
 		this._http = sampleGenerator.getHttpTransport();

@@ -93,7 +93,7 @@ public abstract class OlioOperation extends Operation
 	 */
 	public OlioGenerator getGenerator()
 	{
-		return (OlioGenerator) this._generator;
+		return (OlioGenerator) this.generatedByGenerator;
 	}
 	
 	public OlioOperation( boolean interactive, IScoreboard scoreboard )
@@ -104,7 +104,7 @@ public abstract class OlioOperation extends Operation
 	@Override
 	public void prepare(Generator generator) 
 	{
-		this._generator = generator;
+		this.generatedByGenerator = generator;
 		OlioGenerator olioGenerator = (OlioGenerator) generator;
 		
 		LoadDefinition currentLoadProfile = generator.getLatestLoadProfile();
@@ -308,7 +308,7 @@ public abstract class OlioOperation extends Operation
 	 */
 	protected StringBuilder logOn() throws IOException 
 	{
-		if ( !this._mustBeSync )
+		if ( !this.enforceSync )
 		{
 			this._logger.warning( "logOn() is not thread-safe and should only" +
 					"be called by a synchronous operation!" );
@@ -346,7 +346,7 @@ public abstract class OlioOperation extends Operation
 	 */
 	protected StringBuilder logOff() throws IOException 
 	{
-		if ( !this._mustBeSync )
+		if ( !this.enforceSync )
 		{
 			this._logger.warning( "logOff() is not thread-safe and should only" +
 					"be called by a synchronous operation!" );

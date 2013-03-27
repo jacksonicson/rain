@@ -11,8 +11,8 @@ public class RiakFetchOperation extends RiakOperation
 	public RiakFetchOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = RiakGenerator.FETCH;
+		this.operationName = NAME;
+		this.operationIndex = RiakGenerator.FETCH;
 	}
 
 	@Override

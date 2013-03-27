@@ -39,8 +39,8 @@ public class CreateUserOperation extends ScadrOperation
 	public CreateUserOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = ScadrGenerator.CREATE_USER;
+		this.operationName = NAME;
+		this.operationIndex = ScadrGenerator.CREATE_USER;
 	}
 
 	@Override

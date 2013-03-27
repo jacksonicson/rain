@@ -76,7 +76,7 @@ public abstract class ComradesOperation extends Operation
 
 	public ComradesGenerator getGenerator()
 	{
-		return (ComradesGenerator) this._generator;
+		return (ComradesGenerator) this.generatedByGenerator;
 	}
 	
 	@Override 
@@ -85,7 +85,7 @@ public abstract class ComradesOperation extends Operation
 		if( this._appServerTarget == null || this._appServerTarget.trim().length() == 0 )
 			return;
 		
-		Track track = this._generator.getTrack();
+		Track track = this.generatedByGenerator.getTrack();
 		if( track instanceof ComradesScenarioTrack )
 			((ComradesScenarioTrack) track).requestIssue( this._appServerTarget );
 	}
@@ -96,7 +96,7 @@ public abstract class ComradesOperation extends Operation
 		if( this._appServerTarget == null || this._appServerTarget.trim().length() == 0 )
 			return;
 		
-		Track track = this._generator.getTrack();
+		Track track = this.generatedByGenerator.getTrack();
 		if( track instanceof ComradesScenarioTrack )
 			((ComradesScenarioTrack) track).requestRetire( this._appServerTarget );
 	}
@@ -109,7 +109,7 @@ public abstract class ComradesOperation extends Operation
 	@Override
 	public void prepare(Generator generator) 
 	{
-		this._generator = generator;
+		this.generatedByGenerator = generator;
 		ComradesGenerator comradesGenerator = (ComradesGenerator) generator;
 		
 		// Save the appServer target that's currently in the generator

@@ -11,8 +11,8 @@ public class S3ListAllBucketsOperation extends S3Operation
 	public S3ListAllBucketsOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = S3Generator.LIST_ALL_BUCKETS;
+		this.operationName = NAME;
+		this.operationIndex = S3Generator.LIST_ALL_BUCKETS;
 	}
 
 	@Override

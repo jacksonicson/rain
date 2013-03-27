@@ -9,8 +9,8 @@ public class RedisSetOperation extends RedisOperation
 	public RedisSetOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = RedisGenerator.SET;
+		this.operationName = NAME;
+		this.operationIndex = RedisGenerator.SET;
 	}
 
 	@Override

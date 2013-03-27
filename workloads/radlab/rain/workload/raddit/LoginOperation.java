@@ -44,9 +44,9 @@ public class LoginOperation extends RadditOperation
 	public LoginOperation( boolean interactive, IScoreboard scoreboard ) 
 	{
 		super( interactive, scoreboard );
-		this._operationName = "Login";
-		this._operationIndex = RadditGenerator.LOGIN;
-		this._mustBeSync = true;
+		this.operationName = "Login";
+		this.operationIndex = RadditGenerator.LOGIN;
+		this.enforceSync = true;
 	}
 	
 	@Override

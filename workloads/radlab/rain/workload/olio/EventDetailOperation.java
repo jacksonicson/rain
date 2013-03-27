@@ -47,8 +47,8 @@ public class EventDetailOperation extends OlioOperation
 	public EventDetailOperation( boolean interactive, IScoreboard scoreboard ) 
 	{
 		super( interactive, scoreboard );
-		this._operationName = "EventDetail";
-		this._operationIndex = OlioGenerator.EVENT_DETAIL;
+		this.operationName = "EventDetail";
+		this.operationIndex = OlioGenerator.EVENT_DETAIL;
 	}
 	
 	@Override

@@ -11,8 +11,8 @@ public class S3MoveOperation extends S3Operation
 	public S3MoveOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = S3Generator.MOVE;
+		this.operationName = NAME;
+		this.operationIndex = S3Generator.MOVE;
 	}
 
 	@Override

@@ -43,7 +43,7 @@ public abstract class BookingOperation extends Operation
 	 */
 	public BookingGenerator getGenerator()
 	{
-		return (BookingGenerator) this._generator;
+		return (BookingGenerator) this.generatedByGenerator;
 	}
 	
 	public BookingOperation( boolean interactive, IScoreboard scoreboard )
@@ -54,7 +54,7 @@ public abstract class BookingOperation extends Operation
 	@Override
 	public void prepare(Generator generator) 
 	{
-		this._generator = generator;
+		this.generatedByGenerator = generator;
 		BookingGenerator bookingGenerator = (BookingGenerator) generator;
 		
 		this._http = bookingGenerator.getHttpTransport();

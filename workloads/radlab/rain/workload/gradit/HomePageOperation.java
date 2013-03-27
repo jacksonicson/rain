@@ -40,9 +40,9 @@ public class HomePageOperation extends GraditOperation
 	public HomePageOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = GraditGenerator.HOME_PAGE;
-		this._mustBeSync = true;
+		this.operationName = NAME;
+		this.operationIndex = GraditGenerator.HOME_PAGE;
+		this.enforceSync = true;
 	}
 
 	@Override

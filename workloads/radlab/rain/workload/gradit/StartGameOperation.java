@@ -40,8 +40,8 @@ public class StartGameOperation extends GraditOperation
 	public StartGameOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = GraditGenerator.START_GAME;
+		this.operationName = NAME;
+		this.operationIndex = GraditGenerator.START_GAME;
 	}
 
 	@Override

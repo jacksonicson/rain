@@ -72,7 +72,7 @@ public class GraditOperation extends Operation
 
 	public GraditGenerator getGenerator()
 	{
-		return (GraditGenerator) this._generator;
+		return (GraditGenerator) this.generatedByGenerator;
 	}
 	
 	@Override
@@ -86,7 +86,7 @@ public class GraditOperation extends Operation
 	@Override
 	public void prepare(Generator generator) 
 	{
-		this._generator = generator;
+		this.generatedByGenerator = generator;
 		GraditGenerator graditGenerator = (GraditGenerator) generator;
 		
 		// Refresh the cache to simulate real-world browsing.
@@ -290,7 +290,7 @@ public class GraditOperation extends Operation
 	private String getUsername()
 	{
 		// User names can't have any periods in them
-	  return distributeUserName("user-" + this._generatedBy.replace( '.', '-'));
+	  return distributeUserName("user-" + this.generatedBy.replace( '.', '-'));
 	}
 
 	//Append a hash to the beginning of usernames so they distribute better

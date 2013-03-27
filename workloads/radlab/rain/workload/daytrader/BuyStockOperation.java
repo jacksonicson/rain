@@ -41,8 +41,8 @@ public class BuyStockOperation extends DayTraderOperation
 	{
 		super(interactive, scoreboard);
 		
-		this._operationName = NAME;
-		this._operationIndex = DayTraderGenerator.BUY_STOCKS;
+		this.operationName = NAME;
+		this.operationIndex = DayTraderGenerator.BUY_STOCKS;
 	}
 
 	@Override

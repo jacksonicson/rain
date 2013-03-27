@@ -9,8 +9,8 @@ public class MongoPutOperation extends MongoOperation
 	public MongoPutOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = MongoGenerator.WRITE;
+		this.operationName = NAME;
+		this.operationIndex = MongoGenerator.WRITE;
 	}
 	
 	@Override

@@ -44,9 +44,9 @@ public class BrowseCategoriesOperation extends RubisOperation
 	public BrowseCategoriesOperation( boolean interactive, IScoreboard scoreboard ) 
 	{
 		super( interactive, scoreboard );
-		this._operationName = "Browse Categories";
-		this._operationIndex = RubisGenerator.BROWSE_CATEGORIES;
-		this._mustBeSync = true;
+		this.operationName = "Browse Categories";
+		this.operationIndex = RubisGenerator.BROWSE_CATEGORIES;
+		this.enforceSync = true;
 	}
 	
 	@Override

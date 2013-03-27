@@ -9,8 +9,8 @@ public class HBaseGetOperation extends HBaseOperation
 	public HBaseGetOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = HBaseGenerator.READ;
+		this.operationName = NAME;
+		this.operationIndex = HBaseGenerator.READ;
 	}
 	
 	@Override

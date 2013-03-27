@@ -16,9 +16,9 @@ public class LoginOperation extends BookingOperation
 	public LoginOperation( boolean interactive, IScoreboard scoreboard ) 
 	{
 		super( interactive, scoreboard );
-		this._operationName = "Login";
-		this._operationIndex = BookingGenerator.LOGIN;
-		this._mustBeSync = true;
+		this.operationName = "Login";
+		this.operationIndex = BookingGenerator.LOGIN;
+		this.enforceSync = true;
 	}
 	
 	@Override

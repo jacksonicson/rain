@@ -12,8 +12,8 @@ public class MongoGetOperation extends MongoOperation
 	public MongoGetOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = MongoGenerator.READ;
+		this.operationName = NAME;
+		this.operationIndex = MongoGenerator.READ;
 	}
 	
 	@Override

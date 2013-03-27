@@ -41,8 +41,8 @@ public class HomePageNullOperation extends CloudstoneNullOperation
 	public HomePageNullOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = HomePageNullOperation.NAME;
-		this._operationIndex = CloudstoneNullGenerator.HOME_PAGE;
+		this.operationName = HomePageNullOperation.NAME;
+		this.operationIndex = CloudstoneNullGenerator.HOME_PAGE;
 	}
 
 	@Override
@@ -54,7 +54,7 @@ public class HomePageNullOperation extends CloudstoneNullOperation
 	@Override
 	public void execute() throws Throwable
 	{
-		this.trace( this._operationName );
+		this.trace( this.operationName );
 		Thread.sleep( 25 );
 		this.setFailed( false );
 	}

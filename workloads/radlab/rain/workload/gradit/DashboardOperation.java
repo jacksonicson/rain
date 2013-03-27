@@ -9,8 +9,8 @@ public class DashboardOperation extends GraditOperation
 	public DashboardOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = GraditGenerator.DASHBOARD;
+		this.operationName = NAME;
+		this.operationIndex = GraditGenerator.DASHBOARD;
 	}
 	
 	@Override

@@ -26,9 +26,9 @@ public class CancelHotelOperation extends BookingOperation
 	public CancelHotelOperation( boolean interactive, IScoreboard scoreboard ) 
 	{
 		super( interactive, scoreboard );
-		this._operationName = NAME;
-		this._operationIndex = BookingGenerator.CANCEL_HOTEL;
-		this._mustBeSync = true;
+		this.operationName = NAME;
+		this.operationIndex = BookingGenerator.CANCEL_HOTEL;
+		this.enforceSync = true;
 	}
 		
 	@Override

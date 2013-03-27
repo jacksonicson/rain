@@ -44,9 +44,9 @@ public class BidOperation extends RubisOperation
 	public BidOperation( boolean interactive, IScoreboard scoreboard ) 
 	{
 		super( interactive, scoreboard );
-		this._operationName = "Bid";
-		this._operationIndex = RubisGenerator.BID;
-		this._mustBeSync = true;
+		this.operationName = "Bid";
+		this.operationIndex = RubisGenerator.BID;
+		this.enforceSync = true;
 	}
 	
 	@Override

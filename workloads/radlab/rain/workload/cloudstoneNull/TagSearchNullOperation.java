@@ -41,8 +41,8 @@ public class TagSearchNullOperation extends CloudstoneNullOperation
 	public TagSearchNullOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = TagSearchNullOperation.NAME;
-		this._operationIndex = CloudstoneNullGenerator.TAG_SEARCH;
+		this.operationName = TagSearchNullOperation.NAME;
+		this.operationIndex = CloudstoneNullGenerator.TAG_SEARCH;
 	}
 
 	@Override
@@ -54,7 +54,7 @@ public class TagSearchNullOperation extends CloudstoneNullOperation
 	@Override
 	public void execute() throws Throwable
 	{
-		this.trace( this._operationName );
+		this.trace( this.operationName );
 		Thread.sleep( 25 );
 		this.setFailed( false );
 	}

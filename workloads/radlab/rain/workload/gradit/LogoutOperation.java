@@ -41,8 +41,8 @@ public class LogoutOperation extends GraditOperation
 	public LogoutOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = GraditGenerator.LOGOUT;
+		this.operationName = NAME;
+		this.operationIndex = GraditGenerator.LOGOUT;
 	}
 
 	@Override

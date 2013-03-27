@@ -53,7 +53,7 @@ public abstract class HttpTestOperation extends Operation
 	 */
 	public HttpTestGenerator getGenerator()
 	{
-		return (HttpTestGenerator) this._generator;
+		return (HttpTestGenerator) this.generatedByGenerator;
 	}
 	
 	public HttpTestOperation( boolean interactive, IScoreboard scoreboard )
@@ -64,7 +64,7 @@ public abstract class HttpTestOperation extends Operation
 	@Override
 	public void prepare(Generator generator) 
 	{
-		this._generator = generator;
+		this.generatedByGenerator = generator;
 		HttpTestGenerator httpTestGenerator = (HttpTestGenerator) generator;
 		
 		LoadDefinition currentLoadProfile = generator.getLatestLoadProfile();

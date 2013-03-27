@@ -43,8 +43,8 @@ public class ExternalHomePageOperation extends DayTraderOperation
 	{
 		super(interactive, scoreboard);
 		
-		this._operationName = NAME;
-		this._operationIndex = DayTraderGenerator.EXTERNAL_HOME_PAGE;
+		this.operationName = NAME;
+		this.operationIndex = DayTraderGenerator.EXTERNAL_HOME_PAGE;
 	}
 
 	@Override

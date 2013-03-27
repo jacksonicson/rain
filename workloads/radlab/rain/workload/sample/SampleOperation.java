@@ -52,7 +52,7 @@ public abstract class SampleOperation extends Operation
 	 */
 	public SampleGenerator getGenerator()
 	{
-		return (SampleGenerator) this._generator;
+		return (SampleGenerator) this.generatedByGenerator;
 	}
 	
 	public SampleOperation( boolean interactive, IScoreboard scoreboard )
@@ -63,7 +63,7 @@ public abstract class SampleOperation extends Operation
 	@Override
 	public void prepare(Generator generator) 
 	{
-		this._generator = generator;
+		this.generatedByGenerator = generator;
 		SampleGenerator sampleGenerator = (SampleGenerator) generator;
 		
 		this._http = sampleGenerator.getHttpTransport();

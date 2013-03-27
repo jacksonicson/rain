@@ -9,8 +9,8 @@ public class RiakListBucketOperation extends RiakOperation
 	public RiakListBucketOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationIndex = RiakGenerator.LIST_BUCKET;
-		this._operationName = NAME;
+		this.operationIndex = RiakGenerator.LIST_BUCKET;
+		this.operationName = NAME;
 	}
 
 	@Override

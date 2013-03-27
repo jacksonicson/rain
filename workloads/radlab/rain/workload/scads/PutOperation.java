@@ -41,8 +41,8 @@ public class PutOperation extends ScadsOperation
 	public PutOperation( boolean interactive, IScoreboard scoreboard ) 
 	{
 		super( interactive, scoreboard );
-		this._operationName = "PutOperation";
-		this._operationIndex = ScadsGenerator.PUTOPERATION;
+		this.operationName = "PutOperation";
+		this.operationIndex = ScadsGenerator.PUTOPERATION;
 	}
 
 	@Override

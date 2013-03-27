@@ -34,8 +34,8 @@ public class WorkGenMapReduceOperation extends MapReduceOperation
 	public WorkGenMapReduceOperation( boolean interactive, IScoreboard scoreboard ) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = 0;
+		this.operationName = NAME;
+		this.operationIndex = 0;
 	}
 
 	/**

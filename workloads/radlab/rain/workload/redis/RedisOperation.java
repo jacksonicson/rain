@@ -26,7 +26,7 @@ public abstract class RedisOperation extends Operation
 	@Override
 	public void prepare(Generator generator) 
 	{
-		this._generator = generator;
+		this.generatedByGenerator = generator;
 		RedisGenerator redisGenerator = (RedisGenerator) generator;
 		
 		this._redis = redisGenerator.getRedisTransport();

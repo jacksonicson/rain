@@ -40,8 +40,8 @@ public class LoginOperation extends GraditOperation
 	public LoginOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = GraditGenerator.LOGIN;
+		this.operationName = NAME;
+		this.operationIndex = GraditGenerator.LOGIN;
 	}
 
 	@Override

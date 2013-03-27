@@ -40,8 +40,8 @@ public class AddCandidateOperation extends ComradesOperation
 	public AddCandidateOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = ComradesGenerator.ADD_CANDIDATE;
+		this.operationName = NAME;
+		this.operationIndex = ComradesGenerator.ADD_CANDIDATE;
 	}
 
 	@Override

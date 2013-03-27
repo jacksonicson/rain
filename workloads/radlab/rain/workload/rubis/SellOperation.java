@@ -44,9 +44,9 @@ public class SellOperation extends RubisOperation
 	public SellOperation( boolean interactive, IScoreboard scoreboard ) 
 	{
 		super( interactive, scoreboard );
-		this._operationName = "Sell";
-		this._operationIndex = RubisGenerator.SELL;
-		this._mustBeSync = true;
+		this.operationName = "Sell";
+		this.operationIndex = RubisGenerator.SELL;
+		this.enforceSync = true;
 	}
 	
 	@Override

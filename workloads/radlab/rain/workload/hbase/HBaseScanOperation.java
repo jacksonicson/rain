@@ -11,8 +11,8 @@ public class HBaseScanOperation extends HBaseOperation
 	public HBaseScanOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = HBaseGenerator.SCAN;
+		this.operationName = NAME;
+		this.operationIndex = HBaseGenerator.SCAN;
 	}
 	
 	@Override

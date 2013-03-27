@@ -40,8 +40,8 @@ public class RegisterUserOperation extends GraditOperation
 	public RegisterUserOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = GraditGenerator.REGISTER_USER;
+		this.operationName = NAME;
+		this.operationIndex = GraditGenerator.REGISTER_USER;
 	}
 	
 	@Override

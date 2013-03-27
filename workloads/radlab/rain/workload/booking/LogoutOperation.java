@@ -16,9 +16,9 @@ public class LogoutOperation extends BookingOperation
 	public LogoutOperation( boolean interactive, IScoreboard scoreboard ) 
 	{
 		super( interactive, scoreboard );
-		this._operationName = NAME;
-		this._operationIndex = BookingGenerator.LOGOUT;
-		this._mustBeSync = true;
+		this.operationName = NAME;
+		this.operationIndex = BookingGenerator.LOGOUT;
+		this.enforceSync = true;
 	}
 	
 	@Override

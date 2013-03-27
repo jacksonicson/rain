@@ -9,8 +9,8 @@ public class HBasePutOperation extends HBaseOperation
 	public HBasePutOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = HBaseGenerator.WRITE;
+		this.operationName = NAME;
+		this.operationIndex = HBaseGenerator.WRITE;
 	}
 	
 	@Override

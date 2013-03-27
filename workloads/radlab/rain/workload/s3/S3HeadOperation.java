@@ -11,8 +11,8 @@ public class S3HeadOperation extends S3Operation
 	public S3HeadOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = S3Generator.HEAD;
+		this.operationName = NAME;
+		this.operationIndex = S3Generator.HEAD;
 	}
 
 	@Override

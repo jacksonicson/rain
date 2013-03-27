@@ -75,10 +75,10 @@ public class OperationExecution implements Comparable<OperationExecution> {
 		this._interactive = operation.isInteractive();
 		this._timeStarted = operation.getTimeStarted();
 		this._timeFinished = operation.getTimeFinished();
-		this._operationName = operation._operationName;
-		this._operationRequest = operation._operationRequest;
+		this._operationName = operation.operationName;
+		this._operationRequest = operation.operationRequest;
 		this._async = operation.getAsync();
-		this._failed = operation._failed;
+		this._failed = operation.failed;
 		// Pull out any info on when this operation was created
 		this._generatedDuring = operation.getGeneratedDuringProfile();
 		this._profileStartTime = operation.getProfileStartTime();

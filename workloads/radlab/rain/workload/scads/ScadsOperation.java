@@ -53,7 +53,7 @@ public abstract class ScadsOperation extends Operation
 	 */
 	public ScadsGenerator getGenerator()
 	{
-		return (ScadsGenerator) this._generator;
+		return (ScadsGenerator) this.generatedByGenerator;
 	}
 
 	public ScadsOperation( boolean interactive, IScoreboard scoreboard )
@@ -64,7 +64,7 @@ public abstract class ScadsOperation extends Operation
 	@Override
 	public void prepare(Generator generator) 
 	{
-		this._generator = generator;
+		this.generatedByGenerator = generator;
 
 		ScadsLoadProfile currentLoad = (ScadsLoadProfile) generator.getTrack().getCurrentLoadProfile(); 
 

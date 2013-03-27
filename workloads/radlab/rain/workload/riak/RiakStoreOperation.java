@@ -11,8 +11,8 @@ public class RiakStoreOperation extends RiakOperation
 	public RiakStoreOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = RiakGenerator.STORE;
+		this.operationName = NAME;
+		this.operationIndex = RiakGenerator.STORE;
 	}
 
 	@Override

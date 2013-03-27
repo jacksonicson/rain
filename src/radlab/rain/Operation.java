@@ -36,223 +36,289 @@ import java.util.Set;
 import radlab.rain.scoreboard.IScoreboard;
 
 /**
- * The Operation class is a (delegatable) encapsulation of "tasks to be done".
- * An operation contains all features of the state necessary to execute at an
- * arbitrary point in time (i.e. immediately or in the future). It follows the
- * Command pattern (GoF). It implements <code>Runnable</code> in case another
- * thread has to execute it.
+ * The Operation class is a encapsulation of "tasks to be done". An operation contains all features of the state
+ * necessary to execute at an arbitrary point in time (i.e. immediately or in the future). It follows the Command
+ * pattern (GoF). It implements <code>Runnable</code> in case another thread has to execute it.
  */
-public abstract class Operation implements Runnable 
-{
+public abstract class Operation implements Runnable {
+
 	// Describes the operation
-	protected int _operationIndex       = -1;
-	protected String _operationName     = "";
-	protected String _operationRequest	= "";
+	protected int operationIndex = -1;
+	protected String operationName;
+	protected String operationRequest;
+
 	// Describes who generated the operation and when (during what interval)
-	protected String _generatedBy       			= "";
-	// LoadProfile in effect when this operation was generated/initialized
-	private LoadDefinition _generatedDuringProfile 	= null;
-	protected long _profileStartTime		= -1;
-	
-	private long _generatorThreadID     = -1;
-	private boolean _interactive        = true;
-	private long _timeQueued            = 0;
-	private long _timeStarted           = 0;
-	private long _timeFinished          = 0;
-	
-	private long _thinkTimeUsed			= 0; // Track how much thinktime we used
-	private long _cycleTimeUsed			= 0; // Track how much cycle delays we took advantage of
-		
-	private boolean _async              = false;
-	protected boolean _mustBeSync       = false; // In some cases an operation may have to be done synchronously because it sets the state for operations that happen after it
-		
-	// Describes the outcome of executing the operation
-	protected boolean _failed           = true;
-	protected Throwable _failureReason  = null;
-	protected TraceRecord _trace        = null;
-	
+	protected String generatedBy;
+
+	// Load definition in effect when this operation was generated/initialized
+	private LoadDefinition generatedDuringLoadDefinition;
+	protected long profileStartTime = -1;
+
+	// Reference to the generator that created this operation
+	protected Generator generatedByGenerator;
+
 	// Used to collect execution metrics
-	protected IScoreboard _scoreboard   = null;
-	protected long _actionsPerformed    = 0; // Defaults to 1, should be >= 1
-	protected Generator _generator      = null;
-	
-	public Operation( boolean interactive, IScoreboard scoreboard )
-	{
-		this._interactive = interactive;
-		this._scoreboard = scoreboard;
+	protected IScoreboard scoreboard;
+
+	// Identifies the generator within the track
+	private long generatorId = -1;
+
+	// Statistics
+	private long timeQueued;
+	private long timeStarted;
+	private long timeFinished;
+
+	private long thinkTimeUsed; // Track how much thinktime we used
+	private long cycleTimeUsed; // Track how much cycle delays we took advantage of
+
+	// Synchron or asynchron execution mode
+	private boolean async = false;
+	protected boolean enforceSync = false; // if order of operation execution is important
+
+	// Outcome of executing the operation
+	protected boolean failed = true;
+	protected Throwable failureReason;
+	protected TraceRecord trace;
+
+	protected long numberOfActionsPerformed;
+
+	public Operation(IScoreboard scoreboard) {
+		this.scoreboard = scoreboard;
 	}
-	
-	public int getOperationIndex() { return this._operationIndex; }
-	public String getOperationName() { return this._operationName; }
-	public boolean isInteractive() { return this._interactive; }
-	
-	public long getTimeQueued() { return this._timeQueued; }
-	public void setTimeQueued( long val ){ this._timeQueued = val; }
-	public long getTimeStarted() { return this._timeStarted; }
-	public void setTimeStarted( long val ) { this._timeStarted = val; }
-	public long getTimeFinished() { return this._timeFinished; }
-	public void setTimeFinished( long val ) { this._timeFinished = val; }
-	
-	public long getThinkTimeUsed() { return this._thinkTimeUsed; }
-	public void setThinkTimeUsed( long val ) { this._thinkTimeUsed = val; }
-	public long getCycleTimeUsed() { return this._cycleTimeUsed; }
-	public void setCycleTimeUsed( long val ) { this._cycleTimeUsed = val; }
-	
-	public boolean getAsync() { return this._async; }
-	public void setAsync( boolean val ){ this._async = val; }
-	public String getGeneratedBy() { return this._generatedBy; }
-	public void setGeneratedBy( String val ){ this._generatedBy = val; }
-	public LoadDefinition getGeneratedDuringProfile() { return this._generatedDuringProfile; }
-	public void setGeneratedDuringProfile( LoadDefinition val )
-	{ 
+
+	public int getOperationIndex() {
+		return this.operationIndex;
+	}
+
+	public String getOperationName() {
+		return this.operationName;
+	}
+
+	public long getTimeQueued() {
+		return this.timeQueued;
+	}
+
+	public void setTimeQueued(long val) {
+		this.timeQueued = val;
+	}
+
+	public long getTimeStarted() {
+		return this.timeStarted;
+	}
+
+	public void setTimeStarted(long val) {
+		this.timeStarted = val;
+	}
+
+	public long getTimeFinished() {
+		return this.timeFinished;
+	}
+
+	public void setTimeFinished(long val) {
+		this.timeFinished = val;
+	}
+
+	public long getThinkTimeUsed() {
+		return this.thinkTimeUsed;
+	}
+
+	public void setThinkTimeUsed(long val) {
+		this.thinkTimeUsed = val;
+	}
+
+	public long getCycleTimeUsed() {
+		return this.cycleTimeUsed;
+	}
+
+	public void setCycleTimeUsed(long val) {
+		this.cycleTimeUsed = val;
+	}
+
+	public boolean getAsync() {
+		return this.async;
+	}
+
+	public void setAsync(boolean val) {
+		this.async = val;
+	}
+
+	public String getGeneratedBy() {
+		return this.generatedBy;
+	}
+
+	public void setGeneratedBy(String val) {
+		this.generatedBy = val;
+	}
+
+	public LoadDefinition getGeneratedDuringProfile() {
+		return this.generatedDuringLoadDefinition;
+	}
+
+	public void setGeneratedDuringProfile(LoadDefinition val) {
 		// Save the load profile
-		this._generatedDuringProfile = val; 
+		this.generatedDuringLoadDefinition = val;
 		// Save the time started now since the load manager thread updates this
 		// field - we can then use timestarted+intervalduration
 		// to see whether the operation finished during the interval
-		this._profileStartTime = val.getTimeStarted(); 
+		this.profileStartTime = val.getTimeStarted();
 	}
-	public long getProfileStartTime(){ return this._profileStartTime; }
-	
-	public boolean isFailed() {return this._failed; }
-	public void setFailed( boolean val ){ this._failed = val; }
-	public Throwable getFailureReason(){ return this._failureReason; }
-	public void setFailureReason( Throwable t ){ this._failureReason = t; }
-	public long getActionsPerformed(){ return _actionsPerformed; }
-	public void setActionsPerformed( long val ){ this._actionsPerformed = val; }
-	public long getGeneratorThreadID() { return this._generatorThreadID; }
-	public void setGeneratorThreadID( long val ) { this._generatorThreadID = val; }
-	
-	public void trace( String request )
-	{
-		if( this._trace == null )
-			this._trace = new TraceRecord();
-		this._trace._lstRequests.add( request );
+
+	public long getProfileStartTime() {
+		return this.profileStartTime;
 	}
-	
-	public void trace( String[] requests )
-	{
-		if( this._trace == null )
-			this._trace = new TraceRecord();
-		
-		for( String request : requests )
-			this._trace._lstRequests.add( request );
+
+	public boolean isFailed() {
+		return this.failed;
 	}
-	
-	public void trace( Set<String> requests )
-	{
-		if( this._trace == null )
-			this._trace = new TraceRecord();
-		
-		for( String request : requests )
-			this._trace._lstRequests.add( request );
+
+	public void setFailed(boolean val) {
+		this.failed = val;
 	}
-	
-	public TraceRecord getTrace() { return this._trace; }
-	
-	public StringBuffer dumpTrace()
-	{
+
+	public Throwable getFailureReason() {
+		return this.failureReason;
+	}
+
+	public void setFailureReason(Throwable t) {
+		this.failureReason = t;
+	}
+
+	public long getActionsPerformed() {
+		return numberOfActionsPerformed;
+	}
+
+	public void setActionsPerformed(long val) {
+		this.numberOfActionsPerformed = val;
+	}
+
+	public long getGeneratorThreadID() {
+		return this.generatorId;
+	}
+
+	public void setGeneratorThreadID(long val) {
+		this.generatorId = val;
+	}
+
+	public void trace(String request) {
+		if (this.trace == null)
+			this.trace = new TraceRecord();
+		this.trace._lstRequests.add(request);
+	}
+
+	public void trace(String[] requests) {
+		if (this.trace == null)
+			this.trace = new TraceRecord();
+
+		for (String request : requests)
+			this.trace._lstRequests.add(request);
+	}
+
+	public void trace(Set<String> requests) {
+		if (this.trace == null)
+			this.trace = new TraceRecord();
+
+		for (String request : requests)
+			this.trace._lstRequests.add(request);
+	}
+
+	public TraceRecord getTrace() {
+		return this.trace;
+	}
+
+	public StringBuffer dumpTrace() {
 		StringBuffer buf = new StringBuffer();
-		TraceRecord traceRec = this._trace;
-		if( traceRec == null )
+		TraceRecord traceRec = this.trace;
+		if (traceRec == null)
 			return buf;
-				
+
 		// |-----Workload details----------------|----------|-------|--------|--------------|
-		// [RU] [Workload Interval#?] [Max users] Start time, opName, action#, actual request 
+		// [RU] [Workload Interval#?] [Max users] Start time, opName, action#, actual request
 		int i = 0;
-		for( String request : traceRec._lstRequests )
-		{
-			buf.append( this._timeStarted );
-			buf.append( " " );
-			buf.append( this._operationName );
-			buf.append( " " );
-			buf.append( i );
-			buf.append( " " );
-			buf.append( request );
-			buf.append( "\n" );
+		for (String request : traceRec._lstRequests) {
+			buf.append(this.timeStarted);
+			buf.append(" ");
+			buf.append(this.operationName);
+			buf.append(" ");
+			buf.append(i);
+			buf.append(" ");
+			buf.append(request);
+			buf.append("\n");
 			i++;
 		}
-		
+
 		return buf;
 	}
-	
-	public void disposeOfTrace() 
-	{ 
-		if( this._trace == null )
+
+	public void disposeOfTrace() {
+		if (this.trace == null)
 			return;
-		
-		this._trace._lstRequests.clear();
-		this._trace = null;
+
+		this.trace._lstRequests.clear();
+		this.trace = null;
 	}
-	
+
 	/**
-	 * This method is used to run this operation. By default, it records any
-	 * metrics when executing. This can be overridden to make a single call to
-	 * <code>execute()</code> for more fine-grained control. This method must
-	 * catch any <code>Throwable</code>s.
+	 * This method is used to run this operation. By default, it records any metrics when executing. This can be
+	 * overridden to make a single call to <code>execute()</code> for more fine-grained control. This method must catch
+	 * any <code>Throwable</code>s.
 	 */
-	public void run()
-	{
+	public void run() {
 		// Invoke the pre-execute hook here before we start the clock to time the
 		// operation's execution
 		this.preExecute();
-		
-		this.setTimeStarted( System.currentTimeMillis() );
-		try
-		{
+
+		this.setTimeStarted(System.currentTimeMillis());
+		try {
 			this.execute();
-		}
-		catch( Throwable e )
-		{
-			this.setFailed( true );
-			this.setFailureReason( e );
-		}
-		finally
-		{
-			this.setTimeFinished( System.currentTimeMillis() );
+		} catch (Throwable e) {
+			this.setFailed(true);
+			this.setFailureReason(e);
+		} finally {
+			this.setTimeFinished(System.currentTimeMillis());
 			// Invoke the post-execute hook here after we stop the clock to time the
 			// operation's execution
 			this.postExecute();
-			
-			if ( this._scoreboard != null )
-			{
+
+			if (this.scoreboard != null) {
 				OperationExecution result = new OperationExecution(this);
-				this._scoreboard.dropOffOperation(result);
+				this.scoreboard.dropOffOperation(result);
 			}
 		}
 	}
-	
+
 	/**
-	 * Prepares this operation for execution. This involves copying any features
-	 * about the current state into this operation.
+	 * Prepares this operation for execution. This involves copying any features about the current state into this
+	 * operation.
 	 * 
-	 * @param generator     The generator containing the state to copy.
+	 * @param generator
+	 *            The generator containing the state to copy.
 	 */
-	public abstract void prepare( Generator generator );
-	
+	public abstract void prepare(Generator generator);
+
 	/**
-	 * Executes this operation. This method is responsible for saving its trace
-	 * record and execution metrics.
+	 * Executes this operation. This method is responsible for saving its trace record and execution metrics.
 	 * 
-	 * @throws Throwable 
+	 * @throws Throwable
 	 */
 	public abstract void execute() throws Throwable;
-	
-	/** Hook method for actions to be performed right before execution starts 
-	 * (before the clock starts to time the execute method). There's no throws
-	 * clause on this method so if something fails the methods need to deal with it.
+
+	/**
+	 * Hook method for actions to be performed right before execution starts (before the clock starts to time the
+	 * execute method). There's no throws clause on this method so if something fails the methods need to deal with it.
 	 */
-	public void preExecute(){}
-	
-	/** Hook method for actions to be performed right after execution finishes 
-	 * (after the clock stops to time the execute method). There's no throws
-	 * clause on this method so if something fails the methods need to deal with it.
+	public void preExecute() {
+	}
+
+	/**
+	 * Hook method for actions to be performed right after execution finishes (after the clock stops to time the execute
+	 * method). There's no throws clause on this method so if something fails the methods need to deal with it.
 	 */
-	public void postExecute() {}
-	
+	public void postExecute() {
+	}
+
 	/**
 	 * Do any potential cleanup necessary after execution of this operation.
 	 */
 	public abstract void cleanup();
-	
+
 }

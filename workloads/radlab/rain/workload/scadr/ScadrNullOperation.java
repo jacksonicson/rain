@@ -9,8 +9,8 @@ public class ScadrNullOperation extends ScadrOperation
 	public ScadrNullOperation( boolean interactive, IScoreboard scoreboard ) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = ScadrGenerator.NULL_OP;
+		this.operationName = NAME;
+		this.operationIndex = ScadrGenerator.NULL_OP;
 	}
 
 	@Override

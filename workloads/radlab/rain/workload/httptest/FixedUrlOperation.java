@@ -18,8 +18,8 @@ public class FixedUrlOperation extends Operation
 	public FixedUrlOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = FixedUrlGenerator.PING_URL;
+		this.operationName = NAME;
+		this.operationIndex = FixedUrlGenerator.PING_URL;
 	}
 
 	/**
@@ -29,7 +29,7 @@ public class FixedUrlOperation extends Operation
 	 */
 	public FixedUrlGenerator getGenerator()
 	{
-		return (FixedUrlGenerator) this._generator;
+		return (FixedUrlGenerator) this.generatedByGenerator;
 	}
 	
 	@Override
@@ -58,7 +58,7 @@ public class FixedUrlOperation extends Operation
 	@Override
 	public void prepare(Generator generator) 
 	{
-		this._generator = generator;
+		this.generatedByGenerator = generator;
 		FixedUrlGenerator specificUrlGenerator = (FixedUrlGenerator) generator;
 		
 		LoadDefinition currentLoadProfile = generator.getLatestLoadProfile();

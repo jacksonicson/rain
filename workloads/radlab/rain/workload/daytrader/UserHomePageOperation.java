@@ -42,8 +42,8 @@ public class UserHomePageOperation extends DayTraderOperation
 	public UserHomePageOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = DayTraderGenerator.USER_HOME_PAGE;
+		this.operationName = NAME;
+		this.operationIndex = DayTraderGenerator.USER_HOME_PAGE;
 	}
 
 	@Override

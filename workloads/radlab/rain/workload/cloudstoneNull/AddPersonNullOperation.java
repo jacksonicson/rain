@@ -41,14 +41,14 @@ public class AddPersonNullOperation extends CloudstoneNullOperation
 	public AddPersonNullOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = AddPersonNullOperation.NAME;
-		this._operationIndex = CloudstoneNullGenerator.ADD_PERSON;
+		this.operationName = AddPersonNullOperation.NAME;
+		this.operationIndex = CloudstoneNullGenerator.ADD_PERSON;
 	}
 
 	@Override
 	public void execute() throws Throwable
 	{
-		this.trace( this._operationName );
+		this.trace( this.operationName );
 		Thread.sleep( 25 );
 		this.setFailed( false );
 	}

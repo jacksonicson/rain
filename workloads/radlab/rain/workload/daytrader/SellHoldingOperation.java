@@ -47,8 +47,8 @@ public class SellHoldingOperation extends DayTraderOperation
 	public SellHoldingOperation(boolean interactive, IScoreboard scoreboard) 
 	{
 		super(interactive, scoreboard);
-		this._operationName = NAME;
-		this._operationIndex = DayTraderGenerator.SELL_HOLDINGS;
+		this.operationName = NAME;
+		this.operationIndex = DayTraderGenerator.SELL_HOLDINGS;
 	}
 
 	@Override
