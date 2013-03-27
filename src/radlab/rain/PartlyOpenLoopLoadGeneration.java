@@ -104,7 +104,7 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy {
 
 	/** Disposes of objects used by this thread. */
 	public void dispose() {
-		this._generator.dispose();
+		this.generator.dispose();
 	}
 
 	/** Runs this partly open loop load generation thread. */
@@ -113,22 +113,22 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy {
 		this.resetStatistics();
 
 		// Calculates all benchmark times
-		this.loadTrackConfiguration(this._generator.getTrack());
+		this.loadTrackConfiguration(this.generator.getTrack());
 
 		try {
 			// Sleep until its time to start
-			this.sleepUntil(this._timeStarted);
+			this.sleepUntil(this.timeStarted);
 
 			// loop is active until after the ramp down phase
 			int lastOperationIndex = NO_OPERATION_INDEX;
-			while (System.currentTimeMillis() <= this._timeToQuit) {
+			while (System.currentTimeMillis() <= this.timeToQuit) {
 				// If the user is inactive
 				if (!this.isActive()) {
-					this._lgState = LGState.Inactive;
+					this.threadState = ThreadStates.Inactive;
 					Thread.sleep(INACTIVE_DURATION);
 				} else { // user is active
-					this._lgState = LGState.Active;
-					Operation nextOperation = this._generator.nextRequest(lastOperationIndex);
+					this.threadState = ThreadStates.Active;
+					Operation nextOperation = this.generator.nextRequest(lastOperationIndex);
 					// This will let generators do no-ops by returning null.
 					// We might end up making sure that we count/account for the no-ops
 					if (nextOperation != null) {
@@ -168,29 +168,29 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy {
 	protected void doAsyncOperation(Operation operation) throws InterruptedException {
 		this._asynchOperations++;
 
-		long cycleTime = this._generator.getCycleTime();
+		long cycleTime = this.generator.getCycleTime();
 		long now = System.currentTimeMillis();
 		long wakeUpTime = now + cycleTime;
 
 		operation.setAsync(true);
 		this.doOperation(operation);
 
-		if (wakeUpTime > this._timeToQuit) {
-			if (now < this._startSteadyState) {
+		if (wakeUpTime > this.timeToQuit) {
+			if (now < this.startSteadyState) {
 				// logger.info( "[" + this.getName() + "] In rampUp attempt to sleep past end of run! Adjusting." );
-				cycleTime = this._startSteadyState - now;
-				this.sleepUntil(this._startSteadyState);
+				cycleTime = this.startSteadyState - now;
+				this.sleepUntil(this.startSteadyState);
 			} else {
 				// logger.info( "[" + this.getName() + "] Attempt to sleep past end of run! Adjusting." );
 				// Revise the cycle time
-				cycleTime = this._timeToQuit - now;
-				this.sleepUntil(this._timeToQuit);
+				cycleTime = this.timeToQuit - now;
+				this.sleepUntil(this.timeToQuit);
 			}
 		} else
 			this.sleepUntil(wakeUpTime);
 
 		// Save the cycle time - if we're in the steady state
-		this._generator.getScoreboard().dropOffWaitTime(now, operation._operationName, cycleTime);
+		this.generator.getScoreboard().dropOffWaitTime(now, operation._operationName, cycleTime);
 	}
 
 	/**
@@ -207,29 +207,29 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy {
 		operation.setAsync(false);
 		this.doOperation(operation);
 
-		long thinkTime = this._generator.getThinkTime();
+		long thinkTime = this.generator.getThinkTime();
 		// logger.info( "[" + this.getName() + "] Think time: " + thinkTime );
 
 		long now = System.currentTimeMillis();
-		if ((now + thinkTime) > this._timeToQuit) {
+		if ((now + thinkTime) > this.timeToQuit) {
 			// If we're in the ramp up period then sleep until the start of
 			// steady state
-			if (now < this._startSteadyState) {
+			if (now < this.startSteadyState) {
 				// logger.info( "[" + this.getName() + "] In rampUp attempt to sleep past end of run! Adjusting." );
-				thinkTime = this._startSteadyState - now;
-				this.sleepUntil(this._startSteadyState);
+				thinkTime = this.startSteadyState - now;
+				this.sleepUntil(this.startSteadyState);
 			} else // we're in the steadystate or rampdown
 			{
 				// logger.info( "[" + this.getName() + "] Attempt to sleep past end of run! Adjusting." );
 				// Revise the think time
-				thinkTime = this._timeToQuit - now;
-				this.sleepUntil(this._timeToQuit);
+				thinkTime = this.timeToQuit - now;
+				this.sleepUntil(this.timeToQuit);
 			}
 		} else
 			this.sleepUntil(now + thinkTime);
 
 		// Save the think time
-		this._generator.getScoreboard().dropOffWaitTime(now, operation._operationName, thinkTime);
+		this.generator.getScoreboard().dropOffWaitTime(now, operation._operationName, thinkTime);
 	}
 
 	/**
@@ -240,20 +240,20 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy {
 	 *            The track from which to load the configuration.
 	 */
 	protected void loadTrackConfiguration(Track track) {
-		this._openLoopProbability = this._generator.getTrack().getOpenLoopProbability();
+		this._openLoopProbability = this.generator.getTrack().getOpenLoopProbability();
 
 		// This value gets set by Benchmark
-		if (this._timeStarted == TIME_NOT_SET)
-			this._timeStarted = System.currentTimeMillis();
+		if (this.timeStarted == TIME_NOT_SET)
+			this.timeStarted = System.currentTimeMillis();
 
 		// Configuration is specified in seconds; convert to milliseconds.
 		long rampUp = track.getRampUp() * 1000;
 		long duration = track.getDuration() * 1000;
 		long rampDown = track.getRampDown() * 1000;
 
-		this._startSteadyState = this._timeStarted + rampUp;
-		this._endSteadyState = this._startSteadyState + duration;
-		this._timeToQuit = this._endSteadyState + rampDown;
+		this.startSteadyState = this.timeStarted + rampUp;
+		this.endSteadyState = this.startSteadyState + duration;
+		this.timeToQuit = this.endSteadyState + rampDown;
 	}
 
 	/**
@@ -281,7 +281,7 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy {
 	 * @return True if this thread should be active; otherwise false.
 	 */
 	protected boolean isActive() {
-		LoadUnit loadProfile = this._generator.getTrack().getCurrentLoadProfile();
+		LoadUnit loadProfile = this.generator.getTrack().getCurrentLoadProfile();
 		return (this._id < loadProfile.getNumberOfUsers());
 	}
 }

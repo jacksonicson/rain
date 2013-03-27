@@ -391,7 +391,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 				Scorecard profileScorecard = this.profileScorecards.get(profileName);
 				// Create a new scorecard if needed
 				if (profileScorecard == null) {
-					profileScorecard = new Scorecard(profileName, trackName, activeProfile._interval, activeProfile._numberOfUsers);
+					profileScorecard = new Scorecard(profileName, trackName, activeProfile._interval, activeProfile.numberOfUsers);
 					profileScorecards.put(profileName, profileScorecard);
 				}
 

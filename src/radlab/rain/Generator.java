@@ -31,68 +31,39 @@
 
 package radlab.rain;
 
-import org.json.JSONObject;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import radlab.rain.scoreboard.IScoreboard;
 
 /**
- * The Generator abstract class provides a default constructor, required
- * properties, and specifies the methods that must be implemented in order
- * to interface with the benchmark architecture.<br />
- * <br />
- * The basic Generator has a name, associates itself with a scenario track,
- * and keeps a reference to a scoreboard in which operation results are
- * dropped off.
+ * The Generator abstract class provides a default constructor, required properties, and specifies the methods that must
+ * be implemented in order to interface with the benchmark architecture.
+ * 
+ * The basic Generator has a name, associates itself with a scenario track, and keeps a reference to a scoreboard in
+ * which operation results are dropped off.
  */
-public abstract class Generator 
-{
-	/** A name with which to identify this generator (e.g. for logging). */
-	protected String _name = "";
-	
-	/** The scenario track that identifies the load profile. */
-	protected Track _loadTrack = null;
-	/** The think time and cycle time */
-	protected long _thinkTime = 0;
-	protected long _cycleTime = 0;
-	
-	/** A reference to the scoreboard to drop results off at. */
+public abstract class Generator {
+	// Think time and cycle time
+	protected long _thinkTime;
+	protected long _cycleTime;
+
+	// Scoreboard to drop results off at
 	protected IScoreboard _scoreboard = null;
-	/** A reference to the latest load profile used */
+
+	// Latest load profile used
 	protected LoadUnit _latestLoadProfile = null;
-	
-	public String getName() { return this._name; }
-	public void setName( String val ) { this._name = val; }
-	
-	public Track getTrack() { return this._loadTrack; }
-	
-	public void setScoreboard( IScoreboard scoreboard ) { this._scoreboard = scoreboard; }
-	public IScoreboard getScoreboard() { return this._scoreboard; }
-	
-	public void setLatestLoadProfile( LoadUnit val ) { this._latestLoadProfile = val; }
-	public LoadUnit getLatestLoadProfile() { return this._latestLoadProfile; }
-	
-	/**
-	 * Creates a new Generator.
-	 * 
-	 * @param track     The track configuration with which to run this generator.
-	 */
-	public Generator( Track track )
-	{
-		this._loadTrack = track;
-		//this.initialize(); // let the Benchmark call initialize
+
+	public Generator() {
 	}
-	
-	public abstract long getThinkTime();
-	public void setMeanThinkTime( long val ){ this._thinkTime = val; }
-	public abstract long getCycleTime();
-	public void setMeanCycleTime( long val ) { this._cycleTime = val; }
-	
-	public abstract Operation nextRequest( int lastOperation );
-	
+
 	public abstract void initialize();
+
+	public abstract Operation nextRequest(int lastOperation);
+
 	public abstract void dispose();
-	// Method for configuring the driver prior to its initialization
-	public void configure( JSONObject config ) throws JSONException
-	{}
+
+	public void configure(JSONObject config) throws JSONException {
+		// Overwrite this
+	}
 }

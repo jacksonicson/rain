@@ -151,7 +151,7 @@ public class DefaultScenarioTrack extends Track {
 		// boolean valid = true;
 		int retVal = Track.VALID_LOAD_PROFILE;
 
-		if (profile._numberOfUsers <= 0) {
+		if (profile.numberOfUsers <= 0) {
 			logger.info(this + " Invalid load profile. Number of users <= 0. Profile details: " + profile.toString());
 			retVal = Track.ERROR_INVALID_LOAD_PROFILE_BAD_NUM_USERS;
 		}
@@ -163,9 +163,9 @@ public class DefaultScenarioTrack extends Track {
 
 		// Do capping of number of users, don't fail validation though
 		int maxUsersForTrack = this.getMaxUsers();
-		if (profile._numberOfUsers > maxUsersForTrack) {
+		if (profile.numberOfUsers > maxUsersForTrack) {
 			logger.info(this + " LoadProfile validation capping number of users to " + maxUsersForTrack + ".");
-			profile._numberOfUsers = maxUsersForTrack;
+			profile.numberOfUsers = maxUsersForTrack;
 		}
 
 		return retVal;

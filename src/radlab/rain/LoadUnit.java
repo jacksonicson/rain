@@ -46,17 +46,17 @@ public class LoadUnit {
 
 	public long _interval;
 	protected long _transitionTime;
-	public int _numberOfUsers;
+	public int numberOfUsers;
 	protected String _mixName = "";
 	public long _activeCount = 0; // How often has this interval become active, the load scheduler updates this
-	protected int _openLoopMaxOpsPerSec = 0; // Rate limit on async operations. A value of 0 means no rate limiting.
+	protected int openLoopMaxOpsPerSec = 0; // Rate limit on async operations. A value of 0 means no rate limiting.
 	protected JSONObject _config = null; // Save the original configuration object if its passed
 
 	private long _timeStarted = -1; // LoadManagerThreads need to update this every time they advance the "clock"
 
 	public LoadUnit(JSONObject profileObj) throws JSONException {
 		this._interval = profileObj.getLong(CFG_LOAD_PROFILE_INTERVAL_KEY);
-		this._numberOfUsers = profileObj.getInt(CFG_LOAD_PROFILE_USERS_KEY);
+		this.numberOfUsers = profileObj.getInt(CFG_LOAD_PROFILE_USERS_KEY);
 		this._mixName = profileObj.getString(CFG_LOAD_PROFILE_MIX_KEY);
 
 		// Load the transition time (if specified)
@@ -69,9 +69,9 @@ public class LoadUnit {
 
 		// Open loop rate limiting (if that's configured). By default there's no rate limiting
 		if (profileObj.has(CFG_OPEN_LOOP_MAX_OPS_PER_SEC_KEY)) {
-			this._openLoopMaxOpsPerSec = profileObj.getInt(CFG_OPEN_LOOP_MAX_OPS_PER_SEC_KEY);
-			if (this._openLoopMaxOpsPerSec < 0)
-				this._openLoopMaxOpsPerSec = 0;
+			this.openLoopMaxOpsPerSec = profileObj.getInt(CFG_OPEN_LOOP_MAX_OPS_PER_SEC_KEY);
+			if (this.openLoopMaxOpsPerSec < 0)
+				this.openLoopMaxOpsPerSec = 0;
 		}
 
 		this._config = profileObj;
@@ -83,14 +83,14 @@ public class LoadUnit {
 
 	public LoadUnit(long interval, int numberOfUsers, String mixName, long transitionTime) {
 		this._interval = interval;
-		this._numberOfUsers = numberOfUsers;
+		this.numberOfUsers = numberOfUsers;
 		this._mixName = mixName;
 		this._transitionTime = transitionTime;
 	}
 
 	public LoadUnit(long interval, int numberOfUsers, String mixName, long transitionTime, String name) {
 		this._interval = interval;
-		this._numberOfUsers = numberOfUsers;
+		this.numberOfUsers = numberOfUsers;
 		this._mixName = mixName;
 		this._transitionTime = transitionTime;
 		this._name = name;
@@ -106,11 +106,11 @@ public class LoadUnit {
 	}
 
 	public int getNumberOfUsers() {
-		return this._numberOfUsers;
+		return this.numberOfUsers;
 	}
 
 	public void setNumberOfUsers(int val) {
-		this._numberOfUsers = val;
+		this.numberOfUsers = val;
 	}
 
 	public String getMixName() {
@@ -146,20 +146,20 @@ public class LoadUnit {
 	}
 
 	public int getOpenLoopMaxOpsPerSec() {
-		return this._openLoopMaxOpsPerSec;
+		return this.openLoopMaxOpsPerSec;
 	}
 
 	public void setOpenLoopMaxOpsPerSec(int val) {
-		this._openLoopMaxOpsPerSec = val;
+		this.openLoopMaxOpsPerSec = val;
 	}
 
 	public String toString() {
 		StringBuffer buf = new StringBuffer();
 		if (this._name == null || this._name.trim().length() == 0)
-			buf.append("[Duration: " + this._interval + " Users: " + this._numberOfUsers + " Mix: " + this._mixName + " Transition time: "
+			buf.append("[Duration: " + this._interval + " Users: " + this.numberOfUsers + " Mix: " + this._mixName + " Transition time: "
 					+ this._transitionTime + "]");
 		else
-			buf.append("[Duration: " + this._interval + " Users: " + this._numberOfUsers + " Mix: " + this._mixName + " Transition time: "
+			buf.append("[Duration: " + this._interval + " Users: " + this.numberOfUsers + " Mix: " + this._mixName + " Transition time: "
 					+ this._transitionTime + " Name: " + this._name + "]");
 		return buf.toString();
 	}

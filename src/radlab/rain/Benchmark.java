@@ -55,14 +55,9 @@ public class Benchmark {
 	private static Logger logger = LoggerFactory.getLogger(Benchmark.class);
 
 	public void start(Scenario scenario) throws Exception {
-		Thread.currentThread().setName("Benchmark-thread");
-
+		Thread.currentThread().setName("benchmark");
 		
-		 
-
-		
-
-		// Create threads
+		// Execute scenario
 		scenario.execute();
 
 		// Set up for stats aggregation across tracks based on the generators
@@ -210,9 +205,7 @@ public class Benchmark {
 
 			// Start signal passed. Start scenario now
 			logger.info("Starting scenario (threads)");
-			scenario.start();
 			benchmark.start(scenario);
-			scenario.end();
 
 		} catch (Exception e) {
 			logger.error("error in benchmark", e);
