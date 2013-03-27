@@ -94,7 +94,7 @@ public abstract class LoadGenerationStrategy extends Thread
 	 * @param generator     The generator to associate with this thread.
 	 * @param id            The unique ID of this thread.
 	 */
-	public LoadGenerationStrategy( Generator generator, long id )
+	public LoadGenerationStrategy(Generator generator)
 	{
 		this._generator = generator;
 		this._id = id;
@@ -117,7 +117,7 @@ public abstract class LoadGenerationStrategy extends Thread
 	 * @param id            The unique ID of this thread.
 	 * @param params		Additional configuration parameters.
 	 */
-	public LoadGenerationStrategy( Generator generator, long id, JSONObject params )
+	public LoadGenerationStrategy( Generator generator, JSONObject params )
 	{
 		this._generator = generator;
 		this._id = id;

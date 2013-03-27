@@ -33,7 +33,6 @@ package radlab.rain;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
@@ -72,7 +71,7 @@ public abstract class Track {
 	// Load schedule used by the generator and strategy
 	protected LoadUnit currentLoadUnit;
 	protected LoadScheduleCreator loadScheduleCreator;
-	protected LinkedList<LoadUnit> loadSchedule = new LinkedList<LoadUnit>();
+	protected LoadSchedule loadSchedule;
 
 	// Generates queries
 	protected Generator generator;
@@ -107,6 +106,9 @@ public abstract class Track {
 
 		// Create load schedule creator
 		loadScheduleCreator = createLoadScheduleCreator();
+
+		// Create load schedule
+		loadSchedule = loadScheduleCreator.createSchedule(config.loadSchedulerParams);
 
 		// Create load generator
 		generator = createGenerator();
@@ -153,48 +155,41 @@ public abstract class Track {
 	}
 
 	@SuppressWarnings("unchecked")
-	public LoadGenerationStrategy createLoadGenerationStrategy(String loadGenerationStrategyClassName,
-			JSONObject loadGenerationStrategyParams, Generator generator, int id) throws Exception {
-		LoadGenerationStrategy loadGenStrategy = null;
+	public LoadGenerationStrategy createLoadGenerationStrategy(Generator generator) throws Exception {
 		Class<LoadGenerationStrategy> loadGenStrategyClass = (Class<LoadGenerationStrategy>) Class
-				.forName(loadGenerationStrategyClassName);
+				.forName(config.loadGenerationStrategyClassName);
 		Constructor<LoadGenerationStrategy> loadGenStrategyCtor = loadGenStrategyClass.getConstructor(new Class[] {
 				Generator.class, long.class, JSONObject.class });
-		loadGenStrategy = (LoadGenerationStrategy) loadGenStrategyCtor.newInstance(new Object[] { generator, id,
-				loadGenerationStrategyParams });
+		LoadGenerationStrategy loadGenStrategy = (LoadGenerationStrategy) loadGenStrategyCtor.newInstance(new Object[] {
+				generator, config.loadGenerationStrategyParams });
 		return loadGenStrategy;
 	}
 
-	public long createLoadGenerators(long start, ExecutorService pool, IScoreboard scoreboard) throws Exception {
-		long maxUsers = getMaxUsers();
-
-		logger.info("Creating " + maxUsers + " threads for " + getName());
-
-		// Create enough threads for maximum users needed by the scenario.
-		for (int i = 0; i < maxUsers; i++) {
-			Generator generator = createWorkloadGenerator(getGeneratorClassName(), getGeneratorParams());
+	public void createLoadGenerators(long start, ExecutorService pool, IScoreboard scoreboard) throws Exception {
+		long maxGenerators = loadSchedule.getMaxGenerators();
+		for (int i = 0; i < maxGenerators; i++) {
+			// Setup generator
+			Generator generator = createGenerator();
 			generator.setScoreboard(scoreboard);
-
-			generator.setMeanCycleTime((long) (getMeanCycleTime() * 1000));
-			generator.setMeanThinkTime((long) (getMeanThinkTime() * 1000));
-
-			// Allow the load generation strategy to be configurable
-			LoadGenerationStrategy lgThread = createLoadGenerationStrategy(getLoadGenerationStrategyClassName(),
-					getLoadGenerationStrategyParams(), generator, i);
-
-			generator.setName(lgThread.getName());
+			generator.setMeanCycleTime((long) (config.meanCycleTime * 1000));
+			generator.setMeanThinkTime((long) (config.meanThinkTime * 1000));
 			generator.initialize();
 
-			lgThread.setInteractive(getInteractive());
-			lgThread.setSharedWorkPool(pool);
-			lgThread.setTimeStarted(start);
+			// Allow the load generation strategy to be configurable
+			LoadGenerationStrategy strategy = createLoadGenerationStrategy(generator);
+			strategy.setInteractive(config.interactive);
+			strategy.setSharedWorkPool(pool);
+			strategy.setTimeStarted(start);
 
 			// Add thread to thread list and start the thread
-			generators.add(lgThread);
-			lgThread.start();
+			generators.add(strategy);
 		}
+	}
 
-		return maxUsers;
+	public void startGenerators() {
+		for (LoadGenerationStrategy strategy : generators) {
+			strategy.start();
+		}
 	}
 
 	void join() {
@@ -208,10 +203,5 @@ public abstract class Track {
 				generator.dispose();
 			}
 		}
-	}
-
-	void shutdown() {
-		// Shutdown the shared threadpool
-
 	}
 }

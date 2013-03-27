@@ -50,20 +50,18 @@ public class Scenario {
 
 	private ScenarioConfiguration conf = new ScenarioConfiguration();
 
-	private Timing timing;
-
 	public Scenario(JSONObject jsonConfig) throws Exception {
 		conf.loadProfile(jsonConfig);
 	}
 
-	private void buildTracks() throws Exception {
+	private void buildTracks(Timing timing) throws Exception {
 		for (JSONObject trackConfig : conf.getTrackConfigurations()) {
 			String trackClassName = trackConfig.getString(TrackConfKeys.TRACK_CLASS_KEY.toString());
 
 			Class<Track> trackClass = (Class<Track>) Class.forName(trackClassName);
 			Constructor<Track> trackCtor = trackClass.getConstructor(new Class[] { String.class, Scenario.class });
 			Track track = (Track) trackCtor.newInstance();
-			track.initialize(trackConfig);
+			track.initialize(timing, trackConfig);
 
 			this.tracks.put("", track);
 		}
@@ -71,14 +69,14 @@ public class Scenario {
 
 	void execute() throws Exception {
 		// Calculate timing
-		timing = new Timing(conf.getRampUp(), conf.getDuration(), conf.getRampDown());
+		Timing timing = new Timing(conf.getRampUp(), conf.getDuration(), conf.getRampDown());
 
 		// Threads
 		int sharedThreads = conf.getMaxSharedThreads();
 		ExecutorService pool = Executors.newFixedThreadPool(sharedThreads);
 
 		// Build tracks based on static configuration
-		buildTracks();
+		buildTracks(timing);
 
 		// Join all running tracks
 		for (Track track : tracks.values()) {
