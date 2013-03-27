@@ -1,0 +1,170 @@
+package radlab.rain;
+
+import java.util.Random;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class LoadManager extends Thread {
+	private static Logger logger = LoggerFactory.getLogger(LoadManager.class);
+
+	// Current load unit
+	private LoadUnit currentLoad = null;
+
+	// Ramp up time
+	private final long rampUp;
+
+	// Keeps running as long as this flag is false
+	private boolean done = false;
+
+	// The current load profile index
+	private int loadScheduleIndex = 0;
+
+	// Random number generator
+	private Random random = new Random();
+
+	// Reference to the load schedule
+	private LoadSchedule loadSchedule;
+
+	public LoadManager(long rampUp) {
+		this.rampUp = rampUp;
+	}
+
+	public boolean getDone() {
+		return done;
+	}
+
+	public void setDone(boolean done) {
+		this.done = done;
+	}
+
+	/**
+	 * Returns the current load profile.<br />
+	 * <br />
+	 * This method handles transitions by splitting each load profile interval into two parts:<br />
+	 * 
+	 * <pre>
+	 *     start                               end
+	 *     [ interval proper | transition period ]
+	 *                intervalEndTime    transitionEndTime
+	 * </pre>
+	 * 
+	 * During the interval proper the current load profile is simply returned. However, during the transition period,
+	 * there is a probability that the next load profile (modulo the entire load profile sequence) will be returned
+	 * instead. This probability is proportional to the elapsed time within the transition period (e.g. 10% into the
+	 * transition period will yield the current load profile with 10% likelihood and the next load profile with 90%
+	 * likelihood).
+	 */
+	public LoadUnit getCurrentLoadProfile() {
+		// Leave it up to the load manager thread to determine the current and next load profiles
+		LoadUnit nextProfile = getNextLoadProfile();
+
+		// Calculate when the current interval ends and when the transition ends.
+		long now = System.currentTimeMillis();
+		long intervalEndTime = currentLoad.getTimeStarted() + currentLoad.getInterval();
+		long transitionEndTime = intervalEndTime + currentLoad.getTransitionTime();
+
+		if (now >= currentLoad.getTimeStarted() && now <= transitionEndTime) {
+			// Must either be in 1) interval proper, or 2) transition period.
+			if (now <= intervalEndTime) {
+				return currentLoad;
+			} else {
+				double elapsedRatio = (double) (now - intervalEndTime) / (double) currentLoad.getTransitionTime();
+				double randomDouble = this.random.nextDouble();
+
+				// If elapsedTime = 90% then we'll want to select the currentProfile 10% of the time.
+				// If elapsedTime = 10% then we'll want to select the currentProfile 90% of the time.
+				if (randomDouble <= elapsedRatio) {
+					return nextProfile;
+				} else {
+					return currentLoad;
+				}
+			}
+		} else if (now > transitionEndTime) {
+			/*
+			 * If we make it here then the load scheduler thread has overslept and has not yet woken up to advance the
+			 * load schedule. No worries, we'll just point at what should be the next profile.
+			 */
+			return nextProfile;
+		} else // ( now < currentProfile.getTimestarted() )
+		{
+			/*
+			 * If we make it here, that means the current time is before the current load profile interval. This should
+			 * only happen during ramp up when we use the first load profile as the "ramp up" profile.
+			 */
+			return currentLoad;
+		}
+	}
+
+	public void run() {
+		// The first load profile will be used during ramp-up phase
+		currentLoad = loadSchedule.get(loadScheduleIndex);
+
+		// Log ramp up
+		logger.info("Ramping up for " + rampUp + "ms.");
+
+		// Sleep during ramp up phase
+		try {
+			Thread.sleep(rampUp);
+		} catch (InterruptedException e) {
+			logger.error("Load manager was interrupted during ramp up phase");
+			return;
+		}
+
+		// Log ramp up finished
+		logger.info("Ramp up finished");
+
+		// Activate load profile
+		currentLoad.activate();
+
+		// Main loop that goes over all load units in the load schedule
+		while (!this.getDone()) {
+			try {
+				// Sleep until the next load/behavior change.
+				Thread.sleep(currentLoad.getInterval() + currentLoad.getTransitionTime());
+
+				// Advance the schedule and if that returns false, then we're done
+				currentLoad = advanceSchedule();
+			} catch (InterruptedException e) {
+				logger.error("Load manager interrupted...", e);
+				done = true;
+			} catch (Exception e) {
+				logger.error("Unknown error in load manager", e);
+				done = true;
+			}
+		}
+
+		// Log finished
+		logger.info("finished");
+	}
+
+	private LoadUnit getNextLoadProfile() {
+		int nextLoadScheduleIndex = (loadScheduleIndex + 1) % loadSchedule.size();
+		return loadSchedule.get(nextLoadScheduleIndex);
+	}
+
+	/**
+	 * Default way to advance the load schedule
+	 * 
+	 * @return true if schedule advanced or false if at the end of the schedule
+	 */
+	public LoadUnit advanceSchedule() {
+		// Update load schedule index
+		loadScheduleIndex = (loadScheduleIndex + 1) % loadSchedule.size();
+
+		// If we reach index 0, we cycled
+		if (loadScheduleIndex == 0)
+			logger.info("cycling load schedule");
+
+		// Update the track's reference of the current load profile.
+		logger.debug("advancing load schedule");
+
+		// Get next load unit
+		LoadUnit next = loadSchedule.get(loadScheduleIndex);
+
+		// Update profile stats
+		next.activate();
+
+		return next;
+	}
+}

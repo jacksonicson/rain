@@ -39,7 +39,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import radlab.rain.DefaultScenarioTrack;
+import radlab.rain.DefaultTrack;
 import radlab.rain.Operation;
 import radlab.rain.Scenario;
 import radlab.rain.util.ConfigUtil;
@@ -47,7 +47,7 @@ import radlab.rain.workload.scadr.ScadrGenerator;
 
 public class ScadrOperationsTest 
 {
-	private static DefaultScenarioTrack track;
+	private static DefaultTrack track;
 	private ScadrGenerator generator;
 
 	@BeforeClass
@@ -77,7 +77,7 @@ public class ScadrOperationsTest
 		testScenario.setRampUp( 10 );
 		testScenario.setDuration( 600 );
 		testScenario.setRampDown( 10 );
-		track = new DefaultScenarioTrack( testScenario );
+		track = new DefaultTrack( testScenario );
 		try
 		{
 			track.initialize( generatorClassName, hostname, port );

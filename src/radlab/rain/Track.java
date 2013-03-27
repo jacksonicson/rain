@@ -54,12 +54,6 @@ import radlab.rain.util.MetricWriterFactory;
 public abstract class Track {
 	private static Logger logger = LoggerFactory.getLogger(Track.class);
 
-	public static final int VALID_LOAD_PROFILE = 0;
-	public static final int ERROR_INVALID_LOAD_PROFILE_BAD_NUM_USERS = 1777;
-	public static final int ERROR_INVALID_LOAD_PROFILE_BAD_MIX_NAME = 1778;
-	public static final int ERROR_INVALID_LOAD_PROFILE_BAD_BEHAVIOR_HINT = 1779;
-	public static final int ERROR_TRACK_NOT_FOUND = 1780;
-
 	// Timings
 	private Timing timing;
 
@@ -87,11 +81,7 @@ public abstract class Track {
 
 	public abstract void end();
 
-	public abstract LoadUnit getCurrentLoadProfile();
-
-	public abstract int validateLoadProfile(LoadUnit profile);
-
-	public abstract void submitDynamicLoadProfile(LoadUnit profile);
+	public abstract boolean validateLoadProfile(LoadUnit profile);
 
 	void initialize(Timing timing, JSONObject jsonConfig) throws Exception {
 		// Timings
@@ -116,8 +106,8 @@ public abstract class Track {
 
 	public IScoreboard createScoreboard() throws JSONException, Exception {
 		// Create a metric writer
-		MetricWriter metricWriter = MetricWriterFactory.createMetricWriter(
-				config.metricWriterParams.getString(MetricWriter.CFG_TYPE_KEY), config.metricWriterParams);
+		MetricWriter metricWriter = MetricWriterFactory.createMetricWriter(config.metricWriterParams
+				.getString(MetricWriter.CFG_TYPE_KEY), config.metricWriterParams);
 
 		// Create scoreboard
 		Class<IScoreboard> scoreboardClass = (Class<IScoreboard>) Class.forName("TODO");

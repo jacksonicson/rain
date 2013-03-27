@@ -43,7 +43,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import radlab.rain.Operation;
-import radlab.rain.DefaultScenarioTrack;
+import radlab.rain.DefaultTrack;
 import radlab.rain.Scenario;
 import radlab.rain.util.ConfigUtil;
 import radlab.rain.workload.olio.OlioGenerator;
@@ -52,7 +52,7 @@ import radlab.rain.workload.olio.OlioOperation;
 public class OlioOperationsTest
 {
 	
-	private static DefaultScenarioTrack track;
+	private static DefaultTrack track;
 	private OlioGenerator generator;
 	
 	@BeforeClass
@@ -80,7 +80,7 @@ public class OlioOperationsTest
 		testScenario.setRampUp( 10 );
 		testScenario.setDuration( 600 );
 		testScenario.setRampDown( 10 );
-		track = new DefaultScenarioTrack( testScenario );
+		track = new DefaultTrack( testScenario );
 		try
 		{
 			track.initialize( generatorClassName, hostname, port );

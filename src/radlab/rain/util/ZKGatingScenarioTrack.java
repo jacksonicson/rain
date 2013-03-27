@@ -44,7 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import radlab.rain.Scenario;
-import radlab.rain.DefaultScenarioTrack;
+import radlab.rain.DefaultTrack;
 import radlab.rain.util.AppServerStats;
 import radlab.rain.util.ZKAppServerWatcher;
 
@@ -57,7 +57,7 @@ import radlab.rain.util.ZKAppServerWatcher;
  * For now we just expect generators that use this track to pick the least loaded server
  * to avoid being backed up behind a slow server.
  */
-public abstract class ZKGatingScenarioTrack extends DefaultScenarioTrack 
+public abstract class ZKGatingScenarioTrack extends DefaultTrack 
 {
 	private static Logger logger = LoggerFactory.getLogger(ZKGatingScenarioTrack.class);
 	public static final int DEFAULT_ZOOKEEPER_SESSION_TIMEOUT 	= 30000;

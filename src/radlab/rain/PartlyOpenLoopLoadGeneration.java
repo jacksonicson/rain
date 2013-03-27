@@ -80,6 +80,16 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy {
 	}
 
 	/**
+	 * Decides whether this thread is active or not. The number of threads is equal to the maximum number of generators.
+	 * The actual number of threads varies over time. This is achieved by blocking some threads. If a thread is blocked
+	 * is decided by this function.
+	 */
+	protected boolean isActive() {
+		LoadUnit loadProfile = generator.getTrack().getCurrentLoadProfile();
+		return (this._id < loadProfile.getNumberOfUsers());
+	}
+
+	/**
 	 * Load generator loop. Runs the generator for each cycle and executes the returned operation.
 	 */
 	public void run() {
@@ -147,7 +157,7 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy {
 
 		// Set async flag
 		operation.setAsync(true);
-		
+
 		// Trigger operation
 		doOperation(operation);
 
@@ -177,30 +187,29 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy {
 
 		// Configure operation
 		operation.setAsync(false);
-		
+
 		// Trigger operation
 		doOperation(operation);
 
+		// Calculate timings
 		long thinkTime = generator.getThinkTime();
 		long now = System.currentTimeMillis();
 		long wakeUpTime = now + thinkTime;
-		
+
+		// Sleep for think time
 		if (wakeUpTime > timeToQuit) {
 			if (now < startSteadyState) {
 				thinkTime = startSteadyState - now;
-				this.sleepUntil(this.startSteadyState);
-			} else // we're in the steadystate or rampdown
-			{
-				// logger.info( "[" + this.getName() + "] Attempt to sleep past end of run! Adjusting." );
-				// Revise the think time
-				thinkTime = this.timeToQuit - now;
-				this.sleepUntil(this.timeToQuit);
+				sleepUntil(startSteadyState);
+			} else {
+				thinkTime = timeToQuit - now;
+				sleepUntil(timeToQuit);
 			}
 		} else
-			this.sleepUntil(now + thinkTime);
+			sleepUntil(wakeUpTime);
 
 		// Save the think time
-		this.generator.getScoreboard().dropOffWaitTime(now, operation._operationName, thinkTime);
+		generator.getScoreboard().dropOffWaitTime(now, operation._operationName, thinkTime);
 	}
 
 	/**
@@ -212,7 +221,7 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy {
 	 *            The track from which to load the configuration.
 	 */
 	protected void loadTrackConfiguration() {
-		this.openLoopProbability = trackCon.getOpenLoopProbability();
+		this.openLoopProbability = track.getOpenLoopProbability();
 
 		// This value gets set by Benchmark
 		if (this.timeStarted == TIME_NOT_SET)
@@ -228,32 +237,9 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy {
 		this.timeToQuit = this.endSteadyState + rampDown;
 	}
 
-	/**
-	 * Sleep this thread until the provided time if this thread is being run in interactive mode. No point in sleeping
-	 * if we are simply generating a trace.
-	 * 
-	 * @param time
-	 *            The time to wake up.
-	 * 
-	 * @throws InterruptedException
-	 */
 	protected void sleepUntil(long time) throws InterruptedException {
-		if (this._interactive) {
-			long preRunSleep = time - System.currentTimeMillis();
-			if (preRunSleep > 0) {
-				Thread.sleep(preRunSleep);
-			}
-		}
-	}
-
-	/**
-	 * Checks whether this thread should be active or not based on the number of active users specified by the current
-	 * load profile and this thread's ID number.
-	 * 
-	 * @return True if this thread should be active; otherwise false.
-	 */
-	protected boolean isActive() {
-		LoadUnit loadProfile = this.generator.getTrack().getCurrentLoadProfile();
-		return (this._id < loadProfile.getNumberOfUsers());
+		long preRunSleep = time - System.currentTimeMillis();
+		if (preRunSleep > 0)
+			Thread.sleep(preRunSleep);
 	}
 }

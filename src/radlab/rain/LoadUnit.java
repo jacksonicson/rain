@@ -48,7 +48,7 @@ public class LoadUnit {
 	protected long _transitionTime;
 	public int numberOfUsers;
 	protected String _mixName = "";
-	public long _activeCount = 0; // How often has this interval become active, the load scheduler updates this
+	private long _activeCount = 0; // How often has this interval become active, the load scheduler updates this
 	protected int openLoopMaxOpsPerSec = 0; // Rate limit on async operations. A value of 0 means no rate limiting.
 	protected JSONObject _config = null; // Save the original configuration object if its passed
 
@@ -162,5 +162,10 @@ public class LoadUnit {
 			buf.append("[Duration: " + this._interval + " Users: " + this.numberOfUsers + " Mix: " + this._mixName + " Transition time: "
 					+ this._transitionTime + " Name: " + this._name + "]");
 		return buf.toString();
+	}
+
+	public void activate() {
+		_activeCount++;
+		setTimeStarted(System.currentTimeMillis()); 
 	}
 }

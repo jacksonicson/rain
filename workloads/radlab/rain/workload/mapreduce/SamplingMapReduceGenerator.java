@@ -44,7 +44,7 @@ import java.text.NumberFormat;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.DefaultScenarioTrack;
+import radlab.rain.DefaultTrack;
 import radlab.rain.Generator;
 import radlab.rain.LoadUnit;
 import radlab.rain.Operation;
@@ -441,7 +441,7 @@ public class SamplingMapReduceGenerator extends Generator
 		testScenario.setRampUp( 10 );
 		testScenario.setDuration( 600 );
 		testScenario.setRampDown( 10 );
-		DefaultScenarioTrack track = new DefaultScenarioTrack( testScenario );
+		DefaultTrack track = new DefaultTrack( testScenario );
 		track.initialize( generatorClassName, hostname, port );
 				
 		SamplingMapReduceGenerator gen = new SamplingMapReduceGenerator( track );

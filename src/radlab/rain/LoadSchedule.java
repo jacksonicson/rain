@@ -10,6 +10,14 @@ public class LoadSchedule {
 		this.loadUnits = loadUnits;
 	}
 
+	public LoadUnit get(int index) {
+		return loadUnits.get(index);
+	}
+
+	public int size() {
+		return loadUnits.size();
+	}
+	
 	public long getMaxGenerators() {
 		int i = 0;
 		for (LoadUnit unit : loadUnits) {
@@ -17,5 +25,4 @@ public class LoadSchedule {
 		}
 		return i;
 	}
-
 }
