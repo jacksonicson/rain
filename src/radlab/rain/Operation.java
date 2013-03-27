@@ -108,6 +108,9 @@ public abstract class Operation implements Runnable {
 			// Dump operation results into the scoreboard
 			OperationExecution result = new OperationExecution(this);
 			scoreboard.dropOffOperation(result);
+
+			// Run cleanup
+			cleanup();
 		}
 	}
 
@@ -121,18 +124,18 @@ public abstract class Operation implements Runnable {
 	public abstract void prepare(Generator generator);
 
 	/**
-	 * Executes this operation. This method is responsible for saving its trace record and execution metrics.
-	 * 
-	 * @throws Throwable
-	 */
-	public abstract void execute() throws Throwable;
-
-	/**
 	 * Hook method for actions to be performed right before execution starts (before the clock starts to time the
 	 * execute method). There's no throws clause on this method so if something fails the methods need to deal with it.
 	 */
 	public void preExecute() {
 	}
+
+	/**
+	 * Executes this operation. This method is responsible for saving its trace record and execution metrics.
+	 * 
+	 * @throws Throwable
+	 */
+	public abstract void execute() throws Throwable;
 
 	/**
 	 * Hook method for actions to be performed right after execution finishes (after the clock stops to time the execute
@@ -145,6 +148,10 @@ public abstract class Operation implements Runnable {
 	 * Do any potential cleanup necessary after execution of this operation.
 	 */
 	public abstract void cleanup();
+
+	/**
+	 * Getter & Setters
+	 */
 
 	public int getOperationIndex() {
 		return this.operationIndex;
@@ -217,6 +224,7 @@ public abstract class Operation implements Runnable {
 	public void setGeneratedDuringProfile(LoadDefinition val) {
 		// Save the load profile
 		this.generatedDuringLoadDefinition = val;
+
 		// Save the time started now since the load manager thread updates this
 		// field - we can then use timestarted+intervalduration
 		// to see whether the operation finished during the interval
