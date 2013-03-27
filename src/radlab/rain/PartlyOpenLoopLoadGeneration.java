@@ -58,13 +58,13 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy {
 	// Statistic: number of asynchronous operations run
 	protected long asynchOperations = 0;
 
-	public PartlyOpenLoopLoadGeneration(Generator generator) {
-		super(generator);
+	public PartlyOpenLoopLoadGeneration(long id, LoadManager loadManager, Generator generator) {
+		super(id, loadManager, generator);
 		Thread.setDefaultUncaughtExceptionHandler(new UnexpectedDeathHandler());
 	}
 
-	public PartlyOpenLoopLoadGeneration(Generator generator, long id, JSONObject params) {
-		super(generator, params);
+	public PartlyOpenLoopLoadGeneration(long id, LoadManager loadManager, Generator generator, JSONObject params) {
+		super(id, loadManager, generator, params);
 		Thread.setDefaultUncaughtExceptionHandler(new UnexpectedDeathHandler());
 	}
 
@@ -85,8 +85,8 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy {
 	 * is decided by this function.
 	 */
 	protected boolean isActive() {
-		LoadUnit loadProfile = generator.getTrack().getCurrentLoadProfile();
-		return (this._id < loadProfile.getNumberOfUsers());
+		LoadUnit loadProfile = loadManager.getCurrentLoadProfile();
+		return (id < loadProfile.getNumberOfUsers());
 	}
 
 	/**

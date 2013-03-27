@@ -57,8 +57,14 @@ public abstract class LoadGenerationStrategy extends Thread {
 	public static final int NO_OPERATION_INDEX = -1;
 	public static final int TIME_NOT_SET = -1;
 
+	// Reference to the load manager
+	protected LoadManager loadManager;
+
 	// The generator used to create operations for this thread
 	protected Generator generator;
+
+	// Identifier (strategies are numbered ascending)
+	protected long id;
 
 	// Timings
 	protected long timeStarted = TIME_NOT_SET;
@@ -76,12 +82,16 @@ public abstract class LoadGenerationStrategy extends Thread {
 	// The shared pool of worker threads
 	protected ExecutorService executorService;
 
-	public LoadGenerationStrategy(Generator generator) {
+	public LoadGenerationStrategy(long id, LoadManager loadManager, Generator generator) {
+		this.id = id;
 		this.generator = generator;
+		this.loadManager = loadManager;
 	}
 
-	public LoadGenerationStrategy(Generator generator, JSONObject params) {
+	public LoadGenerationStrategy(long id, LoadManager loadManager, Generator generator, JSONObject params) {
+		this.id = id;
 		this.generator = generator;
+		this.loadManager = loadManager;
 	}
 
 	public abstract void run();

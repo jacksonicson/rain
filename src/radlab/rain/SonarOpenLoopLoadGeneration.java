@@ -38,11 +38,12 @@ import org.json.JSONObject;
  */
 public class SonarOpenLoopLoadGeneration extends PartlyOpenLoopLoadGeneration {
 
-	public SonarOpenLoopLoadGeneration(Generator generator, long id) {
-		super(generator, id);
+	public SonarOpenLoopLoadGeneration(long id, LoadManager loadManager, Generator generator) {
+		super(id, loadManager, generator);
 	}
 
-	public SonarOpenLoopLoadGeneration(Generator generator, long id, JSONObject params) {
-		super(generator, id, params);
+	public SonarOpenLoopLoadGeneration(long id, LoadManager loadManager, Generator generator, JSONObject params) {
+		super(id, loadManager, generator, params);
 	}
+
 }
