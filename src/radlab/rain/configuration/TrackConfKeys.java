@@ -7,14 +7,13 @@ public enum TrackConfKeys {
 	LOG_SAMPLING_PROBABILITY_KEY("pLogSampling"),
 	MEAN_CYCLE_TIME_KEY("meanCycleTime"),
 	MEAN_THINK_TIME_KEY("meanThinkTime"),
-	INTERACTIVE_KEY("interactive"),
 	TARGET_KEY("target"),
 	METRIC_SNAPSHOT_INTERVAL("metricSnapshotInterval"),
 	METRIC_SNAPSHOTS("metricSnapshots"),
 	METRIC_SNAPSHOT_FILE_SUFFIX("metricSnapshotsFileSuffix"),
 	METRIC_SNAPSHOT_CONFIG("metricSnapshotConfig"),
 	METRIC_DB("metricDB"),
-	
+
 	// Targets keys: hostname, port
 	TARGET_HOSTNAME_KEY("hostname"),
 	TARGET_PORT_KEY("port"),
@@ -35,6 +34,7 @@ public enum TrackConfKeys {
 	MAX_USERS("maxUsers");
 
 	private String configuration;
+
 	TrackConfKeys(String config) {
 		this.configuration = config;
 	}

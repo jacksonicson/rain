@@ -25,7 +25,6 @@ public class TrackConfiguration {
 	public String loadProfileClassName = "";
 	public String loadGenerationStrategyClassName = "";
 	public JSONObject loadGenerationStrategyParams = null;
-	public boolean interactive = true;
 	public double openLoopProbability = 0.0;
 	public String resourcePath = "resources/";
 	public double meanCycleTime = 0.0; // non-stop request generation
@@ -69,9 +68,6 @@ public class TrackConfiguration {
 
 		// Mean Think Time
 		meanThinkTime = config.getDouble(TrackConfKeys.MEAN_THINK_TIME_KEY.toString());
-
-		// Interactive?
-		interactive = config.getBoolean(TrackConfKeys.INTERACTIVE_KEY.toString());
 
 		// Concrete Load Profile and Load Profile Array
 		if (config.has(TrackConfKeys.LOAD_PROFILE_CLASS_KEY.toString()))

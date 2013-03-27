@@ -64,7 +64,7 @@ public abstract class LoadGenerationStrategy extends Thread {
 	protected long timeStarted = TIME_NOT_SET;
 	protected long startSteadyState = TIME_NOT_SET;
 	protected long endSteadyStatete = TIME_NOT_SET;
-	protected long timeToQuitit = TIME_NOT_SET;
+	protected long timeToQuit = TIME_NOT_SET;
 
 	// The current state of this thread
 	protected ThreadStates threadState = ThreadStates.WaitingToBegin;
@@ -74,7 +74,7 @@ public abstract class LoadGenerationStrategy extends Thread {
 	protected LoadUnit lastLoadUnit = null;
 
 	// The shared pool of worker threads
-	protected ExecutorService sharedWorkPool;
+	protected ExecutorService executorService;
 
 	public LoadGenerationStrategy(Generator generator) {
 		this.generator = generator;
@@ -97,14 +97,14 @@ public abstract class LoadGenerationStrategy extends Thread {
 
 		// Load unit unspecified - execute operation immediately
 		if (loadUnit == null) {
-			sharedWorkPool.submit(operation);
+			executorService.submit(operation);
 			return;
 		}
 
 		// No rate limiting - execute operation immediately
 		long aggRatePerSec = loadUnit.openLoopMaxOpsPerSec;
 		if (aggRatePerSec == 0) {
-			sharedWorkPool.submit(operation);
+			executorService.submit(operation);
 			return;
 		}
 
@@ -121,7 +121,7 @@ public abstract class LoadGenerationStrategy extends Thread {
 			sendNextRequest = System.currentTimeMillis() + (long) waitIntervalMsecs;
 
 			// Submit operation
-			sharedWorkPool.submit(operation);
+			executorService.submit(operation);
 		} else {
 			long sleepTime = sendNextRequest - now;
 			try {
@@ -131,7 +131,7 @@ public abstract class LoadGenerationStrategy extends Thread {
 			}
 
 			// Submit operation
-			sharedWorkPool.submit(operation);
+			executorService.submit(operation);
 		}
 	}
 
@@ -150,5 +150,13 @@ public abstract class LoadGenerationStrategy extends Thread {
 		} else { // Asynchronous mode
 			runAsyncOperation(operation);
 		}
+	}
+
+	public void setExecutorService(ExecutorService executorService) {
+		this.executorService = executorService;
+	}
+
+	public void setTimeStarted(long timeStarted) {
+		this.timeStarted = timeStarted;
 	}
 }

@@ -203,7 +203,7 @@ public class BookingGenerator extends Generator
 	public Operation nextRequest( int lastOperation )
 	{
 		LoadUnit currentLoad = this.getTrack().getCurrentLoadProfile();
-		this._latestLoadProfile = currentLoad;
+		this.latestLoadProfile = currentLoad;
 		int nextOperation = -1;
 
 		if( lastOperation == -1 )
@@ -236,7 +236,7 @@ public class BookingGenerator extends Generator
 	 */
 	public long getThinkTime()
 	{
-		return this._thinkTime;
+		return this.thinkTime;
 	}
 
 	/**
@@ -246,7 +246,7 @@ public class BookingGenerator extends Generator
 	 */
 	public long getCycleTime()
 	{
-		return this._cycleTime;
+		return this.cycleTime;
 	}
 
 	/**

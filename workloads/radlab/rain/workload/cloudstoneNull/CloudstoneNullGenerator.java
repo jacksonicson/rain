@@ -111,15 +111,15 @@ public class CloudstoneNullGenerator extends Generator
 		// Initialize the cycle time and think time generators. If you want non-stop
 		// activity, then set mean cycle time, and mean think times to 0 and the
 		// number generators should just *always* return 0 for the think/cycle time
-		this._cycleTimeGenerator = new NegativeExponential( this._cycleTime );
-		this._thinkTimeGenerator = new NegativeExponential( this._thinkTime );
+		this._cycleTimeGenerator = new NegativeExponential( this.cycleTime );
+		this._thinkTimeGenerator = new NegativeExponential( this.thinkTime );
 	}
 
 	@Override
 	public Operation nextRequest( int lastOperation ) 
 	{
 		LoadUnit currentLoad = this.getTrack().getCurrentLoadProfile();
-		this._latestLoadProfile = currentLoad;
+		this.latestLoadProfile = currentLoad;
 		int nextOperation = -1;
 		
 		if( lastOperation == -1 )

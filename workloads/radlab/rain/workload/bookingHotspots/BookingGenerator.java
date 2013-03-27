@@ -212,7 +212,7 @@ public class BookingGenerator extends Generator
 	 */
 	public long getThinkTime()
 	{
-		return this._thinkTime;
+		return this.thinkTime;
 	}
 	
 	/**
@@ -222,7 +222,7 @@ public class BookingGenerator extends Generator
 	 */
 	public long getCycleTime()
 	{
-		return this._cycleTime;
+		return this.cycleTime;
 	}
 	
 	/**

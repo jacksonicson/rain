@@ -139,8 +139,8 @@ public class ComradesGenerator extends Generator
 	{
 		super(track);
 		this._rand = new Random();
-		this._thinkTime = (long)( track.getMeanThinkTime() * 1000 );
-		this._cycleTime = (long)( track.getMeanCycleTime() * 1000 );
+		this.thinkTime = (long)( track.getMeanThinkTime() * 1000 );
+		this.cycleTime = (long)( track.getMeanCycleTime() * 1000 );
 	}
 
 	public void initializeUrls( String targetHost, int port )
@@ -163,8 +163,8 @@ public class ComradesGenerator extends Generator
 	{
 		this._http = new HttpTransport();
 		// Initialize think/cycle time random number generators (if you need/want them)
-		this._cycleTimeGenerator = new NegativeExponential( this._cycleTime );
-		this._thinkTimeGenerator = new NegativeExponential( this._thinkTime );
+		this._cycleTimeGenerator = new NegativeExponential( this.cycleTime );
+		this._thinkTimeGenerator = new NegativeExponential( this.thinkTime );
 	}
 	
 	@Override
@@ -247,8 +247,8 @@ public class ComradesGenerator extends Generator
 		// Initialize think/cycle time random number generators (if you
 		// need/want them)
 		//System.out.println("Think time: " + this._thinkTime);
-		this._cycleTimeGenerator = new NegativeExponential( this._cycleTime );
-		this._thinkTimeGenerator = new NegativeExponential( this._thinkTime );
+		this._cycleTimeGenerator = new NegativeExponential( this.cycleTime );
+		this._thinkTimeGenerator = new NegativeExponential( this.thinkTime );
 	}
 
 	public void initializeStaticUrls()
@@ -297,28 +297,28 @@ public class ComradesGenerator extends Generator
 	@Override
 	public long getCycleTime() 
 	{
-		if( this._cycleTime == 0 )
+		if( this.cycleTime == 0 )
 			return 0;
 		else 
 		{
 			// Example cycle time generator
 			long nextCycleTime = (long) this._cycleTimeGenerator.nextDouble();
 			// Truncate at 5 times the mean (arbitrary truncation)
-			return Math.min(nextCycleTime, (5 * this._cycleTime));
+			return Math.min(nextCycleTime, (5 * this.cycleTime));
 		}
 	}
 
 	@Override
 	public long getThinkTime() 
 	{
-		if (this._thinkTime == 0)
+		if (this.thinkTime == 0)
 			return 0;
 		else 
 		{
 			// Example think time generator
 			long nextThinkTime = (long) this._thinkTimeGenerator.nextDouble();
 			// Truncate at 5 times the mean (arbitrary truncation)
-			return Math.min(nextThinkTime, (5 * this._thinkTime));
+			return Math.min(nextThinkTime, (5 * this.thinkTime));
 		}
 	}
 
@@ -337,7 +337,7 @@ public class ComradesGenerator extends Generator
 		// decide
 		// what to do next
 		LoadUnit currentLoad = this.getTrack().getCurrentLoadProfile();
-		this._latestLoadProfile = currentLoad;
+		this.latestLoadProfile = currentLoad;
 
 		// if( true )
 		// return getOperation( 0 );

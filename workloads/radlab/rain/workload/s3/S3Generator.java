@@ -166,9 +166,9 @@ public class S3Generator extends Generator
 	public Operation nextRequest(int lastOperation) 
 	{
 		LoadUnit currentLoad = this.getTrack().getCurrentLoadProfile();
-		this._latestLoadProfile = currentLoad;
+		this.latestLoadProfile = currentLoad;
 		
-		S3LoadProfile s3Profile = (S3LoadProfile) this._latestLoadProfile;
+		S3LoadProfile s3Profile = (S3LoadProfile) this.latestLoadProfile;
 		
 		S3Request<String> nextRequest = new S3Request<String>();
 		

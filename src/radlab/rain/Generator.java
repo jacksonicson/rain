@@ -45,14 +45,14 @@ import radlab.rain.scoreboard.IScoreboard;
  */
 public abstract class Generator {
 	// Think time and cycle time
-	protected long _thinkTime;
-	protected long _cycleTime;
+	protected long thinkTime;
+	protected long cycleTime;
 
 	// Scoreboard to drop results off at
-	protected IScoreboard _scoreboard = null;
+	protected IScoreboard scoreboard = null;
 
 	// Latest load profile used
-	protected LoadUnit _latestLoadProfile = null;
+	protected LoadUnit latestLoadProfile = null;
 
 	public Generator() {
 	}
@@ -65,5 +65,29 @@ public abstract class Generator {
 
 	public void configure(JSONObject config) throws JSONException {
 		// Overwrite this
+	}
+
+	public void setScoreboard(IScoreboard scoreboard) {
+		this.scoreboard = scoreboard;
+	}
+
+	public void setMeanCycleTime(long cycleTime) {
+		this.cycleTime = cycleTime;
+	}
+
+	public void setMeanThinkTime(long thinkTime) {
+		this.thinkTime = thinkTime;
+	}
+
+	public IScoreboard getScoreboard() {
+		return scoreboard;
+	}
+
+	public long getCycleTime() {
+		return cycleTime;
+	}
+
+	public long getThinkTime() {
+		return thinkTime;
 	}
 }

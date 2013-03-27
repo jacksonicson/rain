@@ -177,8 +177,7 @@ public abstract class Track {
 
 			// Allow the load generation strategy to be configurable
 			LoadGenerationStrategy strategy = createLoadGenerationStrategy(generator);
-			strategy.setInteractive(config.interactive);
-			strategy.setSharedWorkPool(pool);
+			strategy.setExecutorService(pool);
 			strategy.setTimeStarted(start);
 
 			// Add thread to thread list and start the thread

@@ -53,7 +53,7 @@ public class FixedUrlGenerator extends Generator
 		
 		long nextThinkTime = (long) this._thinkTimeGenerator.nextDouble(); 
 		// Truncate at 5 times the mean (arbitrary truncation)
-		return Math.min( nextThinkTime, (5*this._thinkTime) );
+		return Math.min( nextThinkTime, (5*this.thinkTime) );
 	}
 
 	/**
@@ -73,7 +73,7 @@ public class FixedUrlGenerator extends Generator
 	public void initialize()
 	{
 		this._http = new HttpTransport();
-		this._thinkTimeGenerator = new NegativeExponential( this._thinkTime );
+		this._thinkTimeGenerator = new NegativeExponential( this.thinkTime );
 	}
 
 	/*
@@ -121,7 +121,7 @@ public class FixedUrlGenerator extends Generator
 		LoadUnit currentLoad = this.getTrack().getCurrentLoadProfile();
 		// We must save the latest loadprofile if we want the little's law calculation to be done.
 		// Latest profile stores the number of users
-		this._latestLoadProfile = currentLoad;
+		this.latestLoadProfile = currentLoad;
 		
 		return this.createFixedUrlOperation();
 	}

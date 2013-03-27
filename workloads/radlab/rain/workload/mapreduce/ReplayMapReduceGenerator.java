@@ -212,7 +212,7 @@ public class ReplayMapReduceGenerator extends Generator
 	public Operation nextRequest( int lastOperation ) 
 	{
 		LoadUnit currentLoad = this.getTrack().getCurrentLoadProfile();
-		this._latestLoadProfile = currentLoad;
+		this.latestLoadProfile = currentLoad;
 		
 		try
 		{
@@ -348,7 +348,7 @@ public class ReplayMapReduceGenerator extends Generator
 						System.out.println( this + " " + jobName + " Shuffle input ratio: " + shuffleInputRatio + " output shuffle ratio: " + outputShuffleRatio );
 					
 					// Create A MapReduce Operation
-					MapReduceOperation op = new WorkGenMapReduceOperation( true, this._scoreboard );
+					MapReduceOperation op = new WorkGenMapReduceOperation( true, this.scoreboard );
 					// Set specific fields on the new operation
 					op.setJobName( jobName );
 					op.setJobTracker( this._jobTracker ); // Set the job tracker so we can get status updates

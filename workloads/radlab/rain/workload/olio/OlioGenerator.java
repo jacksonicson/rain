@@ -269,8 +269,8 @@ public class OlioGenerator extends Generator
 		this._cycleTimeGenerator = new NegativeExponential( track.getMeanCycleTime()*1000 );
 		this._thinkTimeGenerator = new NegativeExponential( track.getMeanThinkTime()*1000 );
 		ScaleFactors.setActiveUsers( this.getTrack().getMaxUsers() );
-		this._cycleTime = (long) track.getMeanCycleTime()*1000;
-		this._thinkTime = (long) track.getMeanThinkTime()*1000;
+		this.cycleTime = (long) track.getMeanCycleTime()*1000;
+		this.thinkTime = (long) track.getMeanThinkTime()*1000;
 	}
 	
 	/**
@@ -390,7 +390,7 @@ public class OlioGenerator extends Generator
 	public Operation nextRequest( int lastOperation )
 	{
 		LoadUnit currentLoad = this.getTrack().getCurrentLoadProfile();
-		this._latestLoadProfile = currentLoad;
+		this.latestLoadProfile = currentLoad;
 		int nextOperation = -1;
 		
 		if( lastOperation == -1 )
@@ -425,7 +425,7 @@ public class OlioGenerator extends Generator
 	{
 		long nextThinkTime = (long) this._thinkTimeGenerator.nextDouble(); 
 		// Truncate at 5 times the mean (arbitrary truncation)
-		return Math.min( nextThinkTime, (5*this._thinkTime) );
+		return Math.min( nextThinkTime, (5*this.thinkTime) );
 	}
 	
 	/**
@@ -437,7 +437,7 @@ public class OlioGenerator extends Generator
 	{
 		long nextCycleTime = (long) this._cycleTimeGenerator.nextDouble(); 
 		// Truncate at 5 times the mean (arbitrary truncation)
-		return Math.min( nextCycleTime, (5*this._cycleTime) );
+		return Math.min( nextCycleTime, (5*this.cycleTime) );
 	}
 	
 	/**

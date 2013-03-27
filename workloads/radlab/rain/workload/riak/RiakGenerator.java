@@ -128,10 +128,10 @@ public class RiakGenerator extends Generator
 	public Operation nextRequest( int lastOperation ) 
 	{
 		LoadUnit currentLoad = this.getTrack().getCurrentLoadProfile();
-		this._latestLoadProfile = currentLoad;
+		this.latestLoadProfile = currentLoad;
 		int key = -1;
 		
-		RiakLoadProfile riakProfile = (RiakLoadProfile) this._latestLoadProfile;
+		RiakLoadProfile riakProfile = (RiakLoadProfile) this.latestLoadProfile;
 		
 		// Check whether we're sending traffic to hot objects or not
 		double rndVal = this._random.nextDouble();

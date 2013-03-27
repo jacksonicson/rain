@@ -31,7 +31,6 @@
 
 package radlab.rain;
 
-import java.io.FileWriter;
 import java.util.Random;
 
 import org.json.JSONObject;
@@ -42,181 +41,153 @@ import org.slf4j.LoggerFactory;
  * The PartlyOpenLoopLoadGeneration class is a thread that supports partly open loop load generation.
  */
 public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy {
-
 	private static Logger logger = LoggerFactory.getLogger(PartlyOpenLoopLoadGeneration.class);
 
-	/** Minimum increments of intervals of inactivity in seconds. */
+	// Minimum increments of intervals of inactivity in seconds
 	public static int INACTIVE_DURATION = 1000;
 
-	/** The probability of using open loop vs. closed loop. */
-	protected double _openLoopProbability;
+	// The probability of using open loop vs. closed loop
+	protected double openLoopProbability;
 
-	/** The random number generator used to decide which loop to use. */
-	protected Random _random = new Random();
+	// The random number generator used to decide which loop to use
+	protected Random random = new Random();
 
-	/** Statistic: number of synchronous operations run. */
-	protected long _synchOperations = 0;
+	// Statistic: number of synchronous operations run
+	protected long synchOperations = 0;
 
-	/** Statistic: number of asynchronous operations run. */
-	protected long _asynchOperations = 0;
+	// Statistic: number of asynchronous operations run
+	protected long asynchOperations = 0;
 
-	/**
-	 * Creates a load generation thread that supports partly open loop.
-	 * 
-	 * @param generator
-	 *            The generator used to generate this thread's load.
-	 * @param id
-	 *            The ID of this thread; used to sleep it on demand.
-	 */
-	public PartlyOpenLoopLoadGeneration(Generator generator, long id) {
-		super(generator, id);
-
-		// If a thread dies for some reason (e.g. the JVM runs out of heap
-		// space, which causes an Error not an Exception), use our uncaught
-		// exception handler to catch it and print some useful debugging info.
+	public PartlyOpenLoopLoadGeneration(Generator generator) {
+		super(generator);
 		Thread.setDefaultUncaughtExceptionHandler(new UnexpectedDeathHandler());
 	}
 
-	/**
-	 * Creates a load generation thread that supports partly open loop.
-	 * 
-	 * @param generator
-	 *            The generator used to generate this thread's load.
-	 * @param id
-	 *            The ID of this thread; used to sleep it on demand.
-	 * @param params
-	 *            Additional configuration parameters.
-	 */
 	public PartlyOpenLoopLoadGeneration(Generator generator, long id, JSONObject params) {
-		super(generator, id, params);
-
-		// If a thread dies for some reason (e.g. the JVM runs out of heap
-		// space, which causes an Error not an Exception), use our uncaught
-		// exception handler to catch it and print some useful debugging info.
+		super(generator, params);
 		Thread.setDefaultUncaughtExceptionHandler(new UnexpectedDeathHandler());
 	}
 
-	/** Resets the number of synchronous/asynchronous operations run. */
+	// Resets the number of synchronous/asynchronous operations run
 	public void resetStatistics() {
-		this._synchOperations = 0;
-		this._asynchOperations = 0;
+		this.synchOperations = 0;
+		this.asynchOperations = 0;
 	}
 
-	/** Disposes of objects used by this thread. */
+	// Disposes of objects used by this thread
 	public void dispose() {
 		this.generator.dispose();
 	}
 
-	/** Runs this partly open loop load generation thread. */
+	/**
+	 * Load generator loop. Runs the generator for each cycle and executes the returned operation.
+	 */
 	public void run() {
-		String threadName = this.getName();
-		this.resetStatistics();
+		String threadName = getName();
 
-		// Calculates all benchmark times
-		this.loadTrackConfiguration(this.generator.getTrack());
+		// Reset statistics
+		resetStatistics();
+
+		// Track configuration
+		loadTrackConfiguration();
 
 		try {
 			// Sleep until its time to start
-			this.sleepUntil(this.timeStarted);
+			sleepUntil(timeStarted);
 
-			// loop is active until after the ramp down phase
+			// Last executed operation (required to run markov chains)
 			int lastOperationIndex = NO_OPERATION_INDEX;
-			while (System.currentTimeMillis() <= this.timeToQuit) {
-				// If the user is inactive
-				if (!this.isActive()) {
-					this.threadState = ThreadStates.Inactive;
+
+			// Check if benchmark is still running
+			while (System.currentTimeMillis() <= timeToQuit) {
+				// If generator is not active
+				if (!isActive()) {
+					threadState = ThreadStates.Inactive;
 					Thread.sleep(INACTIVE_DURATION);
-				} else { // user is active
-					this.threadState = ThreadStates.Active;
-					Operation nextOperation = this.generator.nextRequest(lastOperationIndex);
-					// This will let generators do no-ops by returning null.
-					// We might end up making sure that we count/account for the no-ops
+				} else {
+					threadState = ThreadStates.Active;
+
+					// Generate next operation
+					Operation nextOperation = generator.nextRequest(lastOperationIndex);
 					if (nextOperation != null) {
 						// Update last operation index.
 						lastOperationIndex = nextOperation.getOperationIndex();
 
 						// Store the thread name/ID so we can organize the traces.
 						nextOperation.setGeneratedBy(threadName);
-						nextOperation.setGeneratorThreadID(this._id);
 
-						// Decide whether to do things open or closed
-						double randomDouble = this._random.nextDouble();
-						if (randomDouble <= this._openLoopProbability) {
-							this.doAsyncOperation(nextOperation);
-						} else {
-							this.doSyncOperation(nextOperation);
-						}
+						// Decide whether to do things open or closed (throw a coin)
+						double randomDouble = random.nextDouble();
+						if (randomDouble <= openLoopProbability)
+							doAsyncOperation(nextOperation);
+						else
+							doSyncOperation(nextOperation);
 					}
 				}
 			}
 		} catch (InterruptedException ie) {
-			logger.info("[" + threadName + "] load generation thread interrupted exiting!");
+			logger.error("[" + threadName + "] load generation thread interrupted exiting!");
 		} catch (Exception e) {
-			logger.info("[" + threadName + "] load generation thread died by exception! Reason: " + e.toString());
+			logger.error("[" + threadName + "] load generation thread died by exception! Reason: " + e.toString());
 			e.printStackTrace();
 		}
 	}
 
 	/**
 	 * Runs the provided operation asynchronously and sleeps this thread on the cycle time.
-	 * 
-	 * @param operation
-	 *            The operation to run asynchronously.
-	 * 
-	 * @throws InterruptedException
 	 */
 	protected void doAsyncOperation(Operation operation) throws InterruptedException {
-		this._asynchOperations++;
+		// Update operation counters
+		asynchOperations++;
 
-		long cycleTime = this.generator.getCycleTime();
+		// Calculate timings
+		long cycleTime = generator.getCycleTime();
 		long now = System.currentTimeMillis();
 		long wakeUpTime = now + cycleTime;
 
+		// Set async flag
 		operation.setAsync(true);
-		this.doOperation(operation);
+		
+		// Trigger operation
+		doOperation(operation);
 
-		if (wakeUpTime > this.timeToQuit) {
-			if (now < this.startSteadyState) {
-				// logger.info( "[" + this.getName() + "] In rampUp attempt to sleep past end of run! Adjusting." );
-				cycleTime = this.startSteadyState - now;
-				this.sleepUntil(this.startSteadyState);
+		// Sleep for cycle time
+		if (wakeUpTime > timeToQuit) {
+			if (now < startSteadyState) {
+				cycleTime = startSteadyState - now;
+				sleepUntil(startSteadyState);
 			} else {
-				// logger.info( "[" + this.getName() + "] Attempt to sleep past end of run! Adjusting." );
-				// Revise the cycle time
-				cycleTime = this.timeToQuit - now;
-				this.sleepUntil(this.timeToQuit);
+				cycleTime = timeToQuit - now;
+				sleepUntil(timeToQuit);
 			}
-		} else
-			this.sleepUntil(wakeUpTime);
+		} else {
+			sleepUntil(wakeUpTime);
+		}
 
 		// Save the cycle time - if we're in the steady state
-		this.generator.getScoreboard().dropOffWaitTime(now, operation._operationName, cycleTime);
+		generator.getScoreboard().dropOffWaitTime(now, operation._operationName, cycleTime);
 	}
 
 	/**
 	 * Runs the provided operation synchronously and sleeps this thread on the think time.
-	 * 
-	 * @param operation
-	 *            The operation to run synchronously.
-	 * 
-	 * @throws InterruptedException
 	 */
 	protected void doSyncOperation(Operation operation) throws InterruptedException {
-		this._synchOperations++;
+		// Update operation counters
+		synchOperations++;
 
+		// Configure operation
 		operation.setAsync(false);
-		this.doOperation(operation);
+		
+		// Trigger operation
+		doOperation(operation);
 
-		long thinkTime = this.generator.getThinkTime();
-		// logger.info( "[" + this.getName() + "] Think time: " + thinkTime );
-
+		long thinkTime = generator.getThinkTime();
 		long now = System.currentTimeMillis();
-		if ((now + thinkTime) > this.timeToQuit) {
-			// If we're in the ramp up period then sleep until the start of
-			// steady state
-			if (now < this.startSteadyState) {
-				// logger.info( "[" + this.getName() + "] In rampUp attempt to sleep past end of run! Adjusting." );
-				thinkTime = this.startSteadyState - now;
+		long wakeUpTime = now + thinkTime;
+		
+		if (wakeUpTime > timeToQuit) {
+			if (now < startSteadyState) {
+				thinkTime = startSteadyState - now;
 				this.sleepUntil(this.startSteadyState);
 			} else // we're in the steadystate or rampdown
 			{
@@ -233,14 +204,15 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy {
 	}
 
 	/**
-	 * Loads the configuration from the provided scenario track. This sets the open loop probability as well as time markers for
-	 * when this thread starts, when steady state should begin (i.e. when metrics start recording), and when steady state ends.
+	 * Loads the configuration from the provided scenario track. This sets the open loop probability as well as time
+	 * markers for when this thread starts, when steady state should begin (i.e. when metrics start recording), and when
+	 * steady state ends.
 	 * 
 	 * @param track
 	 *            The track from which to load the configuration.
 	 */
-	protected void loadTrackConfiguration(Track track) {
-		this._openLoopProbability = this.generator.getTrack().getOpenLoopProbability();
+	protected void loadTrackConfiguration() {
+		this.openLoopProbability = trackCon.getOpenLoopProbability();
 
 		// This value gets set by Benchmark
 		if (this.timeStarted == TIME_NOT_SET)
@@ -257,8 +229,8 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy {
 	}
 
 	/**
-	 * Sleep this thread until the provided time if this thread is being run in interactive mode. No point in sleeping if we are
-	 * simply generating a trace.
+	 * Sleep this thread until the provided time if this thread is being run in interactive mode. No point in sleeping
+	 * if we are simply generating a trace.
 	 * 
 	 * @param time
 	 *            The time to wake up.
@@ -275,8 +247,8 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy {
 	}
 
 	/**
-	 * Checks whether this thread should be active or not based on the number of active users specified by the current load
-	 * profile and this thread's ID number.
+	 * Checks whether this thread should be active or not based on the number of active users specified by the current
+	 * load profile and this thread's ID number.
 	 * 
 	 * @return True if this thread should be active; otherwise false.
 	 */

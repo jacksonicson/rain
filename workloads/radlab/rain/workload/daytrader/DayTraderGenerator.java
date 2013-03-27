@@ -167,7 +167,7 @@ public class DayTraderGenerator extends Generator
 		long nextThinkTime = (long) this._thinkTimeGenerator.nextDouble(); 
 		// Truncate at 5 times the mean (arbitrary truncation)
 		//System.out.println( Math.min( nextThinkTime, (5*this._thinkTime) ) );
-		return Math.min( nextThinkTime, (5*this._thinkTime) );
+		return Math.min( nextThinkTime, (5*this.thinkTime) );
 	}
 	
 	/**

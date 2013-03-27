@@ -103,10 +103,10 @@ public class RedisGenerator extends Generator
 	public Operation nextRequest(int lastOperation) 
 	{
 		LoadUnit currentLoad = this.getTrack().getCurrentLoadProfile();
-		this._latestLoadProfile = currentLoad;
+		this.latestLoadProfile = currentLoad;
 		int key = -1;
 		
-		RedisLoadProfile redisProfile = (RedisLoadProfile) this._latestLoadProfile;
+		RedisLoadProfile redisProfile = (RedisLoadProfile) this.latestLoadProfile;
 		
 		// Check whether we're sending traffic to hot objects or not
 		double rndVal = this._random.nextDouble();

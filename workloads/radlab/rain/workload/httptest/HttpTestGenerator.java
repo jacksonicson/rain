@@ -99,7 +99,7 @@ public class HttpTestGenerator extends Generator
 		LoadUnit currentLoad = this.getTrack().getCurrentLoadProfile();
 		// We must save the latest loadprofile if we want the little's law calculation to be done.
 		// Latest profile stores the number of users
-		this._latestLoadProfile = currentLoad;
+		this.latestLoadProfile = currentLoad;
 				
 		int nextOperation = -1;
 		

@@ -174,10 +174,10 @@ public class HBaseGenerator extends Generator
 	public Operation nextRequest( int lastOperation ) 
 	{
 		LoadUnit currentLoad = this.getTrack().getCurrentLoadProfile();
-		this._latestLoadProfile = currentLoad;
+		this.latestLoadProfile = currentLoad;
 		int key = -1;
 		
-		HBaseLoadProfile hbaseProfile = (HBaseLoadProfile) this._latestLoadProfile; 
+		HBaseLoadProfile hbaseProfile = (HBaseLoadProfile) this.latestLoadProfile; 
 		
 		// Check whether we're sending traffic to hot objects or not
 		double rndVal = this._random.nextDouble();
