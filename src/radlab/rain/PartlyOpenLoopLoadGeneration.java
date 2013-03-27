@@ -33,7 +33,6 @@ package radlab.rain;
 
 import java.util.Random;
 
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,13 +57,9 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy {
 	// Statistic: number of asynchronous operations run
 	protected long asynchOperations = 0;
 
-	public PartlyOpenLoopLoadGeneration(long id, LoadManager loadManager, Generator generator) {
-		super(id, loadManager, generator);
-		Thread.setDefaultUncaughtExceptionHandler(new UnexpectedDeathHandler());
-	}
-
-	public PartlyOpenLoopLoadGeneration(long id, LoadManager loadManager, Generator generator, JSONObject params) {
-		super(id, loadManager, generator, params);
+	public PartlyOpenLoopLoadGeneration(long id, LoadManager loadManager, Generator generator,
+			TrackConfiguration trackConfig, ScenarioConfiguration scenarioConfig) {
+		super(id, loadManager, generator, trackConfig, scenarioConfig);
 		Thread.setDefaultUncaughtExceptionHandler(new UnexpectedDeathHandler());
 	}
 
@@ -221,20 +216,20 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy {
 	 *            The track from which to load the configuration.
 	 */
 	protected void loadTrackConfiguration() {
-		this.openLoopProbability = track.getOpenLoopProbability();
+		openLoopProbability = trackConfig.openLoopProbability;
 
 		// This value gets set by Benchmark
-		if (this.timeStarted == TIME_NOT_SET)
-			this.timeStarted = System.currentTimeMillis();
+		timeStarted = System.currentTimeMillis();
 
 		// Configuration is specified in seconds; convert to milliseconds.
-		long rampUp = track.getRampUp() * 1000;
-		long duration = track.getDuration() * 1000;
-		long rampDown = track.getRampDown() * 1000;
+		long rampUp = scenarioConfig.getRampUp() * 1000;
+		long duration = scenarioConfig.getDuration() * 1000;
+		long rampDown = scenarioConfig.getRampDown() * 1000;
 
-		this.startSteadyState = this.timeStarted + rampUp;
-		this.endSteadyState = this.startSteadyState + duration;
-		this.timeToQuit = this.endSteadyState + rampDown;
+		// Calculate timings
+		startSteadyState = timeStarted + rampUp;
+		endSteadyState = startSteadyState + duration;
+		timeToQuit = endSteadyState + rampDown;
 	}
 
 	protected void sleepUntil(long time) throws InterruptedException {

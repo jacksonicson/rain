@@ -33,7 +33,6 @@ package radlab.rain;
 
 import java.util.concurrent.ExecutorService;
 
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,10 +65,14 @@ public abstract class LoadGenerationStrategy extends Thread {
 	// Identifier (strategies are numbered ascending)
 	protected long id;
 
+	// Track configuration
+	protected TrackConfiguration trackConfig;
+	protected ScenarioConfiguration scenarioConfig;
+
 	// Timings
 	protected long timeStarted = TIME_NOT_SET;
 	protected long startSteadyState = TIME_NOT_SET;
-	protected long endSteadyStatete = TIME_NOT_SET;
+	protected long endSteadyState = TIME_NOT_SET;
 	protected long timeToQuit = TIME_NOT_SET;
 
 	// The current state of this thread
@@ -82,16 +85,13 @@ public abstract class LoadGenerationStrategy extends Thread {
 	// The shared pool of worker threads
 	protected ExecutorService executorService;
 
-	public LoadGenerationStrategy(long id, LoadManager loadManager, Generator generator) {
+	public LoadGenerationStrategy(long id, LoadManager loadManager, Generator generator,
+			TrackConfiguration trackConfig, ScenarioConfiguration scenarioConfig) {
 		this.id = id;
 		this.generator = generator;
 		this.loadManager = loadManager;
-	}
-
-	public LoadGenerationStrategy(long id, LoadManager loadManager, Generator generator, JSONObject params) {
-		this.id = id;
-		this.generator = generator;
-		this.loadManager = loadManager;
+		this.trackConfig = trackConfig;
+		this.scenarioConfig = scenarioConfig;
 	}
 
 	public abstract void run();

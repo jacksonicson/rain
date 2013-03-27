@@ -31,19 +31,13 @@
 
 package radlab.rain;
 
-import org.json.JSONObject;
-
 /**
  * The PartlyOpenLoopLoadGeneration class is a thread that supports partly open loop load generation.
  */
 public class SonarOpenLoopLoadGeneration extends PartlyOpenLoopLoadGeneration {
 
-	public SonarOpenLoopLoadGeneration(long id, LoadManager loadManager, Generator generator) {
-		super(id, loadManager, generator);
+	public SonarOpenLoopLoadGeneration(long id, LoadManager loadManager, Generator generator,
+			TrackConfiguration trackConfig, ScenarioConfiguration scenarioConfig) {
+		super(id, loadManager, generator, trackConfig, scenarioConfig);
 	}
-
-	public SonarOpenLoopLoadGeneration(long id, LoadManager loadManager, Generator generator, JSONObject params) {
-		super(id, loadManager, generator, params);
-	}
-
 }
