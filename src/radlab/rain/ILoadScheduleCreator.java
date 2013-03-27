@@ -6,5 +6,5 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public interface ILoadScheduleCreator {
-	LinkedList<LoadProfile> createSchedule(String track, JSONObject params) throws JSONException;
+	LinkedList<LoadUnit> createSchedule(String track, JSONObject params) throws JSONException;
 }

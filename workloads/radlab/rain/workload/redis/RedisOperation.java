@@ -1,7 +1,7 @@
 package radlab.rain.workload.redis;
 
 import radlab.rain.Generator;
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 import radlab.rain.Operation;
 import radlab.rain.scoreboard.IScoreboard;
 
@@ -31,7 +31,7 @@ public abstract class RedisOperation extends Operation
 		
 		this._redis = redisGenerator.getRedisTransport();
 		
-		LoadProfile currentLoadProfile = generator.getLatestLoadProfile();
+		LoadUnit currentLoadProfile = generator.getLatestLoadProfile();
 		if( currentLoadProfile != null )
 			this.setGeneratedDuringProfile( currentLoadProfile );
 	}

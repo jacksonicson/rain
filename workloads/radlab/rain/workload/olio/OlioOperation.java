@@ -32,7 +32,7 @@
 package radlab.rain.workload.olio;
 
 import radlab.rain.Generator;
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 import radlab.rain.Operation;
 
 import radlab.rain.scoreboard.IScoreboard;
@@ -107,7 +107,7 @@ public abstract class OlioOperation extends Operation
 		this._generator = generator;
 		OlioGenerator olioGenerator = (OlioGenerator) generator;
 		
-		LoadProfile currentLoadProfile = generator.getLatestLoadProfile();
+		LoadUnit currentLoadProfile = generator.getLatestLoadProfile();
 		if( currentLoadProfile != null )
 			this.setGeneratedDuringProfile( currentLoadProfile );
 		

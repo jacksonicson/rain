@@ -239,7 +239,7 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy {
 	 * @param track
 	 *            The track from which to load the configuration.
 	 */
-	protected void loadTrackConfiguration(Target track) {
+	protected void loadTrackConfiguration(Track track) {
 		this._openLoopProbability = this._generator.getTrack().getOpenLoopProbability();
 
 		// This value gets set by Benchmark
@@ -281,7 +281,7 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy {
 	 * @return True if this thread should be active; otherwise false.
 	 */
 	protected boolean isActive() {
-		LoadProfile loadProfile = this._generator.getTrack().getCurrentLoadProfile();
+		LoadUnit loadProfile = this._generator.getTrack().getCurrentLoadProfile();
 		return (this._id < loadProfile.getNumberOfUsers());
 	}
 }

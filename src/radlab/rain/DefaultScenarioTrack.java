@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
  * The DefaultScenarioTrack class is a generic implementation of the abstract <code>ScenarioTrack</code> class that supports load
  * profiles that specify the interval, number of users, mix behavior, and any transitions.
  */
-public class DefaultScenarioTrack extends Target {
+public class DefaultScenarioTrack extends Track {
 	private Logger logger = LoggerFactory.getLogger(DefaultScenarioTrack.class.getName() + " " + this);
 
 	private LoadManagerThread _loadManager;
@@ -81,7 +81,7 @@ public class DefaultScenarioTrack extends Target {
 	 * is proportional to the elapsed time within the transition period (e.g. 10% into the transition period will yield the
 	 * current load profile with 10% likelihood and the next load profile with 90% likelihood).
 	 */
-	public LoadProfile getCurrentLoadProfile() {
+	public LoadUnit getCurrentLoadProfile() {
 		/*
 		 * int currentLoadScheduleIndex = this._loadManager.loadScheduleIndex; int nextLoadScheduleIndex = (
 		 * currentLoadScheduleIndex + 1 ) % this._loadSchedule.size();
@@ -91,8 +91,8 @@ public class DefaultScenarioTrack extends Target {
 		 */
 
 		// Leave it up to the load manager thread to determine the current and next load profiles
-		LoadProfile currentProfile = this._loadManager.getCurrentLoadProfile();
-		LoadProfile nextProfile = this._loadManager.getNextLoadProfile();
+		LoadUnit currentProfile = this._loadManager.getCurrentLoadProfile();
+		LoadUnit nextProfile = this._loadManager.getNextLoadProfile();
 
 		// Calculate when the current interval ends and when the transition ends.
 		long intervalEndTime = currentProfile.getTimeStarted() + currentProfile.getInterval();
@@ -132,7 +132,7 @@ public class DefaultScenarioTrack extends Target {
 		}
 	}
 
-	public void submitDynamicLoadProfile(LoadProfile profile) {
+	public void submitDynamicLoadProfile(LoadUnit profile) {
 		this._loadManager.submitDynamicLoadProfile(profile);
 	}
 
@@ -144,21 +144,21 @@ public class DefaultScenarioTrack extends Target {
 	 *            The load profile to be validated
 	 * @return in 0 if the profile is considered valid, non-zero otherwise
 	 */
-	public int validateLoadProfile(LoadProfile profile) {
+	public int validateLoadProfile(LoadUnit profile) {
 		// By default, all we we're interested in is whether:
 		// 1) the number of users is > 0
 		// 2) the mix name is in the mix map
 		// boolean valid = true;
-		int retVal = Target.VALID_LOAD_PROFILE;
+		int retVal = Track.VALID_LOAD_PROFILE;
 
 		if (profile._numberOfUsers <= 0) {
 			logger.info(this + " Invalid load profile. Number of users <= 0. Profile details: " + profile.toString());
-			retVal = Target.ERROR_INVALID_LOAD_PROFILE_BAD_NUM_USERS;
+			retVal = Track.ERROR_INVALID_LOAD_PROFILE_BAD_NUM_USERS;
 		}
 
 		if (profile._mixName.length() > 0 && !this._mixMap.containsKey(profile._mixName)) {
 			logger.info(this + " Invalid load profile. mixname not in track's mixmap. Profile details: " + profile.toString());
-			retVal = Target.ERROR_INVALID_LOAD_PROFILE_BAD_MIX_NAME;
+			retVal = Track.ERROR_INVALID_LOAD_PROFILE_BAD_MIX_NAME;
 		}
 
 		// Do capping of number of users, don't fail validation though
@@ -204,19 +204,19 @@ public class DefaultScenarioTrack extends Target {
 		// 7) Interactive?
 		this._interactive = true;
 		// 8) Load Profile Array
-		LoadProfile i1 = new LoadProfile(30, 400, "default");
-		LoadProfile i2 = new LoadProfile(60, 1000, "default");
-		LoadProfile i3 = new LoadProfile(40, 1200, "default");
-		LoadProfile i4 = new LoadProfile(40, 900, "default");
-		LoadProfile i5 = new LoadProfile(40, 500, "default");
-		LoadProfile i6 = new LoadProfile(40, 200, "default");
-		this._loadSchedule.clear();
-		this._loadSchedule.add(i1);
-		this._loadSchedule.add(i2);
-		this._loadSchedule.add(i3);
-		this._loadSchedule.add(i4);
-		this._loadSchedule.add(i5);
-		this._loadSchedule.add(i6);
+		LoadUnit i1 = new LoadUnit(30, 400, "default");
+		LoadUnit i2 = new LoadUnit(60, 1000, "default");
+		LoadUnit i3 = new LoadUnit(40, 1200, "default");
+		LoadUnit i4 = new LoadUnit(40, 900, "default");
+		LoadUnit i5 = new LoadUnit(40, 500, "default");
+		LoadUnit i6 = new LoadUnit(40, 200, "default");
+		this.loadSchedule.clear();
+		this.loadSchedule.add(i1);
+		this.loadSchedule.add(i2);
+		this.loadSchedule.add(i3);
+		this.loadSchedule.add(i4);
+		this.loadSchedule.add(i5);
+		this.loadSchedule.add(i6);
 		// 9) Load a default mix matrix.
 		MixMatrix defaultMixMatrix = new MixMatrix();
 		defaultMixMatrix.normalize();
@@ -254,9 +254,9 @@ public class DefaultScenarioTrack extends Target {
 	 */
 	protected class LoadManagerThread extends Thread {
 		/** The track for which this thread is responsible. */
-		private Target _track = null;
+		private Track _track = null;
 
-		private LoadProfile _currentProfile = null;
+		private LoadUnit _currentProfile = null;
 
 		/** If true, this thread will stop advancing the load profile. */
 		private boolean _done = false;
@@ -269,7 +269,7 @@ public class DefaultScenarioTrack extends Target {
 		private Calendar cal = null;
 
 		/** Allow external agents to augment the current load schedule by providing dynamic load profiles */
-		LinkedList<LoadProfile> _dynamicLoadProfiles = new LinkedList<LoadProfile>();
+		LinkedList<LoadUnit> _dynamicLoadProfiles = new LinkedList<LoadUnit>();
 
 		public boolean getDone() {
 			return this._done;
@@ -279,23 +279,23 @@ public class DefaultScenarioTrack extends Target {
 			this._done = val;
 		}
 
-		public LoadManagerThread(Target track) {
+		public LoadManagerThread(Track track) {
 			this._track = track;
 		}
 
-		public LoadProfile getCurrentLoadProfile() {
+		public LoadUnit getCurrentLoadProfile() {
 			// Pull the current load profile from a local variable stash
 			// return this._track._loadSchedule.get( this.loadScheduleIndex );
 			return this._currentProfile;
 		}
 
-		public LoadProfile getNextLoadProfile() {
+		public LoadUnit getNextLoadProfile() {
 			// Compute the next load profile from what should be the current load schedule index
-			int nextLoadScheduleIndex = (this.loadScheduleIndex + 1) % this._track._loadSchedule.size();
-			return this._track._loadSchedule.get(nextLoadScheduleIndex);
+			int nextLoadScheduleIndex = (this.loadScheduleIndex + 1) % this._track.loadSchedule.size();
+			return this._track.loadSchedule.get(nextLoadScheduleIndex);
 		}
 
-		public void submitDynamicLoadProfile(LoadProfile profile) {
+		public void submitDynamicLoadProfile(LoadUnit profile) {
 			synchronized (this._dynamicLoadProfiles) {
 				this._dynamicLoadProfiles.add(profile);
 			}
@@ -307,7 +307,7 @@ public class DefaultScenarioTrack extends Target {
 
 			// Prepare the first load profile before ramp up so that we at
 			// lease have a load profile to use during the ramp up.
-			this._currentProfile = this._track._loadSchedule.get(loadScheduleIndex);
+			this._currentProfile = this._track.loadSchedule.get(loadScheduleIndex);
 			this._track._currentLoadProfile = this._currentProfile;
 			this._track._currentLoadProfile.setTimeStarted(now + rampUp);
 			this._track._currentLoadProfile._activeCount++;
@@ -350,13 +350,13 @@ public class DefaultScenarioTrack extends Target {
 						// Grab lock before pop - only this thread pops, all other threads push, so after we see that the list is
 						// non-empty
 						// its size can only increase, so pop should not fail
-						LoadProfile dynProfile = null;
+						LoadUnit dynProfile = null;
 						synchronized (this._dynamicLoadProfiles) {
 							dynProfile = this._dynamicLoadProfiles.pop();
 						}
 
 						// Just in case, make sure that we acutally got a "real"/valid load profile
-						if (dynProfile != null && this._track.validateLoadProfile(dynProfile) == Target.VALID_LOAD_PROFILE) {
+						if (dynProfile != null && this._track.validateLoadProfile(dynProfile) == Track.VALID_LOAD_PROFILE) {
 							logger.info(this + " Dynamic load profile passed validation...");
 							now = System.currentTimeMillis();
 							// Store this dynProfile as the current
@@ -404,20 +404,20 @@ public class DefaultScenarioTrack extends Target {
 		public boolean advanceSchedule() {
 			long now = 0;
 
-			loadScheduleIndex = (loadScheduleIndex + 1) % this._track._loadSchedule.size();
+			loadScheduleIndex = (loadScheduleIndex + 1) % this._track.loadSchedule.size();
 			// If we reach index 0, we cycled; log it.
 			if (loadScheduleIndex == 0) {
 				logger.info(this + " cycling.");
 			}
 
 			// Update the track's reference of the current load profile.
-			if (loadScheduleIndex < this._track._loadSchedule.size()) {
+			if (loadScheduleIndex < this._track.loadSchedule.size()) {
 				logger.debug(this + " advancing load schedule");
 
 				now = System.currentTimeMillis();
 
 				// Save the current loadprofile locally as well as in the track
-				this._currentProfile = this._track._loadSchedule.get(loadScheduleIndex);
+				this._currentProfile = this._track.loadSchedule.get(loadScheduleIndex);
 				this._track._currentLoadProfile = this._currentProfile;
 				this._track._currentLoadProfile._activeCount++;
 				this._track._currentLoadProfile.setTimeStarted(now);

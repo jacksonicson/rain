@@ -42,11 +42,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import radlab.rain.Generator;
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 import radlab.rain.ObjectPool;
 import radlab.rain.Operation;
 import radlab.rain.RainConfig;
-import radlab.rain.Target;
+import radlab.rain.Track;
 import radlab.rain.util.AppServerStats;
 import radlab.rain.util.HttpTransport;
 import radlab.rain.util.NegativeExponential;
@@ -135,7 +135,7 @@ public class ComradesGenerator extends Generator
 	public String _candidatesUrl;
 	public String _newCandidateUrl;
 	
-	public ComradesGenerator(Target track) 
+	public ComradesGenerator(Track track) 
 	{
 		super(track);
 		this._rand = new Random();
@@ -336,7 +336,7 @@ public class ComradesGenerator extends Generator
 		// Get the current load profile if we need to look inside of it to
 		// decide
 		// what to do next
-		LoadProfile currentLoad = this.getTrack().getCurrentLoadProfile();
+		LoadUnit currentLoad = this.getTrack().getCurrentLoadProfile();
 		this._latestLoadProfile = currentLoad;
 
 		// if( true )

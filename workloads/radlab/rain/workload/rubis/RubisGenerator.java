@@ -32,9 +32,9 @@
 package radlab.rain.workload.rubis;
 
 import radlab.rain.Generator;
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 import radlab.rain.Operation;
-import radlab.rain.Target;
+import radlab.rain.Track;
 import radlab.rain.util.HttpTransport;
 
 /**
@@ -83,7 +83,7 @@ public class RubisGenerator extends Generator
 	 * 
 	 * @param track     The track configuration with which to run this generator.
 	 */
-	public RubisGenerator( Target track )
+	public RubisGenerator( Track track )
 	{
 		super( track );
 		
@@ -133,7 +133,7 @@ public class RubisGenerator extends Generator
 	 */
 	public Operation nextRequest( int lastOperation )
 	{
-		LoadProfile currentLoad = this.getTrack().getCurrentLoadProfile();
+		LoadUnit currentLoad = this.getTrack().getCurrentLoadProfile();
 		int nextOperation = -1;
 		
 		if( lastOperation == -1 )

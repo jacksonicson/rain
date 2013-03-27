@@ -40,11 +40,11 @@ import org.json.JSONObject;
 
 import radlab.rain.DefaultScenarioTrack;
 import radlab.rain.Generator;
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 import radlab.rain.ObjectPool;
 import radlab.rain.Operation;
 import radlab.rain.Scenario;
-import radlab.rain.Target;
+import radlab.rain.Track;
 import radlab.rain.util.ConfigUtil;
 import radlab.rain.util.HttpTransport;
 import radlab.rain.util.NegativeExponential;
@@ -93,7 +93,7 @@ public class PredictableAppGenerator extends Generator
 	private float[] _memoryMix 			= null;
 	private int[] _operationBusyPct 	= null; 
 		
-	public PredictableAppGenerator(Target track) 
+	public PredictableAppGenerator(Track track) 
 	{
 		super(track);
 		this._baseUrl 	= "http://" + this._loadTrack.getTargetHostName() + ":" + this._loadTrack.getTargetHostPort();
@@ -286,7 +286,7 @@ public class PredictableAppGenerator extends Generator
 	@Override
 	public Operation nextRequest(int lastOperation) 
 	{
-		LoadProfile currentLoad = this.getTrack().getCurrentLoadProfile();
+		LoadUnit currentLoad = this.getTrack().getCurrentLoadProfile();
 		// We must save the latest loadprofile if we want the little's law calculation to be done.
 		// Latest profile stores the number of users
 		this._latestLoadProfile = currentLoad;

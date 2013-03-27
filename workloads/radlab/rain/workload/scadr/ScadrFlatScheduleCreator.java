@@ -38,7 +38,7 @@ import java.util.LinkedList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 import radlab.rain.LoadScheduleCreator;
 
 public class ScadrFlatScheduleCreator extends LoadScheduleCreator {
@@ -79,7 +79,7 @@ public class ScadrFlatScheduleCreator extends LoadScheduleCreator {
 	}
 
 	@Override
-	public LinkedList<LoadProfile> createSchedule(String track, JSONObject config) throws JSONException {
+	public LinkedList<LoadUnit> createSchedule(String track, JSONObject config) throws JSONException {
 		// Pull out the base offset
 		if (config.has(CFG_INITIAL))
 			this._initialWorkload = config.getInt(CFG_INITIAL);
@@ -90,10 +90,10 @@ public class ScadrFlatScheduleCreator extends LoadScheduleCreator {
 		if (config.has(CFG_INCREMENTS_PER_INTERVAL))
 			this._incrementsPerInterval = config.getInt(CFG_INCREMENTS_PER_INTERVAL);
 
-		LinkedList<LoadProfile> loadSchedule = new LinkedList<LoadProfile>();
+		LinkedList<LoadUnit> loadSchedule = new LinkedList<LoadUnit>();
 
 		// Do a flat n-user workload
-		loadSchedule.add(new LoadProfile((long) 900, 200, "default", 0, FORMATTER.format(0)));
+		loadSchedule.add(new LoadUnit((long) 900, 200, "default", 0, FORMATTER.format(0)));
 
 		/*
 		 * // Add a long interval with 1 thread for debugging // loadSchedule.add( new LoadProfile( 300, 1, "default", 0, "debug"
@@ -116,8 +116,8 @@ public class ScadrFlatScheduleCreator extends LoadScheduleCreator {
 		creator.setInitialWorkload(10);
 
 		// Would like to give a duration and have the workload stretched/compressed into that
-		LinkedList<LoadProfile> profiles = creator.createSchedule(null, new JSONObject());
-		for (LoadProfile p : profiles)
+		LinkedList<LoadUnit> profiles = creator.createSchedule(null, new JSONObject());
+		for (LoadUnit p : profiles)
 			System.out.println(p.getNumberOfUsers());
 	}
 }

@@ -9,10 +9,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import radlab.rain.Generator;
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 import radlab.rain.ObjectPool;
 import radlab.rain.Operation;
-import radlab.rain.Target;
+import radlab.rain.Track;
 
 import radlab.rain.util.storage.KeyGenerator;
 import radlab.rain.util.Histogram;
@@ -45,7 +45,7 @@ public class MongoGenerator extends Generator
 	// Debug hot object popularity
 	Histogram<String> _hotObjHist				= new Histogram<String>();
 	
-	public MongoGenerator(Target track) 
+	public MongoGenerator(Track track) 
 	{
 		super(track);
 	}
@@ -122,7 +122,7 @@ public class MongoGenerator extends Generator
 	@Override
 	public Operation nextRequest(int lastOperation) 
 	{
-		LoadProfile currentLoad = this.getTrack().getCurrentLoadProfile();
+		LoadUnit currentLoad = this.getTrack().getCurrentLoadProfile();
 		this._latestLoadProfile = currentLoad;
 		int key = -1;
 		

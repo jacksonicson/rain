@@ -5,7 +5,7 @@ import java.util.LinkedList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 import radlab.rain.util.storage.StorageLoadProfile;
 import radlab.rain.workload.mongodb.MongoLoadProfile;
 
@@ -16,15 +16,15 @@ public class MongoHotspotScheduleCreator extends HotspotScheduleCreator
 	{}
 
 	@Override
-	public LinkedList<LoadProfile> createSchedule(String target, JSONObject config) throws JSONException 
+	public LinkedList<LoadUnit> createSchedule(String target, JSONObject config) throws JSONException 
 	{
 		// Let the superclass create a generic schedule of StorageLoadProfiles
-		LinkedList<LoadProfile> genericSchedule = super.createSchedule(target, config );
+		LinkedList<LoadUnit> genericSchedule = super.createSchedule(target, config );
 		
-		LinkedList<LoadProfile> mongoSchedule = new LinkedList<LoadProfile>();		
+		LinkedList<LoadUnit> mongoSchedule = new LinkedList<LoadUnit>();		
 		// Make a pass through the generic list, converting each StorageLoadProfile to a
 		// MongoLoadProfile. Conversion is simple, just use the saved JSONObject config object
-		for( LoadProfile p : genericSchedule )
+		for( LoadUnit p : genericSchedule )
 		{
 			if( p instanceof StorageLoadProfile )
 			{

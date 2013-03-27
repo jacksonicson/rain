@@ -46,10 +46,10 @@ import org.json.JSONObject;
 
 import radlab.rain.DefaultScenarioTrack;
 import radlab.rain.Generator;
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 import radlab.rain.Operation;
 import radlab.rain.Scenario;
-import radlab.rain.Target;
+import radlab.rain.Track;
 import radlab.rain.util.ConfigUtil;
 import radlab.rain.util.EmpiricalCDF;
 
@@ -99,7 +99,7 @@ public class SamplingMapReduceGenerator extends Generator
 	private long _nextThinkTime 		= 0;
 	private long _nextCycleTime			= 0;
 	
-	public SamplingMapReduceGenerator(Target track) 
+	public SamplingMapReduceGenerator(Track track) 
 	{
 		super(track);
 	}
@@ -253,7 +253,7 @@ public class SamplingMapReduceGenerator extends Generator
 	@Override
 	public Operation nextRequest(int lastOperation) 
 	{
-		LoadProfile currentLoad = this.getTrack().getCurrentLoadProfile();
+		LoadUnit currentLoad = this.getTrack().getCurrentLoadProfile();
 		this._latestLoadProfile = currentLoad;
 		
 		// Sample job name first

@@ -1,6 +1,6 @@
 package radlab.rain.configuration;
 
-public enum TrackConfigs {
+public enum TrackConfKeys {
 
 	TRACK_CLASS_KEY("track"),
 	OPEN_LOOP_PROBABILITY_KEY("pOpenLoop"),
@@ -35,7 +35,7 @@ public enum TrackConfigs {
 	MAX_USERS("maxUsers");
 
 	private String configuration;
-	TrackConfigs(String config) {
+	TrackConfKeys(String config) {
 		this.configuration = config;
 	}
 

@@ -36,21 +36,21 @@ import java.util.LinkedList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 import radlab.rain.LoadScheduleCreator;
 
 public class HttpTestScheduleCreator extends LoadScheduleCreator 
 {
 	//@Override
-	public LinkedList<LoadProfile> createSchedule(String track, JSONObject params ) throws JSONException  
+	public LinkedList<LoadUnit> createSchedule(String track, JSONObject params ) throws JSONException  
 	{
-		LinkedList<LoadProfile> loadSchedule = new LinkedList<LoadProfile>();
+		LinkedList<LoadUnit> loadSchedule = new LinkedList<LoadUnit>();
 		
 		// Mix names used here should match what's in the behavior
 		//LoadProfile i1 = new LoadProfile( 310, 1, "default", 0, "first" );
 		
-		LoadProfile i1 = new LoadProfile( 30, 20, "default", 0, "first" );// 10
-		LoadProfile i2 = new LoadProfile( 40, 25, "default", 0, "second" );// 15
+		LoadUnit i1 = new LoadUnit( 30, 20, "default", 0, "first" );// 10
+		LoadUnit i2 = new LoadUnit( 40, 25, "default", 0, "second" );// 15
 		/*LoadProfile i2 = new LoadProfile( 15, 40, "default", 0 );
 		LoadProfile i3 = new LoadProfile( 45, 100, "default", 0 );
 		LoadProfile i4 = new LoadProfile( 40, 150, "default", 0 );

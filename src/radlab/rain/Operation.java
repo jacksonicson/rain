@@ -51,7 +51,7 @@ public abstract class Operation implements Runnable
 	// Describes who generated the operation and when (during what interval)
 	protected String _generatedBy       			= "";
 	// LoadProfile in effect when this operation was generated/initialized
-	private LoadProfile _generatedDuringProfile 	= null;
+	private LoadUnit _generatedDuringProfile 	= null;
 	protected long _profileStartTime		= -1;
 	
 	private long _generatorThreadID     = -1;
@@ -102,8 +102,8 @@ public abstract class Operation implements Runnable
 	public void setAsync( boolean val ){ this._async = val; }
 	public String getGeneratedBy() { return this._generatedBy; }
 	public void setGeneratedBy( String val ){ this._generatedBy = val; }
-	public LoadProfile getGeneratedDuringProfile() { return this._generatedDuringProfile; }
-	public void setGeneratedDuringProfile( LoadProfile val )
+	public LoadUnit getGeneratedDuringProfile() { return this._generatedDuringProfile; }
+	public void setGeneratedDuringProfile( LoadUnit val )
 	{ 
 		// Save the load profile
 		this._generatedDuringProfile = val; 

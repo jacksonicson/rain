@@ -8,5 +8,5 @@ import org.json.JSONObject;
 //import java.util.LinkedList;
 
 public abstract class LoadScheduleCreator implements ILoadScheduleCreator {
-	public abstract LinkedList<LoadProfile> createSchedule(String track, JSONObject params) throws JSONException;
+	public abstract LinkedList<LoadUnit> createSchedule(String track, JSONObject params) throws JSONException;
 }

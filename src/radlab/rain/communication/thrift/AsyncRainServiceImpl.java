@@ -8,9 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import radlab.rain.Benchmark;
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 import radlab.rain.Scenario;
-import radlab.rain.Target;
+import radlab.rain.Track;
 import de.tum.in.storm.rain.Profile;
 import de.tum.in.storm.rain.RainService;
 
@@ -30,16 +30,16 @@ public class AsyncRainServiceImpl implements RainService.Iface {
 		// Find the track it should go to and validate it.
 		// We should make Scenarios singletons since there's only one
 		// Scenario ever (a Scenario holds one or more ScenarioTracks)
-		Target track = Benchmark.getBenchmarkScenario().getTracks().get(msg.getDestTrackName());
+		Track track = Benchmark.getBenchmarkScenario().getTracks().get(msg.getDestTrackName());
 		if (track != null) {
 			logger.info(this + " Found target track");
 
-			LoadProfile profile = new LoadProfile(msg.getInterval(), (int) msg.getNumberOfUsers(), msg.getMixName(),
+			LoadUnit profile = new LoadUnit(msg.getInterval(), (int) msg.getNumberOfUsers(), msg.getMixName(),
 					msg.getTransitionTime(), msg.getName());
 
 			int validationResult = track.validateLoadProfile(profile);
 			// Try to validate and submit to the track's load scheduler
-			if (validationResult == Target.VALID_LOAD_PROFILE) {
+			if (validationResult == Track.VALID_LOAD_PROFILE) {
 				logger.info(this + " Profile validated");
 				// Submit to load scheduler thread
 				track.submitDynamicLoadProfile(profile);
@@ -62,7 +62,7 @@ public class AsyncRainServiceImpl implements RainService.Iface {
 		logger.info(this + " Received track list request message.");
 
 		List<String> trackNames = new ArrayList<String>();
-		for (Target track : Benchmark.BenchmarkScenario.getTracks().values()) {
+		for (Track track : Benchmark.BenchmarkScenario.getTracks().values()) {
 			logger.info(this + " Adding track name: " + track.getName());
 			trackNames.add(track.getName());
 		}

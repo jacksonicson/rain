@@ -4,9 +4,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 
-public class S3LoadProfile extends LoadProfile 
+public class S3LoadProfile extends LoadUnit 
 {
 	public static String CFG_LOAD_PROFILE_REQUEST_SIZES_KEY			= "sizes"; // list of obj size
 	public static String CFG_LOAD_PROFILE_REQUEST_SIZE_MIX_KEY		= "sizeMix"; // proportions of obj size

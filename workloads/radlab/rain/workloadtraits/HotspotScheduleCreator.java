@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 import radlab.rain.LoadScheduleCreator;
 import radlab.rain.util.storage.KeyGenerator;
 import radlab.rain.util.storage.StorageLoadProfile;
@@ -64,7 +64,7 @@ public class HotspotScheduleCreator extends LoadScheduleCreator {
 	}
 
 	@Override
-	public LinkedList<LoadProfile> createSchedule(String target, JSONObject config) throws JSONException {
+	public LinkedList<LoadUnit> createSchedule(String target, JSONObject config) throws JSONException {
 		// The relative load, num hot object and hot traffic fraction arrays must all be the same size
 		if (this._relativeLoads.length != this._numHotObjects.length)
 			throw new JSONException("Length of Number of hot objects array: " + this._numHotObjects.length
@@ -136,7 +136,7 @@ public class HotspotScheduleCreator extends LoadScheduleCreator {
 		if (config.has(KeyGenerator.MAX_KEY_CONFIG_KEY))
 			maxKey = config.getInt(KeyGenerator.MAX_KEY_CONFIG_KEY);
 
-		LinkedList<LoadProfile> loadSchedule = new LinkedList<LoadProfile>();
+		LinkedList<LoadUnit> loadSchedule = new LinkedList<LoadUnit>();
 
 		// Specify the key generator parameters
 		JSONObject keyGenConfig = new JSONObject();
@@ -151,9 +151,9 @@ public class HotspotScheduleCreator extends LoadScheduleCreator {
 			if (i == 0) {
 				JSONObject profileConfig = new JSONObject();
 				// Set the basics: # interval, users, mix name
-				profileConfig.put(LoadProfile.CFG_LOAD_PROFILE_INTERVAL_KEY, intervalLength);
-				profileConfig.put(LoadProfile.CFG_LOAD_PROFILE_USERS_KEY, this._initialWorkload);
-				profileConfig.put(LoadProfile.CFG_LOAD_PROFILE_MIX_KEY, mixName);
+				profileConfig.put(LoadUnit.CFG_LOAD_PROFILE_INTERVAL_KEY, intervalLength);
+				profileConfig.put(LoadUnit.CFG_LOAD_PROFILE_USERS_KEY, this._initialWorkload);
+				profileConfig.put(LoadUnit.CFG_LOAD_PROFILE_MIX_KEY, mixName);
 				// Set the Storage specific elements
 				profileConfig.put(StorageLoadProfile.CFG_LOAD_PROFILE_KEY_GENERATOR_KEY, "radlab.rain.util.storage.UniformKeyGenerator");
 				profileConfig.put(StorageLoadProfile.CFG_LOAD_PROFILE_KEY_GENERATOR_CONFIG_KEY, keyGenConfig);
@@ -176,9 +176,9 @@ public class HotspotScheduleCreator extends LoadScheduleCreator {
 
 				JSONObject profileConfig = new JSONObject();
 				// Set the basics: # interval, users, mix name
-				profileConfig.put(LoadProfile.CFG_LOAD_PROFILE_INTERVAL_KEY, intervalLength);
-				profileConfig.put(LoadProfile.CFG_LOAD_PROFILE_USERS_KEY, users);
-				profileConfig.put(LoadProfile.CFG_LOAD_PROFILE_MIX_KEY, mixName);
+				profileConfig.put(LoadUnit.CFG_LOAD_PROFILE_INTERVAL_KEY, intervalLength);
+				profileConfig.put(LoadUnit.CFG_LOAD_PROFILE_USERS_KEY, users);
+				profileConfig.put(LoadUnit.CFG_LOAD_PROFILE_MIX_KEY, mixName);
 				// Set the Storage specific elements
 				profileConfig.put(StorageLoadProfile.CFG_LOAD_PROFILE_KEY_GENERATOR_KEY, "radlab.rain.util.storage.UniformKeyGenerator");
 				profileConfig.put(StorageLoadProfile.CFG_LOAD_PROFILE_KEY_GENERATOR_CONFIG_KEY, keyGenConfig);
@@ -205,9 +205,9 @@ public class HotspotScheduleCreator extends LoadScheduleCreator {
 			long intervalLength = this._incrementSize * this._incrementsPerInterval;
 			JSONObject profileConfig = new JSONObject();
 			// Set the basics: # interval, users, mix name
-			profileConfig.put(LoadProfile.CFG_LOAD_PROFILE_INTERVAL_KEY, intervalLength);
-			profileConfig.put(LoadProfile.CFG_LOAD_PROFILE_USERS_KEY, this._initialWorkload);
-			profileConfig.put(LoadProfile.CFG_LOAD_PROFILE_MIX_KEY, mixName);
+			profileConfig.put(LoadUnit.CFG_LOAD_PROFILE_INTERVAL_KEY, intervalLength);
+			profileConfig.put(LoadUnit.CFG_LOAD_PROFILE_USERS_KEY, this._initialWorkload);
+			profileConfig.put(LoadUnit.CFG_LOAD_PROFILE_MIX_KEY, mixName);
 			// Set the Storage specific elements
 			profileConfig.put(StorageLoadProfile.CFG_LOAD_PROFILE_KEY_GENERATOR_KEY, "radlab.rain.util.storage.UniformKeyGenerator");
 			profileConfig.put(StorageLoadProfile.CFG_LOAD_PROFILE_KEY_GENERATOR_CONFIG_KEY, keyGenConfig);
@@ -235,8 +235,8 @@ public class HotspotScheduleCreator extends LoadScheduleCreator {
 		creator.setInitialWorkload(800);
 
 		// Would like to give a duration and have the workload stretched/compressed into that
-		LinkedList<LoadProfile> profiles = creator.createSchedule(null, new JSONObject());
-		for (LoadProfile p : profiles) {
+		LinkedList<LoadUnit> profiles = creator.createSchedule(null, new JSONObject());
+		for (LoadUnit p : profiles) {
 			if (p instanceof StorageLoadProfile) {
 				StorageLoadProfile slp = (StorageLoadProfile) p;
 				System.out.println(slp.getNumberOfUsers() + " " + slp.getNumHotObjects() + " " + slp.getHotTrafficFraction());

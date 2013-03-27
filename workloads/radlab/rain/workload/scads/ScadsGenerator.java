@@ -33,9 +33,9 @@ package radlab.rain.workload.scads;
 
 import radlab.rain.Generator;
 
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 import radlab.rain.Operation;
-import radlab.rain.Target;
+import radlab.rain.Track;
 import radlab.rain.workload.scads.keys.KeyGenerator;
 
 /**
@@ -59,7 +59,7 @@ public class ScadsGenerator extends Generator
 	 * 
 	 * @param track     The track configuration with which to run this generator.
 	 */
-	public ScadsGenerator( Target track )
+	public ScadsGenerator( Track track )
 	{
 		super( track );
 	}
@@ -80,7 +80,7 @@ public class ScadsGenerator extends Generator
 	 */
 	public Operation nextRequest( int lastOperation )
 	{
-		LoadProfile currentLoad = this.getTrack().getCurrentLoadProfile();
+		LoadUnit currentLoad = this.getTrack().getCurrentLoadProfile();
 
 		int nextOperation = -1;
 

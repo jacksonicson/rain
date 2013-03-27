@@ -44,9 +44,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import radlab.rain.Generator;
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 import radlab.rain.Operation;
-import radlab.rain.Target;
+import radlab.rain.Track;
 
 public class ReplayMapReduceGenerator extends Generator 
 {
@@ -105,7 +105,7 @@ public class ReplayMapReduceGenerator extends Generator
 	private long _nextThinkTime 		= 0;
 	private long _nextCycleTime			= 0;
 	
-	public ReplayMapReduceGenerator(Target track) 
+	public ReplayMapReduceGenerator(Track track) 
 	{
 		super(track);
 	}
@@ -211,7 +211,7 @@ public class ReplayMapReduceGenerator extends Generator
 	@Override
 	public Operation nextRequest( int lastOperation ) 
 	{
-		LoadProfile currentLoad = this.getTrack().getCurrentLoadProfile();
+		LoadUnit currentLoad = this.getTrack().getCurrentLoadProfile();
 		this._latestLoadProfile = currentLoad;
 		
 		try

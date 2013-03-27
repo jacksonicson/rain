@@ -1,7 +1,7 @@
 package radlab.rain.workload.mongodb;
 
 import radlab.rain.Generator;
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 import radlab.rain.Operation;
 import radlab.rain.scoreboard.IScoreboard;
 
@@ -40,7 +40,7 @@ public abstract class MongoOperation extends Operation
 		
 		this._mongoClient = mongoGenerator.getMongoTransport();
 		
-		LoadProfile currentLoadProfile = generator.getLatestLoadProfile();
+		LoadUnit currentLoadProfile = generator.getLatestLoadProfile();
 		if( currentLoadProfile != null )
 			this.setGeneratedDuringProfile( currentLoadProfile );
 		

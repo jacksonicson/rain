@@ -1,6 +1,6 @@
 package radlab.rain.configuration;
 
-public enum ScenarioConfigs {
+public enum ScenarioConfKeys {
 
 	PROFILES_KEY("profiles"), PROFILES_CREATOR_CLASS_KEY("profilesCreatorClass"), PROFILES_CREATOR_CLASS_PARAMS_KEY(
 			"profilesCreatorClassParams"), TIMING_KEY("timing"), RAMP_UP_KEY(
@@ -12,7 +12,7 @@ public enum ScenarioConfigs {
 
 	private String configuration;
 
-	ScenarioConfigs(String config) {
+	ScenarioConfKeys(String config) {
 		this.configuration = config;
 	}
 

@@ -1,7 +1,7 @@
 package radlab.rain.communication;
 
 import java.io.Serializable;
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 
 public class DynamicLoadProfileMessage extends RainMessage implements Serializable
 {
@@ -18,7 +18,7 @@ public class DynamicLoadProfileMessage extends RainMessage implements Serializab
 		this._header = new MessageHeader( MessageHeader.VERSION_1, MessageHeader.DYNAMIC_LOAD_PROFILE_MSG_TYPE );
 	}
 	
-	public DynamicLoadProfileMessage( String destTrack, LoadProfile profile )
+	public DynamicLoadProfileMessage( String destTrack, LoadUnit profile )
 	{
 		this._header = new MessageHeader( MessageHeader.VERSION_1, MessageHeader.DYNAMIC_LOAD_PROFILE_MSG_TYPE );
 		this._destTrackName = destTrack;
@@ -29,9 +29,9 @@ public class DynamicLoadProfileMessage extends RainMessage implements Serializab
 		this._name = profile._name;
 	}
 		
-	public LoadProfile convertToLoadProfile()
+	public LoadUnit convertToLoadProfile()
 	{
-		LoadProfile profile = new LoadProfile( this._interval, this._numberOfUsers, this._mixName, this._transitionTime, this._name );
+		LoadUnit profile = new LoadUnit( this._interval, this._numberOfUsers, this._mixName, this._transitionTime, this._name );
 		return profile;
 	}
 }

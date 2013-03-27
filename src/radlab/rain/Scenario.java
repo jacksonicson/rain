@@ -31,297 +31,52 @@
 
 package radlab.rain;
 
-import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.util.Iterator;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import radlab.rain.configuration.ScenarioConfigs;
-import radlab.rain.configuration.TrackConfigs;
+import radlab.rain.configuration.TrackConfKeys;
 import radlab.rain.scoreboard.IScoreboard;
-import radlab.rain.util.ConfigUtil;
 
-/**
- * The Scenario class contains the specifications for a benchmark scenario, which includes the timings (i.e. ramp up,
- * duration, ramp down) and the different scenario tracks.
- */
 public class Scenario {
 	private static Logger logger = LoggerFactory.getLogger(Scenario.class);
-	public static final int DEFAULT_MAX_SHARED_THREADS = 10;
-	public static final boolean DEFAULT_AGGREGATE_STATS = false;
 
-	// Ramp up time in seconds.
-	private long _rampUp;
+	private TreeMap<String, Track> tracks = new TreeMap<String, Track>();
 
-	// Duration of the run in seconds.
-	private long _duration;
+	private ScenarioConfiguration conf = new ScenarioConfiguration();
 
-	// Ramp down time in seconds.
-	private long _rampDown;
-
-	// Max number of threads to keep in the shared threadpool
-	private int _maxSharedThreads = DEFAULT_MAX_SHARED_THREADS;
-
-	// Log aggregated stats
-	private boolean _aggregateStats = DEFAULT_AGGREGATE_STATS;
-
-	// The instantiated tracks specified by the JSON configuration.
-	private TreeMap<String, Target> _tracks = new TreeMap<String, Target>();
-
-	public long getRampUp() {
-		return this._rampUp;
-	}
-
-	public void setRampUp(long val) {
-		this._rampUp = val;
-	}
-
-	public long getRampDown() {
-		return this._rampDown;
-	}
-
-	public void setRampDown(long val) {
-		this._rampDown = val;
-	}
-
-	public long getDuration() {
-		return this._duration;
-	}
-
-	public void setDuration(long val) {
-		this._duration = val;
-	}
-
-	public int getMaxSharedThreads() {
-		return this._maxSharedThreads;
-	}
-
-	public void setMaxSharedThreads(int val) {
-		this._maxSharedThreads = val;
-	}
-
-	public boolean getAggregateStats() {
-		return this._aggregateStats;
-	}
-
-	public void setAggregateStats(boolean val) {
-		this._aggregateStats = val;
-	}
-
-	public TreeMap<String, Target> getTracks() {
-		return this._tracks;
-	}
-
-	/** Create a new and uninitialized <code>Scenario</code>. */
-	public Scenario() {
-	}
-
-	/**
-	 * Create a new Scenario and load the profile specified in the given JSON configuration object.
-	 * 
-	 * @param jsonConfig
-	 *            The JSON object containing load specifications.
-	 */
 	public Scenario(JSONObject jsonConfig) throws Exception {
-		this.loadProfile(jsonConfig);
+		conf.loadProfile(jsonConfig);
 	}
 
-	/**
-	 * Ask each scenario track to start.
-	 */
-	public void start() {
-		for (Target track : this._tracks.values()) {
-			track.start();
+	private void buildTracks() throws Exception {
+		for (JSONObject trackConfig : conf.getTrackConfigurations()) {
+			String trackClassName = trackConfig.getString(TrackConfKeys.TRACK_CLASS_KEY.toString());
+
+			Class<Track> trackClass = (Class<Track>) Class.forName(trackClassName);
+			Constructor<Track> trackCtor = trackClass.getConstructor(new Class[] { String.class, Scenario.class });
+			Track track = (Track) trackCtor.newInstance();
+			track.initialize(trackConfig);
+
+			this.tracks.put(track._name, track);
 		}
 	}
 
-	/**
-	 * Ask each scenario track to end.
-	 */
-	public void end() {
-		logger.info("Tracks to end: " + this._tracks.values());
-		for (Target track : this._tracks.values()) {
-			track.end();
-		}
-	}
-
-	/**
-	 * Reads the run specifications from the provided JSON configuration object. The timings (i.e. ramp up, duration,
-	 * and ramp down) are set and the scenario tracks are created.
-	 * 
-	 * @param jsonConfig
-	 *            The JSON object containing load specifications.
-	 */
-	public void loadProfile(JSONObject jsonConfig) throws Exception {
-		JSONObject tracksConfig = null;
-		try {
-			JSONObject timing = jsonConfig.getJSONObject(ScenarioConfigs.TIMING_KEY.toString());
-			setRampUp(timing.getLong(ScenarioConfigs.RAMP_UP_KEY.toString()));
-			setDuration(timing.getLong(ScenarioConfigs.DURATION_KEY.toString()));
-			setRampDown(timing.getLong(ScenarioConfigs.RAMP_DOWN_KEY.toString()));
-
-			// Set up Rain configuration params (if they've been provided)
-			if (jsonConfig.has(ScenarioConfigs.VERBOSE_ERRORS_KEY.toString())) {
-				boolean val = jsonConfig.getBoolean(ScenarioConfigs.VERBOSE_ERRORS_KEY.toString());
-				RainConfig.getInstance()._verboseErrors = val;
-			}
-
-			// Setup sonar recorder
-			if (jsonConfig.has(ScenarioConfigs.SONAR_HOSTNAME.toString())) {
-				String host = jsonConfig.getString(ScenarioConfigs.SONAR_HOSTNAME.toString());
-				RainConfig.getInstance()._sonarHost = host;
-			}
-
-			// Check if thrift remote management is used
-			boolean useThrift = false;
-			if (jsonConfig.has(ScenarioConfigs.USE_THRIFT.toString()))
-				useThrift = jsonConfig.getBoolean(ScenarioConfigs.USE_THRIFT.toString());
-
-			if (useThrift) {
-				// Set in the config that we're using pipes
-				RainConfig.getInstance()._useThrift = useThrift;
-
-				// Check whether we're supposed to wait for a start signal
-				if (jsonConfig.has(ScenarioConfigs.WAIT_FOR_START_SIGNAL.toString())) {
-					RainConfig.getInstance().waitForStartSignal = jsonConfig
-							.getBoolean(ScenarioConfigs.WAIT_FOR_START_SIGNAL.toString());
-				}
-			}
-
-			// Look for the profiles key OR the name of a class that
-			// generates the
-			// profiles.
-			if (jsonConfig.has(ScenarioConfigs.PROFILES_CREATOR_CLASS_KEY.toString())) {
-				// Programmatic generation class takes precedence
-				// Create profile creator class by reflection
-				String profileCreatorClass = jsonConfig
-						.getString(ScenarioConfigs.PROFILES_CREATOR_CLASS_KEY.toString());
-				ProfileCreator creator = this.createLoadProfileCreator(profileCreatorClass);
-				JSONObject params = null;
-				// Look for profile creator params - if we find some then
-				// pass them
-				if (jsonConfig.has(ScenarioConfigs.PROFILES_CREATOR_CLASS_PARAMS_KEY.toString()))
-					params = jsonConfig.getJSONObject(ScenarioConfigs.PROFILES_CREATOR_CLASS_PARAMS_KEY.toString());
-
-				tracksConfig = creator.createProfile(params);
-			} else // Otherwise there MUST be a profiles key in the config
-					// file
-			{
-				String filename = jsonConfig.getString(ScenarioConfigs.PROFILES_KEY.toString());
-				String fileContents = ConfigUtil.readFileAsString(filename);
-				tracksConfig = new JSONObject(fileContents);
-			}
-
-			if (jsonConfig.has(ScenarioConfigs.MAX_SHARED_THREADS.toString())) {
-				int sharedThreads = jsonConfig.getInt(ScenarioConfigs.MAX_SHARED_THREADS.toString());
-				if (sharedThreads > 0)
-					this._maxSharedThreads = sharedThreads;
-			}
-
-			if (jsonConfig.has(ScenarioConfigs.AGGREGATE_STATS.toString()))
-				this._aggregateStats = jsonConfig.getBoolean(ScenarioConfigs.AGGREGATE_STATS.toString());
-		} catch (JSONException e) {
-			logger.info("[SCENARIO] ERROR reading JSON configuration object. Reason: " + e.toString());
-			System.exit(1);
-		} catch (IOException e) {
-			logger.info("[SCENARIO] ERROR loading tracks configuration file. Reason: " + e.toString());
-			System.exit(1);
-		}
-
-		this.loadTracks(tracksConfig);
-	}
-
-	@SuppressWarnings("unchecked")
-	public ProfileCreator createLoadProfileCreator(String name) throws Exception {
-		ProfileCreator creator = null;
-		Class<ProfileCreator> creatorClass = (Class<ProfileCreator>) Class.forName(name);
-		Constructor<ProfileCreator> creatorCtor = creatorClass.getConstructor(new Class[] {});
-		creator = (ProfileCreator) creatorCtor.newInstance((Object[]) null);
-		return creator;
-	}
-
-	/**
-	 * Reads the track configuration from the provided JSON configuration object and creates each scenario track.
-	 * 
-	 * @param jsonConfig
-	 *            The JSON object containing load specifications.
-	 */
-	@SuppressWarnings("unchecked")
-	protected void loadTracks(JSONObject jsonConfig) {
-		try {
-			Iterator<String> i = jsonConfig.keys();
-			while (i.hasNext()) {
-				String trackName = i.next();
-				JSONObject trackConfig = jsonConfig.getJSONObject(trackName);
-
-				String trackClassName = trackConfig.getString(TrackConfigs.TRACK_CLASS_KEY.toString());
-				Target track = this.createTrack(trackClassName, trackName);
-				track.setName(trackName);
-				track.initialize(trackConfig);
-
-				this._tracks.put(track._name, track);
-			}
-		} catch (JSONException e) {
-			logger.info("[SCENARIO] ERROR parsing tracks in JSON configuration file/object. Reason: " + e.toString());
-			e.printStackTrace();
-			System.exit(1);
-		} catch (Exception e) {
-			logger.info("[SCENARIO] ERROR initializing tracks. Reason: " + e.toString());
-			e.printStackTrace();
-			System.exit(1);
-		}
-	}
-
-	/**
-	 * Factory method for creating scenario tracks.
-	 * 
-	 * @param trackClassName
-	 *            The class of the scenario track to create.
-	 * @param trackName
-	 *            The name of the instantiated track.
-	 * @return A newly instantiated scenario track.
-	 * 
-	 * @throws Exception
-	 */
-	@SuppressWarnings("unchecked")
-	public Target createTrack(String trackClassName, String trackName) throws Exception {
-		Target track = null;
-		Class<Target> trackClass = (Class<Target>) Class.forName(trackClassName);
-		Constructor<Target> trackCtor = trackClass.getConstructor(new Class[] { String.class, Scenario.class });
-		track = (Target) trackCtor.newInstance(new Object[] { trackName, this });
-		return track;
-	}
-
-	void simulateTracks(long start, long startSteadyState, long endSteadyState) throws Exception {
-		int sharedThreads = getMaxSharedThreads();
+	void execute(long start, long startSteadyState, long endSteadyState) throws Exception {
+		int sharedThreads = conf.getMaxSharedThreads();
 		ExecutorService pool = Executors.newFixedThreadPool(sharedThreads);
 
-		logger.debug("Creating " + sharedThreads + " shared threads.");
-
-		// Scenarios manage their own threads
-		long totalMaxUsers = 0;
-		for (Target track : getTracks().values()) {
-			// Start the scoreboard. It needs to know the timings because we only
-			// want to retain metrics generated during the steady state interval.
-			IScoreboard scoreboard = track.createScoreboard(null);
-			scoreboard.initialize(startSteadyState, endSteadyState, track.getMaxUsers());
-			scoreboard.setMetricSnapshotInterval((long) (track.getMetricSnapshotInterval() * 1000));
-			scoreboard.setMetricWriter(track.getMetricWriter());
-			scoreboard.start();
-
-			track.createLoadGenerators(start, pool, scoreboard);
-		}
+		// Build tracks based on static configuration
+		buildTracks();
 
 		// Join all running tracks
-		for (Target track : getTracks().values()) {
+		for (Track track : tracks.values()) {
 			track.join();
 		}
 

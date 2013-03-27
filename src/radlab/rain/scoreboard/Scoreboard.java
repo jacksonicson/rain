@@ -42,9 +42,9 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 import radlab.rain.OperationExecution;
-import radlab.rain.Target;
+import radlab.rain.Track;
 import radlab.rain.util.MetricWriter;
 import radlab.rain.util.PoissonSamplingStrategy;
 import radlab.rain.util.SonarRecorder;
@@ -72,7 +72,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 	// Who owns this scoreboard
 	private String trackName;
 	private String trackTargetHost;
-	private Target scenarioTrack = null;
+	private Track scenarioTrack = null;
 
 	// If true, this scoreboard will refuse any new results.
 	// Indicates the thread status (started or stopped)
@@ -381,7 +381,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 		// Update per-interval (profile) cards
 		// This code is still here and the data is logged but the data is NOT required for SPECj 
 		// and it is therefore not in the JSON reports!
-		LoadProfile activeProfile = result._generatedDuring;
+		LoadUnit activeProfile = result._generatedDuring;
 		if (activeProfile != null) {
 			// For SPECj the profile names are not set. Profiles are generated based 
 			// on Times TS data. (Second condition is always false)
@@ -522,7 +522,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 	}
 
 	@Override
-	public void setScenarioTrack(Target scenarioTrack) {
+	public void setScenarioTrack(Track scenarioTrack) {
 		this.scenarioTrack = scenarioTrack;
 	}
 
@@ -537,7 +537,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 	}
 
 	@Override
-	public Target getScenarioTrack() {
+	public Track getScenarioTrack() {
 		return scenarioTrack;
 	}
 

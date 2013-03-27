@@ -19,7 +19,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import radlab.rain.Generator;
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 import radlab.rain.Operation;
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.util.HttpTransport;
@@ -59,7 +59,7 @@ public abstract class BookingOperation extends Operation
 		
 		this._http = bookingGenerator.getHttpTransport();
 		this._randomNumberGenerator = bookingGenerator.getRandomNumberGenerator();
-		LoadProfile currentLoadProfile = generator.getLatestLoadProfile();
+		LoadUnit currentLoadProfile = generator.getLatestLoadProfile();
 		if( currentLoadProfile != null )
 			this.setGeneratedDuringProfile( currentLoadProfile );
 	}

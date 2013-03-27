@@ -46,7 +46,7 @@ public class OperationExecution implements Comparable<OperationExecution> {
 	private long _timeFinished = 0;
 	public String _operationName;
 	public String _operationRequest;
-	public LoadProfile _generatedDuring = null;
+	public LoadUnit _generatedDuring = null;
 	public long _profileStartTime = -1;
 	public long _actionsPerformed = 1;
 	public boolean _async = false;

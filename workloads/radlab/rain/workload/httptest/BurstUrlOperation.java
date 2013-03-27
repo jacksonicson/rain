@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.apache.http.HttpStatus;
 
 import radlab.rain.Generator;
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 import radlab.rain.Operation;
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.util.HttpTransport;
@@ -83,7 +83,7 @@ public class BurstUrlOperation extends Operation
 		this._generator = generator;
 		BurstUrlGenerator specificUrlGenerator = (BurstUrlGenerator) generator;
 		
-		LoadProfile currentLoadProfile = generator.getLatestLoadProfile();
+		LoadUnit currentLoadProfile = generator.getLatestLoadProfile();
 		if( currentLoadProfile != null )
 			this.setGeneratedDuringProfile( currentLoadProfile );
 		

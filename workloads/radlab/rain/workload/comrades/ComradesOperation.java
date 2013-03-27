@@ -45,9 +45,9 @@ import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.StringBody;
 
 import radlab.rain.Generator;
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 import radlab.rain.Operation;
-import radlab.rain.Target;
+import radlab.rain.Track;
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.util.HttpTransport;
 
@@ -85,7 +85,7 @@ public abstract class ComradesOperation extends Operation
 		if( this._appServerTarget == null || this._appServerTarget.trim().length() == 0 )
 			return;
 		
-		Target track = this._generator.getTrack();
+		Track track = this._generator.getTrack();
 		if( track instanceof ComradesScenarioTrack )
 			((ComradesScenarioTrack) track).requestIssue( this._appServerTarget );
 	}
@@ -96,7 +96,7 @@ public abstract class ComradesOperation extends Operation
 		if( this._appServerTarget == null || this._appServerTarget.trim().length() == 0 )
 			return;
 		
-		Target track = this._generator.getTrack();
+		Track track = this._generator.getTrack();
 		if( track instanceof ComradesScenarioTrack )
 			((ComradesScenarioTrack) track).requestRetire( this._appServerTarget );
 	}
@@ -119,7 +119,7 @@ public abstract class ComradesOperation extends Operation
 		this.refreshCache();
 		
 		this._http = comradesGenerator.getHttpTransport();
-		LoadProfile currentLoadProfile = comradesGenerator.getLatestLoadProfile();
+		LoadUnit currentLoadProfile = comradesGenerator.getLatestLoadProfile();
 		if( currentLoadProfile != null )
 			this.setGeneratedDuringProfile( currentLoadProfile );
 	}

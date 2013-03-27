@@ -3,7 +3,7 @@ package radlab.rain.workload.httptest;
 import java.io.IOException;
 
 import radlab.rain.Generator;
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 import radlab.rain.Operation;
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.util.HttpTransport;
@@ -61,7 +61,7 @@ public class FixedUrlOperation extends Operation
 		this._generator = generator;
 		FixedUrlGenerator specificUrlGenerator = (FixedUrlGenerator) generator;
 		
-		LoadProfile currentLoadProfile = generator.getLatestLoadProfile();
+		LoadUnit currentLoadProfile = generator.getLatestLoadProfile();
 		if( currentLoadProfile != null )
 			this.setGeneratedDuringProfile( currentLoadProfile );
 		

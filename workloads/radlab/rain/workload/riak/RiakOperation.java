@@ -3,7 +3,7 @@ package radlab.rain.workload.riak;
 import com.basho.riak.client.IRiakObject;
 
 import radlab.rain.Generator;
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 import radlab.rain.Operation;
 import radlab.rain.scoreboard.IScoreboard;
 
@@ -37,7 +37,7 @@ public abstract class RiakOperation extends Operation
 		
 		this._riak = riakGenerator.getRiakTransport();
 		
-		LoadProfile currentLoadProfile = generator.getLatestLoadProfile();
+		LoadUnit currentLoadProfile = generator.getLatestLoadProfile();
 		if( currentLoadProfile != null )
 			this.setGeneratedDuringProfile( currentLoadProfile );
 		

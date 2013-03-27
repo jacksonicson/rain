@@ -10,10 +10,10 @@ import org.json.JSONObject;
 import com.basho.riak.client.RiakException;
 
 import radlab.rain.Generator;
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 import radlab.rain.ObjectPool;
 import radlab.rain.Operation;
-import radlab.rain.Target;
+import radlab.rain.Track;
 import radlab.rain.util.Histogram;
 import radlab.rain.util.storage.KeyGenerator;
 
@@ -50,7 +50,7 @@ public class RiakGenerator extends Generator
 	// Bucket and key next request should go to
 	String _bucket = DEFAULT_BUCKET; 
 		
-	public RiakGenerator(Target track) 
+	public RiakGenerator(Track track) 
 	{
 		super(track);
 	}
@@ -127,7 +127,7 @@ public class RiakGenerator extends Generator
 	@Override
 	public Operation nextRequest( int lastOperation ) 
 	{
-		LoadProfile currentLoad = this.getTrack().getCurrentLoadProfile();
+		LoadUnit currentLoad = this.getTrack().getCurrentLoadProfile();
 		this._latestLoadProfile = currentLoad;
 		int key = -1;
 		

@@ -35,7 +35,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import radlab.rain.OperationExecution;
-import radlab.rain.Target;
+import radlab.rain.Track;
 import radlab.rain.util.MetricWriter;
 import radlab.rain.util.SonarRecorder;
 
@@ -54,7 +54,7 @@ public interface IScoreboard {
 
 	void initialize(long startRecordingTime, long endRecordingTime, long maxUsers);
 
-	void setScenarioTrack(Target val);
+	void setScenarioTrack(Track val);
 
 	void setMetricWriter(MetricWriter val);
 
@@ -95,5 +95,5 @@ public interface IScoreboard {
 
 	long getEndTimestamp();
 
-	Target getScenarioTrack();
+	Track getScenarioTrack();
 }

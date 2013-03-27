@@ -9,9 +9,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 
-public class StorageLoadProfile extends LoadProfile 
+public class StorageLoadProfile extends LoadUnit 
 {
 	public static String CFG_LOAD_PROFILE_KEY_GENERATOR_KEY        	= "keyGenerator";
 	public static String CFG_LOAD_PROFILE_KEY_GENERATOR_CONFIG_KEY 	= "keyGeneratorConfig";

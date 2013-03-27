@@ -9,10 +9,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import radlab.rain.Generator;
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 import radlab.rain.ObjectPool;
 import radlab.rain.Operation;
-import radlab.rain.Target;
+import radlab.rain.Track;
 import radlab.rain.util.Histogram;
 import radlab.rain.util.storage.KeyGenerator;
 
@@ -61,7 +61,7 @@ public class HBaseGenerator extends Generator
 	Histogram<String> _hotObjHist				= new Histogram<String>();
 	
 	
-	public HBaseGenerator(Target track) 
+	public HBaseGenerator(Track track) 
 	{
 		super(track);
 	}
@@ -173,7 +173,7 @@ public class HBaseGenerator extends Generator
 	@Override
 	public Operation nextRequest( int lastOperation ) 
 	{
-		LoadProfile currentLoad = this.getTrack().getCurrentLoadProfile();
+		LoadUnit currentLoad = this.getTrack().getCurrentLoadProfile();
 		this._latestLoadProfile = currentLoad;
 		int key = -1;
 		

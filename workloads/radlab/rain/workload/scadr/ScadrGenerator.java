@@ -32,11 +32,11 @@
 package radlab.rain.workload.scadr;
 
 import radlab.rain.Generator;
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 import radlab.rain.ObjectPool;
 import radlab.rain.Operation;
 import radlab.rain.RainConfig;
-import radlab.rain.Target;
+import radlab.rain.Track;
 import radlab.rain.util.HttpTransport;
 import radlab.rain.util.NegativeExponential;
 import radlab.rain.util.AppServerStats;
@@ -454,7 +454,7 @@ public class ScadrGenerator extends Generator
 	//private String _lastAppServer = "";
 	
 	
-	public ScadrGenerator(Target track) 
+	public ScadrGenerator(Track track) 
 	{
 		super(track);
 		this._rand = new Random();
@@ -599,7 +599,7 @@ public class ScadrGenerator extends Generator
 		
 		// Get the current load profile if we need to look inside of it to decide
 		// what to do next
-		LoadProfile currentLoad = this.getTrack().getCurrentLoadProfile();
+		LoadUnit currentLoad = this.getTrack().getCurrentLoadProfile();
 		this._latestLoadProfile = currentLoad;
 		
 		// Temporary override to test contention for gating

@@ -82,7 +82,7 @@ public abstract class LoadGenerationStrategy extends Thread
 	
 	/** Determine whether we async requests should be limited/throttled down to a max of x/sec */
 	protected long _sendNextRequest = -1;
-	protected LoadProfile _lastLoadProfile = null;
+	protected LoadUnit _lastLoadProfile = null;
 	
 	
 	/** The shared pool of worker threads. */
@@ -175,7 +175,7 @@ public abstract class LoadGenerationStrategy extends Thread
 		}
 		else 
 		{
-			LoadProfile currentProfile = operation.getGeneratedDuringProfile();
+			LoadUnit currentProfile = operation.getGeneratedDuringProfile();
 			if( currentProfile != null )
 			{				
 				long activeUsers = currentProfile._numberOfUsers;

@@ -46,7 +46,7 @@ import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.StringBody;
 
 import radlab.rain.Generator;
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 import radlab.rain.Operation;
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.util.HttpTransport;
@@ -93,7 +93,7 @@ public class GraditOperation extends Operation
 		this.refreshCache();
 		
 		this._http = graditGenerator.getHttpTransport();
-		LoadProfile currentLoadProfile = graditGenerator.getLatestLoadProfile();
+		LoadUnit currentLoadProfile = graditGenerator.getLatestLoadProfile();
 		if( currentLoadProfile != null )
 			this.setGeneratedDuringProfile( currentLoadProfile );
 	}

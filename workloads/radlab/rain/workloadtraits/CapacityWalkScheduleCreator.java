@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 import radlab.rain.LoadScheduleCreator;
 import radlab.rain.util.storage.KeyGenerator;
 import radlab.rain.util.storage.StorageLoadProfile;
@@ -79,7 +79,7 @@ public class CapacityWalkScheduleCreator extends LoadScheduleCreator {
 	}
 
 	@Override
-	public LinkedList<LoadProfile> createSchedule(String target, JSONObject config) throws JSONException {
+	public LinkedList<LoadUnit> createSchedule(String target, JSONObject config) throws JSONException {
 		// if( config.has( CFG_INITIAL ) )
 		// this._initialWorkload = config.getInt( CFG_INITIAL );
 		if (config.has(CFG_MAX_WORKLOAD))
@@ -110,7 +110,7 @@ public class CapacityWalkScheduleCreator extends LoadScheduleCreator {
 		if (config.has(KeyGenerator.MAX_KEY_CONFIG_KEY))
 			maxKey = config.getInt(KeyGenerator.MAX_KEY_CONFIG_KEY);
 
-		LinkedList<LoadProfile> loadSchedule = new LinkedList<LoadProfile>();
+		LinkedList<LoadUnit> loadSchedule = new LinkedList<LoadUnit>();
 
 		// Specify the key generator parameters
 		JSONObject keyGenConfig = new JSONObject();
@@ -155,10 +155,10 @@ public class CapacityWalkScheduleCreator extends LoadScheduleCreator {
 			for (int j = stepSize; j <= this._maxWorkload; j += stepSize) {
 				JSONObject profileConfig = new JSONObject();
 				// Set the basics: # interval, users, mix name
-				profileConfig.put(LoadProfile.CFG_LOAD_PROFILE_INTERVAL_KEY, intervalLength);
-				profileConfig.put(LoadProfile.CFG_LOAD_PROFILE_USERS_KEY, j);
+				profileConfig.put(LoadUnit.CFG_LOAD_PROFILE_INTERVAL_KEY, intervalLength);
+				profileConfig.put(LoadUnit.CFG_LOAD_PROFILE_USERS_KEY, j);
 
-				profileConfig.put(LoadProfile.CFG_LOAD_PROFILE_MIX_KEY, mix._name);
+				profileConfig.put(LoadUnit.CFG_LOAD_PROFILE_MIX_KEY, mix._name);
 				// Set the Storage specific elements
 				profileConfig.put(StorageLoadProfile.CFG_LOAD_PROFILE_KEY_GENERATOR_KEY, "radlab.rain.util.storage.UniformKeyGenerator");
 				profileConfig.put(StorageLoadProfile.CFG_LOAD_PROFILE_KEY_GENERATOR_CONFIG_KEY, keyGenConfig);
@@ -186,8 +186,8 @@ public class CapacityWalkScheduleCreator extends LoadScheduleCreator {
 		creator.setSteps(8);
 
 		// Would like to give a duration and have the workload stretched/compressed into that
-		LinkedList<LoadProfile> profiles = creator.createSchedule(null, new JSONObject());
-		for (LoadProfile p : profiles)
+		LinkedList<LoadUnit> profiles = creator.createSchedule(null, new JSONObject());
+		for (LoadUnit p : profiles)
 			System.out.println(p);
 	}
 }

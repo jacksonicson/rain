@@ -12,10 +12,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import radlab.rain.Generator;
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 import radlab.rain.ObjectPool;
 import radlab.rain.Operation;
-import radlab.rain.Target;
+import radlab.rain.Track;
 
 public class S3Generator extends Generator 
 {
@@ -69,7 +69,7 @@ public class S3Generator extends Generator
 	@SuppressWarnings("unused")
 	private S3Request<String> _lastRequest 	= null;
 	
-	public S3Generator(Target track) 
+	public S3Generator(Track track) 
 	{
 		super(track);
 	}
@@ -165,7 +165,7 @@ public class S3Generator extends Generator
 	@Override
 	public Operation nextRequest(int lastOperation) 
 	{
-		LoadProfile currentLoad = this.getTrack().getCurrentLoadProfile();
+		LoadUnit currentLoad = this.getTrack().getCurrentLoadProfile();
 		this._latestLoadProfile = currentLoad;
 		
 		S3LoadProfile s3Profile = (S3LoadProfile) this._latestLoadProfile;

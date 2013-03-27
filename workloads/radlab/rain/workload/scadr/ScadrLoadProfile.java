@@ -33,11 +33,11 @@ package radlab.rain.workload.scadr;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import radlab.rain.LoadProfile;
+import radlab.rain.LoadUnit;
 import java.util.Hashtable;
 import radlab.rain.Generator;
 
-public class ScadrLoadProfile extends LoadProfile {
+public class ScadrLoadProfile extends LoadUnit {
 
 	Hashtable<Generator,Double> _behavior = new Hashtable<Generator,Double>();
 	

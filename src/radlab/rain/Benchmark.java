@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.TreeMap;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.LogManager;
 import org.json.JSONException;
@@ -50,17 +49,16 @@ import radlab.rain.util.ConfigUtil;
 import radlab.rain.util.SonarRecorder;
 
 /**
- * The Benchmark class provides a framework to initialize and run a benchmark
- * specified by a provided scenario.
+ * The Benchmark class provides a framework to initialize and run a benchmark specified by a provided scenario.
  */
 public class Benchmark {
 	private static Logger logger = LoggerFactory.getLogger(Benchmark.class);
 
 	/**
-	 * Amount of time (in milliseconds) to wait before threads start issuing
-	 * requests. This allows all of the threads to start synchronously.
+	 * Amount of time (in milliseconds) to wait before threads start issuing requests. This allows all of the threads to
+	 * start synchronously.
 	 */
-	public long timeToStart = 10000;
+	private static final long TIME_TO_START = 10000;
 
 	public void start(Scenario scenario) throws Exception {
 		Thread.currentThread().setName("Benchmark-thread");
@@ -68,7 +66,7 @@ public class Benchmark {
 		// Calculate the run timings that will be used for all threads.
 		// start startS.S. endS.S. end
 		// | ramp up |------ duration ------| ramp down |
-		long start = System.currentTimeMillis() + timeToStart;
+		long start = System.currentTimeMillis() + Benchmark.TIME_TO_START;
 		long startSteadyState = start + (scenario.getRampUp() * 1000);
 		long endSteadyState = startSteadyState + (scenario.getDuration() * 1000);
 		long endRun = endSteadyState + (scenario.getRampDown() * 1000);
@@ -82,7 +80,7 @@ public class Benchmark {
 		logger.info("Schedule: " + schedule.toString());
 
 		// Create threads
-		scenario.simulateTracks(start, startSteadyState, endSteadyState);
+		scenario.execute(start, startSteadyState, endSteadyState);
 
 		// Set up for stats aggregation across tracks based on the generators
 		// used
@@ -90,7 +88,7 @@ public class Benchmark {
 		Scorecard globalCard = new Scorecard("global", "global", endSteadyState - startSteadyState);
 
 		// Shutdown the scoreboards and tally up the results.
-		for (Target track : scenario.getTracks().values()) {
+		for (Track track : scenario.getTracks().values()) {
 			// Aggregate stats across track based on the generator class name.
 			// If the generator
 			// class names are identical then there is potentially overlap in
@@ -177,12 +175,10 @@ public class Benchmark {
 			}
 			return new JSONObject(fileContents);
 		} catch (IOException e) {
-			logger.error("ERROR loading configuration file " + filename + ". Reason: "
-					+ e.toString());
+			logger.error("ERROR loading configuration file " + filename + ". Reason: " + e.toString());
 			System.exit(1);
 		} catch (JSONException e) {
-			logger.error("ERROR parsing configuration file " + filename + " as JSON. Reason: "
-					+ e.toString());
+			logger.error("ERROR parsing configuration file " + filename + " as JSON. Reason: " + e.toString());
 			System.exit(1);
 		}
 
@@ -190,8 +186,8 @@ public class Benchmark {
 	}
 
 	/**
-	 * Runs the benchmark. The only required argument is the configuration file
-	 * path (e.g. config/rain.config.sample.json).
+	 * Runs the benchmark. The only required argument is the configuration file path (e.g.
+	 * config/rain.config.sample.json).
 	 */
 	public static void main(String[] args) throws Exception {
 		try {
