@@ -34,7 +34,6 @@ public class TrackConfiguration {
 	public boolean useMetricSnapshots = false;
 
 	public String metricSnapshotFileSuffix = "";
-	public ObjectPool objPool = null;
 	public long meanResponseTimeSamplingInterval = DEFAULT_MEAN_RESPONSE_TIME_SAMPLE_INTERVAL;
 	public int maxUsersFromConfig = 0;
 	public JSONObject loadProfileConfig;

@@ -34,7 +34,7 @@ package radlab.rain;
 /**
  * The PartlyOpenLoopLoadGeneration class is a thread that supports partly open loop load generation.
  */
-public class SonarOpenLoopLoadGeneration extends PartlyOpenLoopLoadGeneration {
+public class SonarOpenLoopLoadGeneration extends PartlyOpenLoopLoadGenerationUnit {
 
 	public SonarOpenLoopLoadGeneration(long id, LoadManager loadManager, Generator generator,
 			TrackConfiguration trackConfig, ScenarioConfiguration scenarioConfig) {

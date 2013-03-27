@@ -39,8 +39,8 @@ import org.slf4j.LoggerFactory;
 /**
  * The PartlyOpenLoopLoadGeneration class is a thread that supports partly open loop load generation.
  */
-public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy {
-	private static Logger logger = LoggerFactory.getLogger(PartlyOpenLoopLoadGeneration.class);
+public class PartlyOpenLoopLoadGenerationUnit extends LoadGenerationUnit {
+	private static Logger logger = LoggerFactory.getLogger(PartlyOpenLoopLoadGenerationUnit.class);
 
 	// Minimum increments of intervals of inactivity in seconds
 	public static int INACTIVE_DURATION = 1000;
@@ -57,7 +57,7 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy {
 	// Statistic: number of asynchronous operations run
 	protected long asynchOperations = 0;
 
-	public PartlyOpenLoopLoadGeneration(long id, LoadManager loadManager, Generator generator,
+	public PartlyOpenLoopLoadGenerationUnit(long id, LoadManager loadManager, Generator generator,
 			TrackConfiguration trackConfig, ScenarioConfiguration scenarioConfig) {
 		super(id, loadManager, generator, trackConfig, scenarioConfig);
 		Thread.setDefaultUncaughtExceptionHandler(new UnexpectedDeathHandler());
