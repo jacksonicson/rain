@@ -34,12 +34,10 @@ package radlab.rain;
 import radlab.rain.scoreboard.TraceLabels;
 
 /**
- * The OperationExecution class is a wrapper for the results recorded from the execution of an operation. This wrapper can be
- * passed off to an IScoreboard to be recorded and presented at a later time.
+ * The OperationExecution class is a wrapper for the results recorded from the execution of an operation. This wrapper
+ * can be passed off to an IScoreboard to be recorded and presented at a later time.
  */
 public class OperationExecution implements Comparable<OperationExecution> {
-	/** The owner operation for/in which the results are stored. */
-	private Operation _owner = null;
 	private boolean _interactive = true;
 	private TraceLabels _traceLabel = TraceLabels.NO_TRACE_LABEL;
 	private long _timeStarted = 0;
@@ -52,8 +50,16 @@ public class OperationExecution implements Comparable<OperationExecution> {
 	public boolean _async = false;
 	public boolean _failed = true;
 
-	public Operation getOperation() {
-		return this._owner;
+	public OperationExecution(Operation operation) {
+		this._timeStarted = operation.getTimeStarted();
+		this._timeFinished = operation.getTimeFinished();
+		this._operationName = operation.operationName;
+		this._operationRequest = operation.operationRequest;
+		this._async = operation.getAsync();
+		this._failed = operation.failed;
+		this._generatedDuring = operation.getGeneratedDuringProfile();
+		this._profileStartTime = operation.getProfileStartTime();
+		this._actionsPerformed = operation.getActionsPerformed();
 	}
 
 	public TraceLabels getTraceLabel() {
@@ -62,33 +68,6 @@ public class OperationExecution implements Comparable<OperationExecution> {
 
 	public void setTraceLabel(TraceLabels label) {
 		this._traceLabel = label;
-	}
-
-	/**
-	 * Creates a new OperationExecution for the specified operation.
-	 * 
-	 * @param operation
-	 *            The operation for/in which results are stored.
-	 */
-	public OperationExecution(Operation operation) {
-		this._owner = operation;
-		this._interactive = operation.isInteractive();
-		this._timeStarted = operation.getTimeStarted();
-		this._timeFinished = operation.getTimeFinished();
-		this._operationName = operation.operationName;
-		this._operationRequest = operation.operationRequest;
-		this._async = operation.getAsync();
-		this._failed = operation.failed;
-		// Pull out any info on when this operation was created
-		this._generatedDuring = operation.getGeneratedDuringProfile();
-		this._profileStartTime = operation.getProfileStartTime();
-
-		TraceRecord traceRec = operation.getTrace();
-		if (traceRec != null && traceRec._lstRequests.size() > 0) {
-			this._actionsPerformed = traceRec._lstRequests.size();
-		} else {
-			this._actionsPerformed = 1;
-		}
 	}
 
 	/* Delegate to get the execution statistics */
@@ -128,8 +107,8 @@ public class OperationExecution implements Comparable<OperationExecution> {
 	// public long getTotalTime() { return this.getWaitTime() + this.getExecutionTime() + this.getDelayTime(); }
 
 	/**
-	 * Compares the start time of this OperationExecution with the provided OperationExecution; used to construct a timeline of
-	 * what happened.
+	 * Compares the start time of this OperationExecution with the provided OperationExecution; used to construct a
+	 * timeline of what happened.
 	 * 
 	 * @param other
 	 *            The other OperationExecution.

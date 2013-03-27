@@ -31,8 +31,6 @@
 
 package radlab.rain;
 
-import java.util.Set;
-
 import radlab.rain.scoreboard.IScoreboard;
 
 /**
@@ -68,7 +66,7 @@ public abstract class Operation implements Runnable {
 	private long timeStarted;
 	private long timeFinished;
 
-	private long thinkTimeUsed; // Track how much thinktime we used
+	private long thinkTimeUsed; // Track how much think time we used
 	private long cycleTimeUsed; // Track how much cycle delays we took advantage of
 
 	// Synchron or asynchron execution mode
@@ -78,13 +76,75 @@ public abstract class Operation implements Runnable {
 	// Outcome of executing the operation
 	protected boolean failed = true;
 	protected Throwable failureReason;
-	protected TraceRecord trace;
 
 	protected long numberOfActionsPerformed;
 
 	public Operation(IScoreboard scoreboard) {
 		this.scoreboard = scoreboard;
 	}
+
+	/**
+	 * This method is used to run this operation. By default, it records any metrics when executing. This can be
+	 * overridden to make a single call to <code>execute()</code> for more fine-grained control. This method must catch
+	 * any <code>Throwable</code>s.
+	 */
+	public void run() {
+		// Invoke the pre-execute hook here before we start the clock to time the operation's execution
+		preExecute();
+		setTimeStarted(System.currentTimeMillis());
+
+		try {
+			execute();
+		} catch (Throwable e) {
+			setFailed(true);
+			setFailureReason(e);
+		} finally {
+			setTimeFinished(System.currentTimeMillis());
+
+			// Invoke the post-execute hook here after we stop the clock to time the
+			// operation's execution
+			postExecute();
+
+			// Dump operation results into the scoreboard
+			OperationExecution result = new OperationExecution(this);
+			scoreboard.dropOffOperation(result);
+		}
+	}
+
+	/**
+	 * Prepares this operation for execution. This involves copying any features about the current state into this
+	 * operation.
+	 * 
+	 * @param generator
+	 *            The generator containing the state to copy.
+	 */
+	public abstract void prepare(Generator generator);
+
+	/**
+	 * Executes this operation. This method is responsible for saving its trace record and execution metrics.
+	 * 
+	 * @throws Throwable
+	 */
+	public abstract void execute() throws Throwable;
+
+	/**
+	 * Hook method for actions to be performed right before execution starts (before the clock starts to time the
+	 * execute method). There's no throws clause on this method so if something fails the methods need to deal with it.
+	 */
+	public void preExecute() {
+	}
+
+	/**
+	 * Hook method for actions to be performed right after execution finishes (after the clock stops to time the execute
+	 * method). There's no throws clause on this method so if something fails the methods need to deal with it.
+	 */
+	public void postExecute() {
+	}
+
+	/**
+	 * Do any potential cleanup necessary after execution of this operation.
+	 */
+	public abstract void cleanup();
 
 	public int getOperationIndex() {
 		return this.operationIndex;
@@ -198,127 +258,4 @@ public abstract class Operation implements Runnable {
 	public void setGeneratorThreadID(long val) {
 		this.generatorId = val;
 	}
-
-	public void trace(String request) {
-		if (this.trace == null)
-			this.trace = new TraceRecord();
-		this.trace._lstRequests.add(request);
-	}
-
-	public void trace(String[] requests) {
-		if (this.trace == null)
-			this.trace = new TraceRecord();
-
-		for (String request : requests)
-			this.trace._lstRequests.add(request);
-	}
-
-	public void trace(Set<String> requests) {
-		if (this.trace == null)
-			this.trace = new TraceRecord();
-
-		for (String request : requests)
-			this.trace._lstRequests.add(request);
-	}
-
-	public TraceRecord getTrace() {
-		return this.trace;
-	}
-
-	public StringBuffer dumpTrace() {
-		StringBuffer buf = new StringBuffer();
-		TraceRecord traceRec = this.trace;
-		if (traceRec == null)
-			return buf;
-
-		// |-----Workload details----------------|----------|-------|--------|--------------|
-		// [RU] [Workload Interval#?] [Max users] Start time, opName, action#, actual request
-		int i = 0;
-		for (String request : traceRec._lstRequests) {
-			buf.append(this.timeStarted);
-			buf.append(" ");
-			buf.append(this.operationName);
-			buf.append(" ");
-			buf.append(i);
-			buf.append(" ");
-			buf.append(request);
-			buf.append("\n");
-			i++;
-		}
-
-		return buf;
-	}
-
-	public void disposeOfTrace() {
-		if (this.trace == null)
-			return;
-
-		this.trace._lstRequests.clear();
-		this.trace = null;
-	}
-
-	/**
-	 * This method is used to run this operation. By default, it records any metrics when executing. This can be
-	 * overridden to make a single call to <code>execute()</code> for more fine-grained control. This method must catch
-	 * any <code>Throwable</code>s.
-	 */
-	public void run() {
-		// Invoke the pre-execute hook here before we start the clock to time the
-		// operation's execution
-		this.preExecute();
-
-		this.setTimeStarted(System.currentTimeMillis());
-		try {
-			this.execute();
-		} catch (Throwable e) {
-			this.setFailed(true);
-			this.setFailureReason(e);
-		} finally {
-			this.setTimeFinished(System.currentTimeMillis());
-			// Invoke the post-execute hook here after we stop the clock to time the
-			// operation's execution
-			this.postExecute();
-
-			if (this.scoreboard != null) {
-				OperationExecution result = new OperationExecution(this);
-				this.scoreboard.dropOffOperation(result);
-			}
-		}
-	}
-
-	/**
-	 * Prepares this operation for execution. This involves copying any features about the current state into this
-	 * operation.
-	 * 
-	 * @param generator
-	 *            The generator containing the state to copy.
-	 */
-	public abstract void prepare(Generator generator);
-
-	/**
-	 * Executes this operation. This method is responsible for saving its trace record and execution metrics.
-	 * 
-	 * @throws Throwable
-	 */
-	public abstract void execute() throws Throwable;
-
-	/**
-	 * Hook method for actions to be performed right before execution starts (before the clock starts to time the
-	 * execute method). There's no throws clause on this method so if something fails the methods need to deal with it.
-	 */
-	public void preExecute() {
-	}
-
-	/**
-	 * Hook method for actions to be performed right after execution finishes (after the clock stops to time the execute
-	 * method). There's no throws clause on this method so if something fails the methods need to deal with it.
-	 */
-	public void postExecute() {
-	}
-
-	/**
-	 * Do any potential cleanup necessary after execution of this operation.
-	 */
-	public abstract void cleanup();
-
 }
