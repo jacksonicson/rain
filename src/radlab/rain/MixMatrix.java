@@ -34,128 +34,81 @@ package radlab.rain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MixMatrix 
-{
+public class MixMatrix {
 	private static Logger logger = LoggerFactory.getLogger(MixMatrix.class);
-	
-	// Default cloudstone mix, but could be anything
-	
-	private double [][] _mix = { {  0.0, 11, 52, 36,  0.0, 1,  0.0 }, 
-							     {  0.0,  0.0, 60, 20,  0.0, 0.0, 20 }, 
-							     { 21,  6, 41, 31,  0.0, 1,  0.0 }, 
-							     { 72, 21,  0,  0,  6, 1,  0.0 }, 
-							     { 52,  6,  0, 31, 11, 0,  0 }, 
-							     {  0.0,  0.0,  0.0, 0.0, 100, 0.0,  0.0 },
-							     { 0.0,  0.0,  0.0, 100, 0.0, 0.0, 0.0 }  };
-	//private double [][] _normalizedMix = null;
-	private double [][] _selectionMix = null;
-	
-	public MixMatrix()
-	{
-		this.normalize();
-		this.createSelectionMatrix();
+
+	// Markov chain matrix
+	private double[][] mix;
+	private double[][] selectionMix = null;
+
+	public MixMatrix() {
+		normalize();
+		createSelectionMatrix();
 	}
-	
-	public MixMatrix( double[][] data )
-	{
-		this._mix = data.clone();
-		this.normalize();
-		//this.printMix();
-		this.createSelectionMatrix();
+
+	public MixMatrix(double[][] mix) {
+		this.mix = mix;
+		normalize();
+		createSelectionMatrix();
 	}
-	
-	public boolean isSelectionMixAvailable()
-	{ return this._selectionMix != null; }
-	
-	public void normalize()
-	{
-		for( int i = 0; i < this._mix.length; i++ )
-		{
+
+	public boolean isSelectionMixAvailable() {
+		return selectionMix != null;
+	}
+
+	public void normalize() {
+		for (int i = 0; i < mix.length; i++) {
 			double rowSum = 0.0;
-			for( int j = 0; j < this._mix.length; j++ )
-			{
-				rowSum += this._mix[i][j];
+			for (int j = 0; j < mix.length; j++) {
+				rowSum += mix[i][j];
 			}
-			
-			//logger.info( rowSum );
-			
-			for( int k = 0; k < this._mix.length; k++ )
-			{
-				this._mix[i][k] /= rowSum;
+
+			for (int k = 0; k < mix.length; k++) {
+				mix[i][k] /= rowSum;
 			}
 		}
 	}
-	
-	public void createSelectionMatrix()
-	{
-		if( this.isSelectionMixAvailable() )
+
+	public void createSelectionMatrix() {
+		// Do not recreate it
+		if (isSelectionMixAvailable())
 			return;
-		
-		this._selectionMix = new double[this._mix.length][this._mix.length];
-		
-		for( int i = 0; i < this._mix.length; i++ ) 
-		{
-            this._selectionMix[i][0] = this._mix[i][0];
-            for (int j = 1; j < this._selectionMix.length; j++) 
-            {
-                this._selectionMix[i][j] = this._mix[i][j] + this._selectionMix[i][j - 1];
-            }
-        }
-	}
-	
-	public double[][] getSelectionMix()
-	{
-		return this._selectionMix;
-	}
-	
-	public void printMix()
-	{
-		for( int i = 0; i < this._mix.length; i++ )
-		{
-			for( int j = 0; j < this._mix.length; j++ )
-			{
-				logger.info( Double.toString(this._mix[i][j]) );
-        		logger.info( " " );
+
+		// New matrix
+		selectionMix = new double[mix.length][mix.length];
+
+		// Build matrix
+		for (int i = 0; i < mix.length; i++) {
+			selectionMix[i][0] = mix[i][0];
+			for (int j = 1; j < selectionMix.length; j++) {
+				selectionMix[i][j] = mix[i][j] + selectionMix[i][j - 1];
 			}
-			logger.info( "" );
 		}
-		logger.info( "" );
 	}
-	
-	public void printSelectionMix()
-	{
-		for( int i = 0; i < this._selectionMix.length; i++ )
-		{
-			for( int j = 0; j < this._selectionMix.length; j++ )
-			{
-				logger.info(Double.toString( this._selectionMix[i][j]) );
-        		logger.info( " " );
+
+	public double[][] getSelectionMix() {
+		return selectionMix;
+	}
+
+	public void dumpMix() {
+		for (int i = 0; i < mix.length; i++) {
+			for (int j = 0; j < mix.length; j++) {
+				logger.info(Double.toString(mix[i][j]));
+				logger.info(" ");
 			}
-			logger.info( "" );
+			logger.info("");
 		}
-		logger.info( "" );
+		logger.info("");
 	}
-	
-	public boolean converges( long steps, double tolerance )
-	{
-		boolean converged = false;
-			
-		return converged;
-	}
-	
-	public static void main( String[] args )
-	{
-		double [][] mix = { { 1, 50, 0, 49,  0, 0, 0, 0 }, 
-			     			{ 1,  0, 0, 99,  0, 0, 0, 0 }, 
-			     			{ 1, 50, 0, 49,  0, 0,  0, 0 }, 
-			     			{ 0,  5, 5, 10, 80, 0, 0, 0 }, 
-			     			{ 0,  5, 5, 20, 0, 70, 0, 0 },
-			     			{ 0,  0, 5, 35, 0, 0, 60, 0 },
-			     			{ 0,  0, 10, 30, 0, 0, 0, 60 },
-			     			{ 0,  0, 10, 80, 0, 0, 10, 0 }  };
-		
-		MixMatrix m = new MixMatrix( mix );
-		m.printMix();
-		m.printSelectionMix();
+
+	public void dumpSelectionMix() {
+		for (int i = 0; i < selectionMix.length; i++) {
+			for (int j = 0; j < selectionMix.length; j++) {
+				logger.info(Double.toString(selectionMix[i][j]));
+				logger.info(" ");
+			}
+			logger.info("");
+		}
+		logger.info("");
 	}
 }

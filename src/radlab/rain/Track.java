@@ -71,7 +71,7 @@ public abstract class Track {
 	protected Generator generator;
 
 	// Triggers generator
-	protected List<LoadGenerationUnit> generators = new ArrayList<LoadGenerationUnit>();
+	protected List<LoadGeneratingUnit> generators = new ArrayList<LoadGeneratingUnit>();
 
 	public Track(ScenarioConfiguration scenarioConfiguration) throws Exception {
 		this.scenarioConfiguration = scenarioConfiguration;
@@ -148,12 +148,12 @@ public abstract class Track {
 	}
 
 	@SuppressWarnings("unchecked")
-	public LoadGenerationUnit createLoadGenerationStrategy(Generator generator) throws Exception {
-		Class<LoadGenerationUnit> loadGenStrategyClass = (Class<LoadGenerationUnit>) Class
+	public LoadGeneratingUnit createLoadGenerationStrategy(Generator generator) throws Exception {
+		Class<LoadGeneratingUnit> loadGenStrategyClass = (Class<LoadGeneratingUnit>) Class
 				.forName(config.loadGenerationStrategyClassName);
-		Constructor<LoadGenerationUnit> loadGenStrategyCtor = loadGenStrategyClass.getConstructor(new Class[] {
+		Constructor<LoadGeneratingUnit> loadGenStrategyCtor = loadGenStrategyClass.getConstructor(new Class[] {
 				Generator.class, long.class, JSONObject.class });
-		LoadGenerationUnit loadGenStrategy = (LoadGenerationUnit) loadGenStrategyCtor.newInstance(new Object[] {
+		LoadGeneratingUnit loadGenStrategy = (LoadGeneratingUnit) loadGenStrategyCtor.newInstance(new Object[] {
 				generator, config.loadGenerationStrategyParams });
 		return loadGenStrategy;
 	}
@@ -169,7 +169,7 @@ public abstract class Track {
 			generator.initialize();
 
 			// Allow the load generation strategy to be configurable
-			LoadGenerationUnit strategy = createLoadGenerationStrategy(generator);
+			LoadGeneratingUnit strategy = createLoadGenerationStrategy(generator);
 			strategy.setExecutorService(pool);
 			strategy.setTimeStarted(start);
 
@@ -179,13 +179,13 @@ public abstract class Track {
 	}
 
 	public void startGenerators() {
-		for (LoadGenerationUnit strategy : generators) {
+		for (LoadGeneratingUnit strategy : generators) {
 			strategy.start();
 		}
 	}
 
 	void join() {
-		for (LoadGenerationUnit generator : generators) {
+		for (LoadGeneratingUnit generator : generators) {
 			try {
 				generator.join();
 				logger.info("Thread joined: " + generator.getName());

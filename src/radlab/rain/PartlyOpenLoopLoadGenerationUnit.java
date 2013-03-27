@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
 /**
  * The PartlyOpenLoopLoadGeneration class is a thread that supports partly open loop load generation.
  */
-public class PartlyOpenLoopLoadGenerationUnit extends LoadGenerationUnit {
+public class PartlyOpenLoopLoadGenerationUnit extends LoadGeneratingUnit {
 	private static Logger logger = LoggerFactory.getLogger(PartlyOpenLoopLoadGenerationUnit.class);
 
 	// Minimum increments of intervals of inactivity in seconds

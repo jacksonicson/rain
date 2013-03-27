@@ -63,7 +63,7 @@ public class ScadrLoadProfile extends LoadDefinition {
 	public String toString()
 	{
 		StringBuffer buf = new StringBuffer();
-		buf.append( "[Duration: " + this._interval + " Users: " + this.numberOfUsers + " Transition time: " + this._transitionTime + "]");
+		buf.append( "[Duration: " + this.interval + " Users: " + this.numberOfUsers + " Transition time: " + this.transitionTime + "]");
 		return buf.toString();
 	}
 }

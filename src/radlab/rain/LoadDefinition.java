@@ -44,24 +44,24 @@ public class LoadDefinition {
 	// Allow LoadProfile intervals to have names (no getter/setter)
 	public String _name = "";
 
-	public long _interval;
-	protected long _transitionTime;
+	public long interval;
+	protected long transitionTime;
 	public int numberOfUsers;
-	protected String _mixName = "";
-	private long _activeCount = 0; // How often has this interval become active, the load scheduler updates this
+	protected String mixName = "";
+	private long activeCount = 0; // How often has this interval become active, the load scheduler updates this
 	protected int openLoopMaxOpsPerSec = 0; // Rate limit on async operations. A value of 0 means no rate limiting.
-	protected JSONObject _config = null; // Save the original configuration object if its passed
+	protected JSONObject config = null; // Save the original configuration object if its passed
 
 	private long _timeStarted = -1; // LoadManagerThreads need to update this every time they advance the "clock"
 
 	public LoadDefinition(JSONObject profileObj) throws JSONException {
-		this._interval = profileObj.getLong(CFG_LOAD_PROFILE_INTERVAL_KEY);
+		this.interval = profileObj.getLong(CFG_LOAD_PROFILE_INTERVAL_KEY);
 		this.numberOfUsers = profileObj.getInt(CFG_LOAD_PROFILE_USERS_KEY);
-		this._mixName = profileObj.getString(CFG_LOAD_PROFILE_MIX_KEY);
+		this.mixName = profileObj.getString(CFG_LOAD_PROFILE_MIX_KEY);
 
 		// Load the transition time (if specified)
 		if (profileObj.has(CFG_LOAD_PROFILE_TRANSITION_TIME_KEY))
-			this._transitionTime = profileObj.getLong(CFG_LOAD_PROFILE_TRANSITION_TIME_KEY);
+			this.transitionTime = profileObj.getLong(CFG_LOAD_PROFILE_TRANSITION_TIME_KEY);
 
 		// Load the interval name (if specified)
 		if (profileObj.has(CFG_LOAD_PROFILE_NAME_KEY))
@@ -74,7 +74,7 @@ public class LoadDefinition {
 				this.openLoopMaxOpsPerSec = 0;
 		}
 
-		this._config = profileObj;
+		this.config = profileObj;
 	}
 
 	public LoadDefinition(long interval, int numberOfUsers, String mixName) {
@@ -82,27 +82,27 @@ public class LoadDefinition {
 	}
 
 	public LoadDefinition(long interval, int numberOfUsers, String mixName, long transitionTime) {
-		this._interval = interval;
+		this.interval = interval;
 		this.numberOfUsers = numberOfUsers;
-		this._mixName = mixName;
-		this._transitionTime = transitionTime;
+		this.mixName = mixName;
+		this.transitionTime = transitionTime;
 	}
 
 	public LoadDefinition(long interval, int numberOfUsers, String mixName, long transitionTime, String name) {
-		this._interval = interval;
+		this.interval = interval;
 		this.numberOfUsers = numberOfUsers;
-		this._mixName = mixName;
-		this._transitionTime = transitionTime;
+		this.mixName = mixName;
+		this.transitionTime = transitionTime;
 		this._name = name;
 	}
 
 	// Converts to milliseconds
 	public long getInterval() {
-		return (this._interval * 1000);
+		return (this.interval * 1000);
 	}
 
 	public void setInterval(long val) {
-		this._interval = val;
+		this.interval = val;
 	}
 
 	public int getNumberOfUsers() {
@@ -114,19 +114,19 @@ public class LoadDefinition {
 	}
 
 	public String getMixName() {
-		return this._mixName;
+		return this.mixName;
 	}
 
 	public void setMixName(String val) {
-		this._mixName = val;
+		this.mixName = val;
 	}
 
 	public long getTransitionTime() {
-		return (this._transitionTime * 1000);
+		return (this.transitionTime * 1000);
 	}
 
 	public void setTransitionTime(long val) {
-		this._transitionTime = val;
+		this.transitionTime = val;
 	}
 
 	public long getTimeStarted() {
@@ -138,11 +138,11 @@ public class LoadDefinition {
 	}
 
 	public JSONObject getConfig() {
-		return this._config;
+		return this.config;
 	}
 
 	public void setConfig(JSONObject val) {
-		this._config = val;
+		this.config = val;
 	}
 
 	public int getOpenLoopMaxOpsPerSec() {
@@ -156,16 +156,16 @@ public class LoadDefinition {
 	public String toString() {
 		StringBuffer buf = new StringBuffer();
 		if (this._name == null || this._name.trim().length() == 0)
-			buf.append("[Duration: " + this._interval + " Users: " + this.numberOfUsers + " Mix: " + this._mixName + " Transition time: "
-					+ this._transitionTime + "]");
+			buf.append("[Duration: " + this.interval + " Users: " + this.numberOfUsers + " Mix: " + this.mixName
+					+ " Transition time: " + this.transitionTime + "]");
 		else
-			buf.append("[Duration: " + this._interval + " Users: " + this.numberOfUsers + " Mix: " + this._mixName + " Transition time: "
-					+ this._transitionTime + " Name: " + this._name + "]");
+			buf.append("[Duration: " + this.interval + " Users: " + this.numberOfUsers + " Mix: " + this.mixName
+					+ " Transition time: " + this.transitionTime + " Name: " + this._name + "]");
 		return buf.toString();
 	}
 
 	public void activate() {
-		_activeCount++;
-		setTimeStarted(System.currentTimeMillis()); 
+		activeCount++;
+		setTimeStarted(System.currentTimeMillis());
 	}
 }

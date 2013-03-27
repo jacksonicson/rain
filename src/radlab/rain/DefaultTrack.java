@@ -58,7 +58,7 @@ public class DefaultTrack extends Track {
 		}
 
 		// Check references to the mix matrix
-		if (profile._mixName.length() > 0 && !config.mixMatrices.containsKey(profile._mixName)) {
+		if (profile.mixName.length() > 0 && !config.mixMatrices.containsKey(profile.mixName)) {
 			logger.info("Invalid load profile. mixname not in track's mixmap. Profile details: " + profile.toString());
 			return false;
 		}
