@@ -52,7 +52,7 @@ import org.xml.sax.InputSource;
 import radlab.rain.Generator;
 import radlab.rain.LoadProfile;
 import radlab.rain.Operation;
-import radlab.rain.ScenarioTrack;
+import radlab.rain.Target;
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.util.HttpTransport;
 
@@ -93,7 +93,7 @@ public abstract class ScadrOperation extends Operation
 		if( this._appServerTarget == null || this._appServerTarget.trim().length() == 0 )
 			return;
 		
-		ScenarioTrack track = this._generator.getTrack();
+		Target track = this._generator.getTrack();
 		if( track instanceof ScadrScenarioTrack )
 			((ScadrScenarioTrack) track).requestIssue( this._appServerTarget );
 	}
@@ -104,7 +104,7 @@ public abstract class ScadrOperation extends Operation
 		if( this._appServerTarget == null || this._appServerTarget.trim().length() == 0 )
 			return;
 		
-		ScenarioTrack track = this._generator.getTrack();
+		Target track = this._generator.getTrack();
 		if( track instanceof ScadrScenarioTrack )
 			((ScadrScenarioTrack) track).requestRetire( this._appServerTarget );
 	}

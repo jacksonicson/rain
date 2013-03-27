@@ -51,7 +51,7 @@ public abstract class Generator
 	protected String _name = "";
 	
 	/** The scenario track that identifies the load profile. */
-	protected ScenarioTrack _loadTrack = null;
+	protected Target _loadTrack = null;
 	/** The think time and cycle time */
 	protected long _thinkTime = 0;
 	protected long _cycleTime = 0;
@@ -64,7 +64,7 @@ public abstract class Generator
 	public String getName() { return this._name; }
 	public void setName( String val ) { this._name = val; }
 	
-	public ScenarioTrack getTrack() { return this._loadTrack; }
+	public Target getTrack() { return this._loadTrack; }
 	
 	public void setScoreboard( IScoreboard scoreboard ) { this._scoreboard = scoreboard; }
 	public IScoreboard getScoreboard() { return this._scoreboard; }
@@ -77,7 +77,7 @@ public abstract class Generator
 	 * 
 	 * @param track     The track configuration with which to run this generator.
 	 */
-	public Generator( ScenarioTrack track )
+	public Generator( Target track )
 	{
 		this._loadTrack = track;
 		//this.initialize(); // let the Benchmark call initialize

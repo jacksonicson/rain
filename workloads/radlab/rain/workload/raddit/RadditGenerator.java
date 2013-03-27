@@ -34,7 +34,7 @@ package radlab.rain.workload.raddit;
 import radlab.rain.Generator;
 import radlab.rain.LoadProfile;
 import radlab.rain.Operation;
-import radlab.rain.ScenarioTrack;
+import radlab.rain.Target;
 import radlab.rain.util.HttpTransport;
 
 /**
@@ -71,7 +71,7 @@ public class RadditGenerator extends Generator
 	 * 
 	 * @param track     The track configuration with which to run this generator.
 	 */
-	public RadditGenerator( ScenarioTrack track )
+	public RadditGenerator( Target track )
 	{
 		super( track );
 		

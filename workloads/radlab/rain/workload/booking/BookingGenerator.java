@@ -7,7 +7,7 @@ import radlab.rain.Generator;
 import radlab.rain.LoadProfile;
 import radlab.rain.ObjectPool;
 import radlab.rain.Operation;
-import radlab.rain.ScenarioTrack;
+import radlab.rain.Target;
 import radlab.rain.util.HttpTransport;
 
 /**
@@ -122,7 +122,7 @@ public class BookingGenerator extends Generator
 	 *
 	 * @param track     The track configuration with which to run this generator.
 	 */
-	public BookingGenerator( ScenarioTrack track )
+	public BookingGenerator( Target track )
 	{
 		super( track );
 

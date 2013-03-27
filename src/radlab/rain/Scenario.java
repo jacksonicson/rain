@@ -34,26 +34,24 @@ package radlab.rain;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import radlab.rain.communication.RainPipe;
 import radlab.rain.configuration.ScenarioConfigs;
 import radlab.rain.configuration.TrackConfigs;
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.util.ConfigUtil;
 
 /**
- * The Scenario class contains the specifications for a benchmark scenario,
- * which includes the timings (i.e. ramp up, duration, ramp down) and the
- * different scenario tracks.
+ * The Scenario class contains the specifications for a benchmark scenario, which includes the timings (i.e. ramp up,
+ * duration, ramp down) and the different scenario tracks.
  */
 public class Scenario {
 	private static Logger logger = LoggerFactory.getLogger(Scenario.class);
@@ -76,7 +74,7 @@ public class Scenario {
 	private boolean _aggregateStats = DEFAULT_AGGREGATE_STATS;
 
 	// The instantiated tracks specified by the JSON configuration.
-	private TreeMap<String, ScenarioTrack> _tracks = new TreeMap<String, ScenarioTrack>();
+	private TreeMap<String, Target> _tracks = new TreeMap<String, Target>();
 
 	public long getRampUp() {
 		return this._rampUp;
@@ -118,7 +116,7 @@ public class Scenario {
 		this._aggregateStats = val;
 	}
 
-	public TreeMap<String, ScenarioTrack> getTracks() {
+	public TreeMap<String, Target> getTracks() {
 		return this._tracks;
 	}
 
@@ -127,8 +125,7 @@ public class Scenario {
 	}
 
 	/**
-	 * Create a new Scenario and load the profile specified in the given JSON
-	 * configuration object.
+	 * Create a new Scenario and load the profile specified in the given JSON configuration object.
 	 * 
 	 * @param jsonConfig
 	 *            The JSON object containing load specifications.
@@ -141,7 +138,7 @@ public class Scenario {
 	 * Ask each scenario track to start.
 	 */
 	public void start() {
-		for (ScenarioTrack track : this._tracks.values()) {
+		for (Target track : this._tracks.values()) {
 			track.start();
 		}
 	}
@@ -151,15 +148,14 @@ public class Scenario {
 	 */
 	public void end() {
 		logger.info("Tracks to end: " + this._tracks.values());
-		for (ScenarioTrack track : this._tracks.values()) {
+		for (Target track : this._tracks.values()) {
 			track.end();
 		}
 	}
 
 	/**
-	 * Reads the run specifications from the provided JSON configuration object.
-	 * The timings (i.e. ramp up, duration, and ramp down) are set and the
-	 * scenario tracks are created.
+	 * Reads the run specifications from the provided JSON configuration object. The timings (i.e. ramp up, duration,
+	 * and ramp down) are set and the scenario tracks are created.
 	 * 
 	 * @param jsonConfig
 	 *            The JSON object containing load specifications.
@@ -184,52 +180,11 @@ public class Scenario {
 				RainConfig.getInstance()._sonarHost = host;
 			}
 
-			// Figure out whether we're using communication pipes
-
-			// Figure out whether we're waiting for a start signal from an
-			// external controller
-			if (jsonConfig.has(ScenarioConfigs.PIPE_PORT.toString())) {
-				RainConfig.getInstance()._pipePort = jsonConfig.getInt(ScenarioConfigs.PIPE_PORT
-						.toString());
-				RainPipe.getInstance().setPort(RainConfig.getInstance()._pipePort);
-			}
-
-			if (jsonConfig.has(ScenarioConfigs.PIPE_THREADS.toString())) {
-				RainConfig.getInstance()._pipeThreads = jsonConfig
-						.getInt(ScenarioConfigs.PIPE_THREADS.toString());
-				RainPipe.getInstance().setNumThreads(RainConfig.getInstance()._pipeThreads);
-			}
-
-			boolean usePipe = false;
-			if (jsonConfig.has(ScenarioConfigs.USE_PIPE.toString()))
-				usePipe = jsonConfig.getBoolean(ScenarioConfigs.USE_PIPE.toString());
-
-			// We can only wait for start signal if we're using a pipe or thrift
-			// service to the
-			// outside world.
-			// If we're not using a pipe or thrift to the outside world then
-			// just launch
-			// the run.
-			if (usePipe) {
-				// Set in the config that we're using pipes
-				RainConfig.getInstance()._usePipe = usePipe;
-				// Check whether we're supposed to wait for a start signal
-				if (jsonConfig.has(ScenarioConfigs.WAIT_FOR_START_SIGNAL.toString())) {
-					RainConfig.getInstance().waitForStartSignal = jsonConfig
-							.getBoolean(ScenarioConfigs.WAIT_FOR_START_SIGNAL.toString());
-				}
-			}
-
+			// Check if thrift remote management is used
 			boolean useThrift = false;
 			if (jsonConfig.has(ScenarioConfigs.USE_THRIFT.toString()))
 				useThrift = jsonConfig.getBoolean(ScenarioConfigs.USE_THRIFT.toString());
 
-			// We can only wait for start signal if we're using a pipe or thrift
-			// service to the
-			// outside world.
-			// If we're not using a pipe or thrift to the outside world then
-			// just launch
-			// the run.
 			if (useThrift) {
 				// Set in the config that we're using pipes
 				RainConfig.getInstance()._useThrift = useThrift;
@@ -254,9 +209,7 @@ public class Scenario {
 				// Look for profile creator params - if we find some then
 				// pass them
 				if (jsonConfig.has(ScenarioConfigs.PROFILES_CREATOR_CLASS_PARAMS_KEY.toString()))
-					params = jsonConfig
-							.getJSONObject(ScenarioConfigs.PROFILES_CREATOR_CLASS_PARAMS_KEY
-									.toString());
+					params = jsonConfig.getJSONObject(ScenarioConfigs.PROFILES_CREATOR_CLASS_PARAMS_KEY.toString());
 
 				tracksConfig = creator.createProfile(params);
 			} else // Otherwise there MUST be a profiles key in the config
@@ -268,22 +221,18 @@ public class Scenario {
 			}
 
 			if (jsonConfig.has(ScenarioConfigs.MAX_SHARED_THREADS.toString())) {
-				int sharedThreads = jsonConfig
-						.getInt(ScenarioConfigs.MAX_SHARED_THREADS.toString());
+				int sharedThreads = jsonConfig.getInt(ScenarioConfigs.MAX_SHARED_THREADS.toString());
 				if (sharedThreads > 0)
 					this._maxSharedThreads = sharedThreads;
 			}
 
 			if (jsonConfig.has(ScenarioConfigs.AGGREGATE_STATS.toString()))
-				this._aggregateStats = jsonConfig.getBoolean(ScenarioConfigs.AGGREGATE_STATS
-						.toString());
+				this._aggregateStats = jsonConfig.getBoolean(ScenarioConfigs.AGGREGATE_STATS.toString());
 		} catch (JSONException e) {
-			logger.info("[SCENARIO] ERROR reading JSON configuration object. Reason: "
-					+ e.toString());
+			logger.info("[SCENARIO] ERROR reading JSON configuration object. Reason: " + e.toString());
 			System.exit(1);
 		} catch (IOException e) {
-			logger.info("[SCENARIO] ERROR loading tracks configuration file. Reason: "
-					+ e.toString());
+			logger.info("[SCENARIO] ERROR loading tracks configuration file. Reason: " + e.toString());
 			System.exit(1);
 		}
 
@@ -300,8 +249,7 @@ public class Scenario {
 	}
 
 	/**
-	 * Reads the track configuration from the provided JSON configuration object
-	 * and creates each scenario track.
+	 * Reads the track configuration from the provided JSON configuration object and creates each scenario track.
 	 * 
 	 * @param jsonConfig
 	 *            The JSON object containing load specifications.
@@ -314,17 +262,15 @@ public class Scenario {
 				String trackName = i.next();
 				JSONObject trackConfig = jsonConfig.getJSONObject(trackName);
 
-				String trackClassName = trackConfig.getString(TrackConfigs.TRACK_CLASS_KEY
-						.toString());
-				ScenarioTrack track = this.createTrack(trackClassName, trackName);
+				String trackClassName = trackConfig.getString(TrackConfigs.TRACK_CLASS_KEY.toString());
+				Target track = this.createTrack(trackClassName, trackName);
 				track.setName(trackName);
 				track.initialize(trackConfig);
 
 				this._tracks.put(track._name, track);
 			}
 		} catch (JSONException e) {
-			logger.info("[SCENARIO] ERROR parsing tracks in JSON configuration file/object. Reason: "
-					+ e.toString());
+			logger.info("[SCENARIO] ERROR parsing tracks in JSON configuration file/object. Reason: " + e.toString());
 			e.printStackTrace();
 			System.exit(1);
 		} catch (Exception e) {
@@ -346,93 +292,48 @@ public class Scenario {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	public ScenarioTrack createTrack(String trackClassName, String trackName) throws Exception {
-		ScenarioTrack track = null;
-		Class<ScenarioTrack> trackClass = (Class<ScenarioTrack>) Class.forName(trackClassName);
-		Constructor<ScenarioTrack> trackCtor = trackClass.getConstructor(new Class[] {
-				String.class, Scenario.class });
-		track = (ScenarioTrack) trackCtor.newInstance(new Object[] { trackName, this });
+	public Target createTrack(String trackClassName, String trackName) throws Exception {
+		Target track = null;
+		Class<Target> trackClass = (Class<Target>) Class.forName(trackClassName);
+		Constructor<Target> trackCtor = trackClass.getConstructor(new Class[] { String.class, Scenario.class });
+		track = (Target) trackCtor.newInstance(new Object[] { trackName, this });
 		return track;
 	}
 
-	void createThreads() {
+	void simulateTracks(long start, long startSteadyState, long endSteadyState) throws Exception {
 		int sharedThreads = getMaxSharedThreads();
 		ExecutorService pool = Executors.newFixedThreadPool(sharedThreads);
+
 		logger.debug("Creating " + sharedThreads + " shared threads.");
 
-		// List of all user threads
-		LinkedList<LoadGenerationStrategy> threads = new LinkedList<LoadGenerationStrategy>();
-		
 		// Scenarios manage their own threads
 		long totalMaxUsers = 0;
-		for (ScenarioTrack track : scenario.getTracks().values()) {
-			// Start the scoreboard. It needs to know the timings because we
-			// only
-			// want to retain metrics generated during the steady state
-			// interval.
+		for (Target track : getTracks().values()) {
+			// Start the scoreboard. It needs to know the timings because we only
+			// want to retain metrics generated during the steady state interval.
 			IScoreboard scoreboard = track.createScoreboard(null);
-			if (scoreboard != null) {
-				scoreboard.initialize(startSteadyState, endSteadyState, track.getMaxUsers());
-				scoreboard
-						.setMetricSnapshotInterval((long) (track.getMetricSnapshotInterval() * 1000));
-				scoreboard.setMetricWriter(track.getMetricWriter());
-				scoreboard.start();
-			}
-			track.setScoreboard(scoreboard);
+			scoreboard.initialize(startSteadyState, endSteadyState, track.getMaxUsers());
+			scoreboard.setMetricSnapshotInterval((long) (track.getMetricSnapshotInterval() * 1000));
+			scoreboard.setMetricWriter(track.getMetricWriter());
+			scoreboard.start();
 
-			// Let track register to receive messages from the Pipe
-
-			// Need some configuration parameters to indidcate:
-			// 1) whether to wait here for controller to contact us
-			// 2) whether to forge ahead
-
-			long maxUsers = track.getMaxUsers();
-			totalMaxUsers += maxUsers;
-			logger.info("Creating " + maxUsers + " threads for " + track);
-
-			// Create enough threads for maximum users needed by the scenario.
-			for (int i = 0; i < maxUsers; i++) {
-				Generator generator = track.createWorkloadGenerator(track.getGeneratorClassName(),
-						track.getGeneratorParams());
-				generator.setScoreboard(scoreboard);
-
-				generator.setMeanCycleTime((long) (track.getMeanCycleTime() * 1000));
-				generator.setMeanThinkTime((long) (track.getMeanThinkTime() * 1000));
-
-				// Allow the load generation strategy to be configurable
-				LoadGenerationStrategy lgThread = track.createLoadGenerationStrategy(
-						track.getLoadGenerationStrategyClassName(),
-						track.getLoadGenerationStrategyParams(), generator, i);
-
-				generator.setName(lgThread.getName());
-				generator.initialize();
-
-				lgThread.setInteractive(track.getInteractive());
-				lgThread.setSharedWorkPool(pool);
-				lgThread.setTimeStarted(start);
-
-				// Add thread to thread list and start the thread
-				threads.add(lgThread);
-				lgThread.start();
-			}
-		}
-		
-		logger.info("Total user threads: " + totalMaxUsers);
-
-		// Wait for all user threads to finish
-		for (LoadGenerationStrategy lgThread : threads) {
-			try {
-				lgThread.join();
-				logger.info("Thread joined: " + lgThread.getName());
-			} catch (InterruptedException ie) {
-				logger.error("Main thread interrupted... exiting!");
-			} finally {
-				lgThread.dispose();
-			}
+			track.createLoadGenerators(start, pool, scoreboard);
 		}
 
-		// Purge threads.
-		logger.debug("Purging threads and shutting down... exiting!");
-		threads.clear();
+		// Join all running tracks
+		for (Target track : getTracks().values()) {
+			track.join();
+		}
+
+		// Shutdown thread pool
+		pool.shutdown();
+		try {
+			logger.debug("waiting up to 10 seconds for shared threadpool to shutdown!");
+			pool.awaitTermination(10000, TimeUnit.MILLISECONDS);
+			if (!pool.isTerminated())
+				pool.shutdownNow();
+		} catch (InterruptedException ie) {
+			logger.debug("INTERRUPTED while waiting for shared threadpool to shutdown!");
+		}
 	}
 }

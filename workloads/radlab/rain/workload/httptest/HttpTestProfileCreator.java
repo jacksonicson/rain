@@ -32,7 +32,7 @@
 package radlab.rain.workload.httptest;
 
 import radlab.rain.ProfileCreator;
-import radlab.rain.ScenarioTrack;
+import radlab.rain.Target;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -76,9 +76,9 @@ public class HttpTestProfileCreator extends ProfileCreator
 			
 			JSONObject trackDetails = new JSONObject();
 			// Fill in details
-			trackDetails.put( ScenarioTrack.CFG_GENERATOR_KEY, "radlab.rain.workload.httptest.HttpTestGenerator" ); 
-			trackDetails.put( ScenarioTrack.CFG_TRACK_CLASS_KEY, "radlab.rain.DefaultScenarioTrack" );
-			trackDetails.put( ScenarioTrack.CFG_RESOURCE_PATH, "resources/" );
+			trackDetails.put( Target.CFG_GENERATOR_KEY, "radlab.rain.workload.httptest.HttpTestGenerator" ); 
+			trackDetails.put( Target.CFG_TRACK_CLASS_KEY, "radlab.rain.DefaultScenarioTrack" );
+			trackDetails.put( Target.CFG_RESOURCE_PATH, "resources/" );
 			// Add in behavior and loadProfileCreatorClass
 			
 			/*"behavior": {
@@ -119,10 +119,10 @@ public class HttpTestProfileCreator extends ProfileCreator
 			behaviorDetails.put( "default", mix1 );
 			
 			// Store the behavior details in the track config
-			trackDetails.put( ScenarioTrack.CFG_BEHAVIOR_KEY, behaviorDetails );
+			trackDetails.put( Target.CFG_BEHAVIOR_KEY, behaviorDetails );
 			
 			// Specifiy the load creator class
-			trackDetails.put( ScenarioTrack.CFG_LOAD_SCHEDULE_CREATOR_KEY, "radlab.rain.workload.httptest.HttpTestScheduleCreator" );
+			trackDetails.put( Target.CFG_LOAD_SCHEDULE_CREATOR_KEY, "radlab.rain.workload.httptest.HttpTestScheduleCreator" );
 						
 			JSONObject targetDetails = new JSONObject();
 			
@@ -143,22 +143,22 @@ public class HttpTestProfileCreator extends ProfileCreator
 			
 			System.out.println( "Target IP: " + targetIPAddress.toString() );
 			
-			targetDetails.put( ScenarioTrack.CFG_TARGET_HOSTNAME_KEY, targetIPAddress.toString() );
-			targetDetails.put( ScenarioTrack.CFG_TARGET_PORT_KEY, 8080 );
+			targetDetails.put( Target.CFG_TARGET_HOSTNAME_KEY, targetIPAddress.toString() );
+			targetDetails.put( Target.CFG_TARGET_PORT_KEY, 8080 );
 			
-			trackDetails.put( ScenarioTrack.CFG_TARGET_KEY, targetDetails );
-			trackDetails.put( ScenarioTrack.CFG_LOG_SAMPLING_PROBABILITY_KEY, 0.0 ); // No log sampling
-			trackDetails.put( ScenarioTrack.CFG_OPEN_LOOP_PROBABILITY_KEY, 0.0 );
-			trackDetails.put( ScenarioTrack.CFG_MEAN_CYCLE_TIME_KEY, 0 );
-			trackDetails.put( ScenarioTrack.CFG_MEAN_THINK_TIME_KEY, 0 );
-			trackDetails.put( ScenarioTrack.CFG_INTERACTIVE_KEY, true );
+			trackDetails.put( Target.CFG_TARGET_KEY, targetDetails );
+			trackDetails.put( Target.CFG_LOG_SAMPLING_PROBABILITY_KEY, 0.0 ); // No log sampling
+			trackDetails.put( Target.CFG_OPEN_LOOP_PROBABILITY_KEY, 0.0 );
+			trackDetails.put( Target.CFG_MEAN_CYCLE_TIME_KEY, 0 );
+			trackDetails.put( Target.CFG_MEAN_THINK_TIME_KEY, 0 );
+			trackDetails.put( Target.CFG_INTERACTIVE_KEY, true );
 
 			// Set response time sampling interval - should be tuned based on the expected 
 			// order of the expected number of operations/requests that will be issued/served
 			// e.g. lower values if we're doing a short run with few operations and
 			// larger values if we're doing a long run with many operations so we reduce
 			// memory overhead of storing samples
-			trackDetails.put( ScenarioTrack.CFG_MEAN_RESPONSE_TIME_SAMPLE_INTERVAL, 50 );
+			trackDetails.put( Target.CFG_MEAN_RESPONSE_TIME_SAMPLE_INTERVAL, 50 );
 			
 			trackConfig.put( trackName, trackDetails );
 		}

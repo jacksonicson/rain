@@ -44,7 +44,7 @@ import radlab.rain.LoadProfile;
 import radlab.rain.ObjectPool;
 import radlab.rain.Operation;
 import radlab.rain.Scenario;
-import radlab.rain.ScenarioTrack;
+import radlab.rain.Target;
 import radlab.rain.util.ConfigUtil;
 import radlab.rain.util.HttpTransport;
 import radlab.rain.util.NegativeExponential;
@@ -93,7 +93,7 @@ public class PredictableAppGenerator extends Generator
 	private float[] _memoryMix 			= null;
 	private int[] _operationBusyPct 	= null; 
 		
-	public PredictableAppGenerator(ScenarioTrack track) 
+	public PredictableAppGenerator(Target track) 
 	{
 		super(track);
 		this._baseUrl 	= "http://" + this._loadTrack.getTargetHostName() + ":" + this._loadTrack.getTargetHostPort();

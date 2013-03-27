@@ -49,7 +49,7 @@ import radlab.rain.Generator;
 import radlab.rain.LoadProfile;
 import radlab.rain.Operation;
 import radlab.rain.Scenario;
-import radlab.rain.ScenarioTrack;
+import radlab.rain.Target;
 import radlab.rain.util.ConfigUtil;
 import radlab.rain.util.EmpiricalCDF;
 
@@ -99,7 +99,7 @@ public class SamplingMapReduceGenerator extends Generator
 	private long _nextThinkTime 		= 0;
 	private long _nextCycleTime			= 0;
 	
-	public SamplingMapReduceGenerator(ScenarioTrack track) 
+	public SamplingMapReduceGenerator(Target track) 
 	{
 		super(track);
 	}

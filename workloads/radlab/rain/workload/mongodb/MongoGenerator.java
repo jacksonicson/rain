@@ -12,7 +12,7 @@ import radlab.rain.Generator;
 import radlab.rain.LoadProfile;
 import radlab.rain.ObjectPool;
 import radlab.rain.Operation;
-import radlab.rain.ScenarioTrack;
+import radlab.rain.Target;
 
 import radlab.rain.util.storage.KeyGenerator;
 import radlab.rain.util.Histogram;
@@ -45,7 +45,7 @@ public class MongoGenerator extends Generator
 	// Debug hot object popularity
 	Histogram<String> _hotObjHist				= new Histogram<String>();
 	
-	public MongoGenerator(ScenarioTrack track) 
+	public MongoGenerator(Target track) 
 	{
 		super(track);
 	}

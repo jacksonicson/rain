@@ -46,7 +46,7 @@ import org.json.JSONObject;
 import radlab.rain.Generator;
 import radlab.rain.LoadProfile;
 import radlab.rain.Operation;
-import radlab.rain.ScenarioTrack;
+import radlab.rain.Target;
 
 public class ReplayMapReduceGenerator extends Generator 
 {
@@ -105,7 +105,7 @@ public class ReplayMapReduceGenerator extends Generator
 	private long _nextThinkTime 		= 0;
 	private long _nextCycleTime			= 0;
 	
-	public ReplayMapReduceGenerator(ScenarioTrack track) 
+	public ReplayMapReduceGenerator(Target track) 
 	{
 		super(track);
 	}

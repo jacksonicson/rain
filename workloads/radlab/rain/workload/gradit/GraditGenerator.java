@@ -36,7 +36,7 @@ import radlab.rain.LoadProfile;
 import radlab.rain.ObjectPool;
 import radlab.rain.Operation;
 import radlab.rain.RainConfig;
-import radlab.rain.ScenarioTrack;
+import radlab.rain.Target;
 import radlab.rain.util.AppServerStats;
 import radlab.rain.util.HttpTransport;
 import radlab.rain.util.NegativeExponential;
@@ -147,7 +147,7 @@ public class GraditGenerator extends Generator {
 	public String _username;
 
 	
-	public GraditGenerator(ScenarioTrack track) {
+	public GraditGenerator(Target track) {
 		super(track);
 		this._rand = new Random();
 		//System.out.println( "Think time ctor: " + track.getMeanThinkTime() );

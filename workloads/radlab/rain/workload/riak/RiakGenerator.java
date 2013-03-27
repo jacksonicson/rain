@@ -13,7 +13,7 @@ import radlab.rain.Generator;
 import radlab.rain.LoadProfile;
 import radlab.rain.ObjectPool;
 import radlab.rain.Operation;
-import radlab.rain.ScenarioTrack;
+import radlab.rain.Target;
 import radlab.rain.util.Histogram;
 import radlab.rain.util.storage.KeyGenerator;
 
@@ -50,7 +50,7 @@ public class RiakGenerator extends Generator
 	// Bucket and key next request should go to
 	String _bucket = DEFAULT_BUCKET; 
 		
-	public RiakGenerator(ScenarioTrack track) 
+	public RiakGenerator(Target track) 
 	{
 		super(track);
 	}

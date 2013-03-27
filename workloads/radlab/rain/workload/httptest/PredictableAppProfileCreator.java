@@ -36,7 +36,7 @@ import org.json.JSONObject;
 
 import radlab.rain.ProfileCreator;
 //import radlab.rain.Scenario;
-import radlab.rain.ScenarioTrack;
+import radlab.rain.Target;
 //import radlab.rain.util.ConfigUtil;
 import radlab.rain.workloadtraits.WikipediaScheduleCreator;
 
@@ -142,8 +142,8 @@ public class PredictableAppProfileCreator extends ProfileCreator
 		//else this._userPopulation = this._numHostTargets;
 		
 		JSONObject generatorParameters = null;
-		if( params.has( ScenarioTrack.CFG_GENERATOR_PARAMS_KEY ) )
-			generatorParameters = params.getJSONObject( ScenarioTrack.CFG_GENERATOR_PARAMS_KEY );
+		if( params.has( Target.CFG_GENERATOR_PARAMS_KEY ) )
+			generatorParameters = params.getJSONObject( Target.CFG_GENERATOR_PARAMS_KEY );
 		else generatorParameters = new JSONObject();
 		
 		this.printConfig( System.out );
@@ -281,43 +281,43 @@ public class PredictableAppProfileCreator extends ProfileCreator
 	{
 		JSONObject trackDetails = new JSONObject();
 		// Fill in details
-		trackDetails.put( ScenarioTrack.CFG_GENERATOR_KEY, "radlab.rain.workload.httptest.PredictableAppGenerator" );
+		trackDetails.put( Target.CFG_GENERATOR_KEY, "radlab.rain.workload.httptest.PredictableAppGenerator" );
 		// Fill in any generator parameters
-		trackDetails.put( ScenarioTrack.CFG_GENERATOR_PARAMS_KEY, generatorParameters );
+		trackDetails.put( Target.CFG_GENERATOR_PARAMS_KEY, generatorParameters );
 		
-		trackDetails.put( ScenarioTrack.CFG_TRACK_CLASS_KEY, "radlab.rain.DefaultScenarioTrack" );
-		trackDetails.put( ScenarioTrack.CFG_RESOURCE_PATH, "resources/" );
+		trackDetails.put( Target.CFG_TRACK_CLASS_KEY, "radlab.rain.DefaultScenarioTrack" );
+		trackDetails.put( Target.CFG_RESOURCE_PATH, "resources/" );
 		// Add in loadProfileCreatorClass
 		JSONObject behaviorDetails = new JSONObject();
 		// Store the behavior details in the track config
-		trackDetails.put( ScenarioTrack.CFG_BEHAVIOR_KEY, behaviorDetails );
+		trackDetails.put( Target.CFG_BEHAVIOR_KEY, behaviorDetails );
 		// Specifiy the load creator class - we're going to use Wikipedia for now
-		trackDetails.put( ScenarioTrack.CFG_LOAD_SCHEDULE_CREATOR_KEY, "radlab.rain.workloadtraits.WikipediaScheduleCreator" );
+		trackDetails.put( Target.CFG_LOAD_SCHEDULE_CREATOR_KEY, "radlab.rain.workloadtraits.WikipediaScheduleCreator" );
 		JSONObject scheduleCreatorParams = new JSONObject();
 		// Fill in the parameters for the schedule creator
 		// Just set the minUsers so the workload can be scaled
 		scheduleCreatorParams.put( WikipediaScheduleCreator.CFG_INITIAL, minUsers );
 				
-		trackDetails.put( ScenarioTrack.CFG_LOAD_SCHEDULE_CREATOR_PARAMS_KEY, scheduleCreatorParams );
+		trackDetails.put( Target.CFG_LOAD_SCHEDULE_CREATOR_PARAMS_KEY, scheduleCreatorParams );
 		
 		JSONObject targetDetails = new JSONObject();
 				
-		targetDetails.put( ScenarioTrack.CFG_TARGET_HOSTNAME_KEY, host );
-		targetDetails.put( ScenarioTrack.CFG_TARGET_PORT_KEY, port );
+		targetDetails.put( Target.CFG_TARGET_HOSTNAME_KEY, host );
+		targetDetails.put( Target.CFG_TARGET_PORT_KEY, port );
 		
-		trackDetails.put( ScenarioTrack.CFG_TARGET_KEY, targetDetails );
-		trackDetails.put( ScenarioTrack.CFG_LOG_SAMPLING_PROBABILITY_KEY, 0.0 ); // No log sampling
-		trackDetails.put( ScenarioTrack.CFG_OPEN_LOOP_PROBABILITY_KEY, 0.0 );
-		trackDetails.put( ScenarioTrack.CFG_MEAN_CYCLE_TIME_KEY, 0 );
-		trackDetails.put( ScenarioTrack.CFG_MEAN_THINK_TIME_KEY, meanThinkTime );
-		trackDetails.put( ScenarioTrack.CFG_INTERACTIVE_KEY, true );
+		trackDetails.put( Target.CFG_TARGET_KEY, targetDetails );
+		trackDetails.put( Target.CFG_LOG_SAMPLING_PROBABILITY_KEY, 0.0 ); // No log sampling
+		trackDetails.put( Target.CFG_OPEN_LOOP_PROBABILITY_KEY, 0.0 );
+		trackDetails.put( Target.CFG_MEAN_CYCLE_TIME_KEY, 0 );
+		trackDetails.put( Target.CFG_MEAN_THINK_TIME_KEY, meanThinkTime );
+		trackDetails.put( Target.CFG_INTERACTIVE_KEY, true );
 
 		// Set response time sampling interval - should be tuned based on the expected 
 		// order of the expected number of operations/requests that will be issued/served
 		// e.g. lower values if we're doing a short run with few operations and
 		// larger values if we're doing a long run with many operations so we reduce
 		// memory overhead of storing samples
-		trackDetails.put( ScenarioTrack.CFG_MEAN_RESPONSE_TIME_SAMPLE_INTERVAL, 100 );
+		trackDetails.put( Target.CFG_MEAN_RESPONSE_TIME_SAMPLE_INTERVAL, 100 );
 
 		return trackDetails;
 	}

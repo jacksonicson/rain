@@ -239,7 +239,7 @@ public class PartlyOpenLoopLoadGeneration extends LoadGenerationStrategy {
 	 * @param track
 	 *            The track from which to load the configuration.
 	 */
-	protected void loadTrackConfiguration(ScenarioTrack track) {
+	protected void loadTrackConfiguration(Target track) {
 		this._openLoopProbability = this._generator.getTrack().getOpenLoopProbability();
 
 		// This value gets set by Benchmark

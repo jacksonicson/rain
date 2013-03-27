@@ -12,7 +12,7 @@ import radlab.rain.Generator;
 import radlab.rain.LoadProfile;
 import radlab.rain.ObjectPool;
 import radlab.rain.Operation;
-import radlab.rain.ScenarioTrack;
+import radlab.rain.Target;
 import radlab.rain.util.Histogram;
 import radlab.rain.util.storage.KeyGenerator;
 
@@ -61,7 +61,7 @@ public class HBaseGenerator extends Generator
 	Histogram<String> _hotObjHist				= new Histogram<String>();
 	
 	
-	public HBaseGenerator(ScenarioTrack track) 
+	public HBaseGenerator(Target track) 
 	{
 		super(track);
 	}

@@ -9,7 +9,7 @@ import radlab.rain.Generator;
 import radlab.rain.LoadProfile;
 import radlab.rain.ObjectPool;
 import radlab.rain.Operation;
-import radlab.rain.ScenarioTrack;
+import radlab.rain.Target;
 import radlab.rain.util.HttpTransport;
 import radlab.rain.util.NegativeExponential;
 
@@ -33,7 +33,7 @@ public class FixedUrlGenerator extends Generator
 	private int _connectionTimeoutMsecs = 1000;
 	private int _socketTimeoutMsecs = 1000;
 		
-	public FixedUrlGenerator(ScenarioTrack track) 
+	public FixedUrlGenerator(Target track) 
 	{
 		super(track);
 		this._baseUrl 	= this._loadTrack.getTargetHostName();

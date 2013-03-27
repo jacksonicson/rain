@@ -46,7 +46,7 @@ import radlab.rain.LoadProfile;
 import radlab.rain.ObjectPool;
 import radlab.rain.Operation;
 import radlab.rain.RainConfig;
-import radlab.rain.ScenarioTrack;
+import radlab.rain.Target;
 import radlab.rain.util.AppServerStats;
 import radlab.rain.util.HttpTransport;
 import radlab.rain.util.NegativeExponential;
@@ -135,7 +135,7 @@ public class ComradesGenerator extends Generator
 	public String _candidatesUrl;
 	public String _newCandidateUrl;
 	
-	public ComradesGenerator(ScenarioTrack track) 
+	public ComradesGenerator(Target track) 
 	{
 		super(track);
 		this._rand = new Random();

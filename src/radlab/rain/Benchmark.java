@@ -82,7 +82,7 @@ public class Benchmark {
 		logger.info("Schedule: " + schedule.toString());
 
 		// Create threads
-		scenario.createThreads();
+		scenario.simulateTracks(start, startSteadyState, endSteadyState);
 
 		// Set up for stats aggregation across tracks based on the generators
 		// used
@@ -90,7 +90,7 @@ public class Benchmark {
 		Scorecard globalCard = new Scorecard("global", "global", endSteadyState - startSteadyState);
 
 		// Shutdown the scoreboards and tally up the results.
-		for (ScenarioTrack track : scenario.getTracks().values()) {
+		for (Target track : scenario.getTracks().values()) {
 			// Aggregate stats across track based on the generator class name.
 			// If the generator
 			// class names are identical then there is potentially overlap in
@@ -149,17 +149,6 @@ public class Benchmark {
 
 		// Shutdown Sonar monitoring
 		SonarRecorder.getInstance().shutdown();
-
-		// Shutdown the shared threadpool
-		pool.shutdown();
-		try {
-			logger.debug("waiting up to 10 seconds for shared threadpool to shutdown!");
-			pool.awaitTermination(10000, TimeUnit.MILLISECONDS);
-			if (!pool.isTerminated())
-				pool.shutdownNow();
-		} catch (InterruptedException ie) {
-			logger.debug("INTERRUPTED while waiting for shared threadpool to shutdown!");
-		}
 
 		// Shutdown thrift server
 		if (RainConfig.getInstance()._useThrift) {

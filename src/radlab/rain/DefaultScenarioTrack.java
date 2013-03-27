@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
  * The DefaultScenarioTrack class is a generic implementation of the abstract <code>ScenarioTrack</code> class that supports load
  * profiles that specify the interval, number of users, mix behavior, and any transitions.
  */
-public class DefaultScenarioTrack extends ScenarioTrack {
+public class DefaultScenarioTrack extends Target {
 	private Logger logger = LoggerFactory.getLogger(DefaultScenarioTrack.class.getName() + " " + this);
 
 	private LoadManagerThread _loadManager;
@@ -149,16 +149,16 @@ public class DefaultScenarioTrack extends ScenarioTrack {
 		// 1) the number of users is > 0
 		// 2) the mix name is in the mix map
 		// boolean valid = true;
-		int retVal = ScenarioTrack.VALID_LOAD_PROFILE;
+		int retVal = Target.VALID_LOAD_PROFILE;
 
 		if (profile._numberOfUsers <= 0) {
 			logger.info(this + " Invalid load profile. Number of users <= 0. Profile details: " + profile.toString());
-			retVal = ScenarioTrack.ERROR_INVALID_LOAD_PROFILE_BAD_NUM_USERS;
+			retVal = Target.ERROR_INVALID_LOAD_PROFILE_BAD_NUM_USERS;
 		}
 
 		if (profile._mixName.length() > 0 && !this._mixMap.containsKey(profile._mixName)) {
 			logger.info(this + " Invalid load profile. mixname not in track's mixmap. Profile details: " + profile.toString());
-			retVal = ScenarioTrack.ERROR_INVALID_LOAD_PROFILE_BAD_MIX_NAME;
+			retVal = Target.ERROR_INVALID_LOAD_PROFILE_BAD_MIX_NAME;
 		}
 
 		// Do capping of number of users, don't fail validation though
@@ -254,7 +254,7 @@ public class DefaultScenarioTrack extends ScenarioTrack {
 	 */
 	protected class LoadManagerThread extends Thread {
 		/** The track for which this thread is responsible. */
-		private ScenarioTrack _track = null;
+		private Target _track = null;
 
 		private LoadProfile _currentProfile = null;
 
@@ -279,7 +279,7 @@ public class DefaultScenarioTrack extends ScenarioTrack {
 			this._done = val;
 		}
 
-		public LoadManagerThread(ScenarioTrack track) {
+		public LoadManagerThread(Target track) {
 			this._track = track;
 		}
 
@@ -356,7 +356,7 @@ public class DefaultScenarioTrack extends ScenarioTrack {
 						}
 
 						// Just in case, make sure that we acutally got a "real"/valid load profile
-						if (dynProfile != null && this._track.validateLoadProfile(dynProfile) == ScenarioTrack.VALID_LOAD_PROFILE) {
+						if (dynProfile != null && this._track.validateLoadProfile(dynProfile) == Target.VALID_LOAD_PROFILE) {
 							logger.info(this + " Dynamic load profile passed validation...");
 							now = System.currentTimeMillis();
 							// Store this dynProfile as the current
