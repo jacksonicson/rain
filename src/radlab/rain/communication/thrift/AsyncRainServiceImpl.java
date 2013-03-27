@@ -34,8 +34,8 @@ public class AsyncRainServiceImpl implements RainService.Iface {
 		if (track != null) {
 			logger.info(this + " Found target track");
 
-			LoadProfile profile = new LoadProfile(msg.getInterval(), (int) msg.getNumberOfUsers(), msg.getMixName(), msg.getTransitionTime(),
-					msg.getName());
+			LoadProfile profile = new LoadProfile(msg.getInterval(), (int) msg.getNumberOfUsers(), msg.getMixName(),
+					msg.getTransitionTime(), msg.getName());
 
 			int validationResult = track.validateLoadProfile(profile);
 			// Try to validate and submit to the track's load scheduler
