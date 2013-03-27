@@ -37,11 +37,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import radlab.rain.scoreboard.IScoreboard;
+import radlab.rain.util.MetricWriter;
+import radlab.rain.util.MetricWriterFactory;
 
 /**
  * The ScenarioTrack abstract class represents a single workload among potentially many that are simultaneously run
@@ -58,21 +61,27 @@ public abstract class Track {
 	public static final int ERROR_INVALID_LOAD_PROFILE_BAD_BEHAVIOR_HINT = 1779;
 	public static final int ERROR_TRACK_NOT_FOUND = 1780;
 
+	// Timings
+	private Timing timing;
+
+	// Scoreboard
 	protected IScoreboard scoreboard;
 	protected TrackConfiguration config;
+	protected ScenarioConfiguration scenarioConfiguration;
 
-	protected Generator generator;
-
+	// Load schedule used by the generator and strategy
 	protected LoadUnit currentLoadUnit;
 	protected LoadScheduleCreator loadScheduleCreator;
 	protected LinkedList<LoadUnit> loadSchedule = new LinkedList<LoadUnit>();
 
-	public Track(Scenario parentScenario) throws Exception {
-		IScoreboard scoreboard = createScoreboard(null);
-		// scoreboard.initialize(startSteadyState, endSteadyState, track.getMaxUsers());
-		scoreboard.setMetricSnapshotInterval((long) (getMetricSnapshotInterval() * 1000));
-		scoreboard.setMetricWriter(getMetricWriter());
-		scoreboard.start();
+	// Generates queries
+	protected Generator generator;
+
+	// Triggers generator
+	protected List<LoadGenerationStrategy> generators = new ArrayList<LoadGenerationStrategy>();
+
+	public Track(ScenarioConfiguration scenarioConfiguration) throws Exception {
+		this.scenarioConfiguration = scenarioConfiguration;
 	}
 
 	public abstract void start();
@@ -85,13 +94,47 @@ public abstract class Track {
 
 	public abstract void submitDynamicLoadProfile(LoadUnit profile);
 
-	void initialize(JSONObject jsonConfig) throws Exception {
+	void initialize(Timing timing, JSONObject jsonConfig) throws Exception {
+		// Timings
+		this.timing = timing;
+
 		// Load configuration
 		config = new TrackConfiguration();
 		config.initialize(jsonConfig);
+
+		// Create scoreboard
+		scoreboard = createScoreboard();
+
+		// Create load schedule creator
+		loadScheduleCreator = createLoadScheduleCreator();
+
+		// Create load generator
+		generator = createGenerator();
 	}
 
-	// Factory methods
+	public IScoreboard createScoreboard() throws JSONException, Exception {
+		// Create a metric writer
+		MetricWriter metricWriter = MetricWriterFactory.createMetricWriter(
+				config.metricWriterParams.getString(MetricWriter.CFG_TYPE_KEY), config.metricWriterParams);
+
+		// Create scoreboard
+		Class<IScoreboard> scoreboardClass = (Class<IScoreboard>) Class.forName("TODO");
+		Constructor<IScoreboard> scoreboardCtor = scoreboardClass.getConstructor(String.class);
+		IScoreboard scoreboard = (IScoreboard) scoreboardCtor.newInstance("TODO");
+
+		// Set the log sampling probability for the scoreboard
+		scoreboard.initialize(timing);
+		scoreboard.setScenarioTrack(this);
+		scoreboard.setLogSamplingProbability(config.logSamplingProbability);
+		scoreboard.setUsingMetricSnapshots(config.useMetricSnapshots);
+		scoreboard.setMeanResponseTimeSamplingInterval(config.meanResponseTimeSamplingInterval);
+		scoreboard.setMetricSnapshotInterval((long) (config.metricSnapshotInterval * 1000));
+		scoreboard.setMetricWriter(metricWriter);
+		scoreboard.start();
+
+		return scoreboard;
+	}
+
 	@SuppressWarnings("unchecked")
 	public LoadScheduleCreator createLoadScheduleCreator() throws Exception {
 		Class<LoadScheduleCreator> creatorClass = (Class<LoadScheduleCreator>) Class
@@ -101,40 +144,12 @@ public abstract class Track {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Generator createWorkloadGenerator() throws Exception {
+	public Generator createGenerator() throws Exception {
 		Class<Generator> generatorClass = (Class<Generator>) Class.forName(config.generatorClassName);
 		Constructor<Generator> generatorCtor = generatorClass.getConstructor(new Class[] { Track.class });
 		Generator generator = (Generator) generatorCtor.newInstance(new Object[] { this });
 		generator.configure(config.generatorParams);
 		return generator;
-	}
-
-	@SuppressWarnings("unchecked")
-	public LoadUnit createLoadProfile(String name, JSONObject profileObj) throws Exception {
-		LoadUnit loadProfile = null;
-		Class<LoadUnit> loadProfileClass = (Class<LoadUnit>) Class.forName(name);
-		Constructor<LoadUnit> loadProfileCtor = loadProfileClass.getConstructor(new Class[] { JSONObject.class });
-		loadProfile = (LoadUnit) loadProfileCtor.newInstance(new Object[] { profileObj });
-		return loadProfile;
-	}
-
-	@SuppressWarnings("unchecked")
-	public IScoreboard createScoreboard(String name) throws Exception {
-		if (name == null)
-			name = this._scoreboardClassName;
-
-		IScoreboard scoreboard = null;
-		Class<IScoreboard> scoreboardClass = (Class<IScoreboard>) Class.forName(name);
-		Constructor<IScoreboard> scoreboardCtor = scoreboardClass.getConstructor(String.class);
-		scoreboard = (IScoreboard) scoreboardCtor.newInstance(this._name);
-		// Set the log sampling probability for the scoreboard
-		scoreboard.setLogSamplingProbability(this._logSamplingProbability);
-		scoreboard.setScenarioTrack(this);
-		scoreboard.setUsingMetricSnapshots(this._useMetricSnapshots);
-		scoreboard.setMeanResponseTimeSamplingInterval(this._meanResponseTimeSamplingInterval);
-
-		this.scoreboard = scoreboard;
-		return scoreboard;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -149,12 +164,6 @@ public abstract class Track {
 				loadGenerationStrategyParams });
 		return loadGenStrategy;
 	}
-
-	public String toString() {
-		return "[" + this._name + "]";
-	}
-
-	private List<LoadGenerationStrategy> generators = new ArrayList<LoadGenerationStrategy>();
 
 	public long createLoadGenerators(long start, ExecutorService pool, IScoreboard scoreboard) throws Exception {
 		long maxUsers = getMaxUsers();

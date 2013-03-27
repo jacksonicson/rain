@@ -54,33 +54,16 @@ import radlab.rain.util.SonarRecorder;
 public class Benchmark {
 	private static Logger logger = LoggerFactory.getLogger(Benchmark.class);
 
-	/**
-	 * Amount of time (in milliseconds) to wait before threads start issuing requests. This allows all of the threads to
-	 * start synchronously.
-	 */
-	private static final long TIME_TO_START = 10000;
-
 	public void start(Scenario scenario) throws Exception {
 		Thread.currentThread().setName("Benchmark-thread");
 
-		// Calculate the run timings that will be used for all threads.
-		// start startS.S. endS.S. end
-		// | ramp up |------ duration ------| ramp down |
-		long start = System.currentTimeMillis() + Benchmark.TIME_TO_START;
-		long startSteadyState = start + (scenario.getRampUp() * 1000);
-		long endSteadyState = startSteadyState + (scenario.getDuration() * 1000);
-		long endRun = endSteadyState + (scenario.getRampDown() * 1000);
+		
+		 
 
-		// Log benchmark schedule
-		JSONObject schedule = new JSONObject();
-		schedule.put("start", start);
-		schedule.put("startSteadyState", startSteadyState);
-		schedule.put("endSteadyState", endSteadyState);
-		schedule.put("endRun", endRun);
-		logger.info("Schedule: " + schedule.toString());
+		
 
 		// Create threads
-		scenario.execute(start, startSteadyState, endSteadyState);
+		scenario.execute();
 
 		// Set up for stats aggregation across tracks based on the generators
 		// used

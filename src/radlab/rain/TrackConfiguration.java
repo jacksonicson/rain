@@ -9,8 +9,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import radlab.rain.configuration.TrackConfKeys;
-import radlab.rain.util.MetricWriter;
-import radlab.rain.util.MetricWriterFactory;
 
 public class TrackConfiguration {
 
@@ -35,7 +33,7 @@ public class TrackConfiguration {
 	public double logSamplingProbability = 1.0; // Log every executed request seen by the Scoreboard
 	public double metricSnapshotInterval = 60.0; // (seconds)
 	public boolean useMetricSnapshots = false;
-	public MetricWriter metricWriter = null;
+
 	public String metricSnapshotFileSuffix = "";
 	public ObjectPool objPool = null;
 	public long meanResponseTimeSamplingInterval = DEFAULT_MEAN_RESPONSE_TIME_SAMPLE_INTERVAL;
@@ -43,7 +41,10 @@ public class TrackConfiguration {
 	public JSONObject loadProfileConfig;
 	public long objPoolMaxSize = DEFAULT_OBJECT_POOL_MAX_SIZE;
 	public String loadScheduleCreatorClass;
+
 	public JSONObject loadSchedulerParams;
+	public JSONObject metricWriterParams;
+
 	public Map<String, MixMatrix> mixMatrices = new HashMap<String, MixMatrix>();
 
 	public void initialize(JSONObject config) throws JSONException, Exception {
@@ -117,11 +118,8 @@ public class TrackConfiguration {
 		if (config.has(TrackConfKeys.METRIC_SNAPSHOT_FILE_SUFFIX.toString()))
 			metricSnapshotFileSuffix = config.getString(TrackConfKeys.METRIC_SNAPSHOT_FILE_SUFFIX.toString());
 
-		if (config.has(TrackConfKeys.METRIC_SNAPSHOT_CONFIG.toString())) {
-			JSONObject metricWriterConfig = config.getJSONObject(TrackConfKeys.METRIC_SNAPSHOT_CONFIG.toString());
-			metricWriter = MetricWriterFactory.createMetricWriter(
-					metricWriterConfig.getString(MetricWriter.CFG_TYPE_KEY), metricWriterConfig);
-		}
+		if (config.has(TrackConfKeys.METRIC_SNAPSHOT_CONFIG.toString()))
+			metricWriterParams = config.getJSONObject(TrackConfKeys.METRIC_SNAPSHOT_CONFIG.toString());
 
 		// Maximum size of the object pool
 		if (config.has(TrackConfKeys.OBJECT_POOL_MAX_SIZE.toString()))

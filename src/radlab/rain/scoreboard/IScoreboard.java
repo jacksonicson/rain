@@ -35,24 +35,24 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import radlab.rain.OperationExecution;
+import radlab.rain.Timing;
 import radlab.rain.Track;
 import radlab.rain.util.MetricWriter;
-import radlab.rain.util.SonarRecorder;
 
 /**
  * The IScoreboard interface allows an implemented scoreboard to interface with the benchmark architecture.<br />
  * <br />
- * The interface requires that the scoreboard be able to start, stop, receive results, show statistics, and register log handles,
- * among other things.
+ * The interface requires that the scoreboard be able to start, stop, receive results, show statistics, and register log
+ * handles, among other things.
  */
 public interface IScoreboard {
 
 	/**
 	 * Bootstrapping and initialization
 	 */
-	void initialize(long startRecordingTime, long endRecordingTime);
+	void initialize(Timing timing);
 
-	void initialize(long startRecordingTime, long endRecordingTime, long maxUsers);
+	void initialize(Timing timing, long maxUsers);
 
 	void setScenarioTrack(Track val);
 

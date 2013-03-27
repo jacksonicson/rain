@@ -42,7 +42,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import radlab.rain.configuration.TrackConfKeys;
-import radlab.rain.scoreboard.IScoreboard;
 
 public class Scenario {
 	private static Logger logger = LoggerFactory.getLogger(Scenario.class);
@@ -50,6 +49,8 @@ public class Scenario {
 	private TreeMap<String, Track> tracks = new TreeMap<String, Track>();
 
 	private ScenarioConfiguration conf = new ScenarioConfiguration();
+
+	private Timing timing;
 
 	public Scenario(JSONObject jsonConfig) throws Exception {
 		conf.loadProfile(jsonConfig);
@@ -64,11 +65,15 @@ public class Scenario {
 			Track track = (Track) trackCtor.newInstance();
 			track.initialize(trackConfig);
 
-			this.tracks.put(track._name, track);
+			this.tracks.put("", track);
 		}
 	}
 
-	void execute(long start, long startSteadyState, long endSteadyState) throws Exception {
+	void execute() throws Exception {
+		// Calculate timing
+		timing = new Timing(conf.getRampUp(), conf.getDuration(), conf.getRampDown());
+
+		// Threads
 		int sharedThreads = conf.getMaxSharedThreads();
 		ExecutorService pool = Executors.newFixedThreadPool(sharedThreads);
 
