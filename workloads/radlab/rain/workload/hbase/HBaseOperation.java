@@ -3,7 +3,7 @@ package radlab.rain.workload.hbase;
 import java.util.ArrayList;
 
 import radlab.rain.Generator;
-import radlab.rain.LoadUnit;
+import radlab.rain.LoadDefinition;
 import radlab.rain.Operation;
 import radlab.rain.scoreboard.IScoreboard;
 
@@ -30,7 +30,7 @@ public abstract class HBaseOperation extends Operation
 		
 		this._hbaseClient = hbaseGenerator.getHBaseTransport();
 		
-		LoadUnit currentLoadProfile = generator.getLatestLoadProfile();
+		LoadDefinition currentLoadProfile = generator.getLatestLoadProfile();
 		if( currentLoadProfile != null )
 			this.setGeneratedDuringProfile( currentLoadProfile );
 		

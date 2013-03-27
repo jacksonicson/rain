@@ -4,13 +4,13 @@ import java.util.List;
 
 public class LoadSchedule {
 
-	private List<LoadUnit> loadUnits;
+	private List<LoadDefinition> loadUnits;
 
-	public LoadSchedule(List<LoadUnit> loadUnits) {
+	public LoadSchedule(List<LoadDefinition> loadUnits) {
 		this.loadUnits = loadUnits;
 	}
 
-	public LoadUnit get(int index) {
+	public LoadDefinition get(int index) {
 		return loadUnits.get(index);
 	}
 
@@ -20,7 +20,7 @@ public class LoadSchedule {
 	
 	public long getMaxGenerators() {
 		int i = 0;
-		for (LoadUnit unit : loadUnits) {
+		for (LoadDefinition unit : loadUnits) {
 			i = Math.max(i, unit.getNumberOfUsers());
 		}
 		return i;

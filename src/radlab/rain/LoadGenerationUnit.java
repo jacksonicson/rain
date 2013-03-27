@@ -80,7 +80,7 @@ public abstract class LoadGenerationUnit extends Thread {
 
 	// Determine whether we async requests should be limited/throttled down to a max of x/sec
 	protected long sendNextRequest = NO_OPERATION_INDEX;
-	protected LoadUnit lastLoadUnit = null;
+	protected LoadDefinition lastLoadUnit = null;
 
 	// The shared pool of worker threads
 	protected ExecutorService executorService;
@@ -103,7 +103,7 @@ public abstract class LoadGenerationUnit extends Thread {
 	}
 
 	private void runAsyncOperation(Operation operation) {
-		LoadUnit loadUnit = operation.getGeneratedDuringProfile();
+		LoadDefinition loadUnit = operation.getGeneratedDuringProfile();
 
 		// Load unit unspecified - execute operation immediately
 		if (loadUnit == null) {

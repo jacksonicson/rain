@@ -5,14 +5,14 @@ import java.util.LinkedList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.LoadUnit;
+import radlab.rain.LoadDefinition;
 import radlab.rain.LoadScheduleCreator;
 
 public class BookingAppLoadSpikeScheduleCreator extends LoadScheduleCreator {
 
 	@Override
-	public LinkedList<LoadUnit> createSchedule(String track, JSONObject params) throws JSONException {
-		LinkedList<LoadUnit> loadSchedule = new LinkedList<LoadUnit>();
+	public LinkedList<LoadDefinition> createSchedule(String track, JSONObject params) throws JSONException {
+		LinkedList<LoadDefinition> loadSchedule = new LinkedList<LoadDefinition>();
 
 		/*
 		 * LoadProfile i1 = new LoadProfile( 30, 400, "default" ); LoadProfile i2 = new LoadProfile( 60, 1000, "default" );
@@ -24,17 +24,17 @@ public class BookingAppLoadSpikeScheduleCreator extends LoadScheduleCreator {
 		 */
 
 		// 4X increase over 100 seconds, sustained for 10 minutes followed by a return to the original load level over 100 seconds
-		LoadUnit i1 = new LoadUnit(50, 100, "default", 5);
-		LoadUnit i2 = new LoadUnit(20, 160, "default", 5);
-		LoadUnit i3 = new LoadUnit(20, 220, "default", 5);
-		LoadUnit i4 = new LoadUnit(20, 280, "default", 5);
-		LoadUnit i5 = new LoadUnit(20, 340, "default", 5);
-		LoadUnit i6 = new LoadUnit(20, 400, "default", 5);
-		LoadUnit i7 = new LoadUnit(600, 400, "default", 5);
-		LoadUnit i8 = new LoadUnit(30, 300, "default", 5);
-		LoadUnit i9 = new LoadUnit(30, 200, "default", 5);
-		LoadUnit i10 = new LoadUnit(30, 100, "default", 5);
-		LoadUnit i11 = new LoadUnit(400, 100, "default", 5);
+		LoadDefinition i1 = new LoadDefinition(50, 100, "default", 5);
+		LoadDefinition i2 = new LoadDefinition(20, 160, "default", 5);
+		LoadDefinition i3 = new LoadDefinition(20, 220, "default", 5);
+		LoadDefinition i4 = new LoadDefinition(20, 280, "default", 5);
+		LoadDefinition i5 = new LoadDefinition(20, 340, "default", 5);
+		LoadDefinition i6 = new LoadDefinition(20, 400, "default", 5);
+		LoadDefinition i7 = new LoadDefinition(600, 400, "default", 5);
+		LoadDefinition i8 = new LoadDefinition(30, 300, "default", 5);
+		LoadDefinition i9 = new LoadDefinition(30, 200, "default", 5);
+		LoadDefinition i10 = new LoadDefinition(30, 100, "default", 5);
+		LoadDefinition i11 = new LoadDefinition(400, 100, "default", 5);
 
 		loadSchedule.add(i1);
 		loadSchedule.add(i2);

@@ -34,7 +34,7 @@ package radlab.rain;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class LoadUnit {
+public class LoadDefinition {
 	public static String CFG_LOAD_PROFILE_INTERVAL_KEY = "interval";
 	public static String CFG_LOAD_PROFILE_TRANSITION_TIME_KEY = "transitionTime";
 	public static String CFG_LOAD_PROFILE_USERS_KEY = "users";
@@ -54,7 +54,7 @@ public class LoadUnit {
 
 	private long _timeStarted = -1; // LoadManagerThreads need to update this every time they advance the "clock"
 
-	public LoadUnit(JSONObject profileObj) throws JSONException {
+	public LoadDefinition(JSONObject profileObj) throws JSONException {
 		this._interval = profileObj.getLong(CFG_LOAD_PROFILE_INTERVAL_KEY);
 		this.numberOfUsers = profileObj.getInt(CFG_LOAD_PROFILE_USERS_KEY);
 		this._mixName = profileObj.getString(CFG_LOAD_PROFILE_MIX_KEY);
@@ -77,18 +77,18 @@ public class LoadUnit {
 		this._config = profileObj;
 	}
 
-	public LoadUnit(long interval, int numberOfUsers, String mixName) {
+	public LoadDefinition(long interval, int numberOfUsers, String mixName) {
 		this(interval, numberOfUsers, mixName, 0);
 	}
 
-	public LoadUnit(long interval, int numberOfUsers, String mixName, long transitionTime) {
+	public LoadDefinition(long interval, int numberOfUsers, String mixName, long transitionTime) {
 		this._interval = interval;
 		this.numberOfUsers = numberOfUsers;
 		this._mixName = mixName;
 		this._transitionTime = transitionTime;
 	}
 
-	public LoadUnit(long interval, int numberOfUsers, String mixName, long transitionTime, String name) {
+	public LoadDefinition(long interval, int numberOfUsers, String mixName, long transitionTime, String name) {
 		this._interval = interval;
 		this.numberOfUsers = numberOfUsers;
 		this._mixName = mixName;

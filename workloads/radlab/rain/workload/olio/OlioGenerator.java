@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
 import radlab.rain.Generator;
-import radlab.rain.LoadUnit;
+import radlab.rain.LoadDefinition;
 import radlab.rain.Operation;
 import radlab.rain.Track;
 import radlab.rain.util.HttpTransport;
@@ -389,7 +389,7 @@ public class OlioGenerator extends Generator
 	 */
 	public Operation nextRequest( int lastOperation )
 	{
-		LoadUnit currentLoad = this.getTrack().getCurrentLoadProfile();
+		LoadDefinition currentLoad = this.getTrack().getCurrentLoadProfile();
 		this.latestLoadProfile = currentLoad;
 		int nextOperation = -1;
 		

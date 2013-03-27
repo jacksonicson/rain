@@ -3,10 +3,10 @@ package radlab.rain.workload.bookingHotspots;
 //import org.json.JSONException;
 //import org.json.JSONObject;
 
-import radlab.rain.LoadUnit;
+import radlab.rain.LoadDefinition;
 import radlab.rain.hotspots.IObjectGenerator;
 
-public class BookingLoadProfile extends LoadUnit {
+public class BookingLoadProfile extends LoadDefinition {
 
 	private IObjectGenerator<Hotel> hotelGenerator;
 	

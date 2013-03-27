@@ -45,7 +45,7 @@ import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.StringBody;
 
 import radlab.rain.Generator;
-import radlab.rain.LoadUnit;
+import radlab.rain.LoadDefinition;
 import radlab.rain.Operation;
 import radlab.rain.Track;
 import radlab.rain.scoreboard.IScoreboard;
@@ -119,7 +119,7 @@ public abstract class ComradesOperation extends Operation
 		this.refreshCache();
 		
 		this._http = comradesGenerator.getHttpTransport();
-		LoadUnit currentLoadProfile = comradesGenerator.getLatestLoadProfile();
+		LoadDefinition currentLoadProfile = comradesGenerator.getLatestLoadProfile();
 		if( currentLoadProfile != null )
 			this.setGeneratedDuringProfile( currentLoadProfile );
 	}

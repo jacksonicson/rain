@@ -36,7 +36,7 @@ import java.io.IOException;
 import org.apache.http.HttpStatus;
 
 import radlab.rain.Generator;
-import radlab.rain.LoadUnit;
+import radlab.rain.LoadDefinition;
 import radlab.rain.Operation;
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.util.HttpTransport;
@@ -116,7 +116,7 @@ public class PredictableAppOperation extends Operation
 		this._generator = generator;
 		PredictableAppGenerator predictableGenerator = (PredictableAppGenerator) generator;
 		
-		LoadUnit currentLoadProfile = generator.getLatestLoadProfile();
+		LoadDefinition currentLoadProfile = generator.getLatestLoadProfile();
 		if( currentLoadProfile != null )
 			this.setGeneratedDuringProfile( currentLoadProfile );
 		

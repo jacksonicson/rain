@@ -32,7 +32,7 @@
 package radlab.rain.workload.httptest;
 
 import radlab.rain.Generator;
-import radlab.rain.LoadUnit;
+import radlab.rain.LoadDefinition;
 import radlab.rain.Operation;
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.util.HttpTransport;
@@ -67,7 +67,7 @@ public abstract class HttpTestOperation extends Operation
 		this._generator = generator;
 		HttpTestGenerator httpTestGenerator = (HttpTestGenerator) generator;
 		
-		LoadUnit currentLoadProfile = generator.getLatestLoadProfile();
+		LoadDefinition currentLoadProfile = generator.getLatestLoadProfile();
 		if( currentLoadProfile != null )
 			this.setGeneratedDuringProfile( currentLoadProfile );
 		

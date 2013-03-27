@@ -35,7 +35,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import radlab.rain.Generator;
-import radlab.rain.LoadUnit;
+import radlab.rain.LoadDefinition;
 import radlab.rain.ObjectPool;
 import radlab.rain.Operation;
 import radlab.rain.Track;
@@ -96,7 +96,7 @@ public class HttpTestGenerator extends Generator
 	 */
 	public Operation nextRequest( int lastOperation )
 	{
-		LoadUnit currentLoad = this.getTrack().getCurrentLoadProfile();
+		LoadDefinition currentLoad = this.getTrack().getCurrentLoadProfile();
 		// We must save the latest loadprofile if we want the little's law calculation to be done.
 		// Latest profile stores the number of users
 		this.latestLoadProfile = currentLoad;

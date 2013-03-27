@@ -31,7 +31,7 @@
 
 package radlab.rain.workload.cloudstoneNull;
 
-import radlab.rain.LoadUnit;
+import radlab.rain.LoadDefinition;
 import radlab.rain.Operation;
 import radlab.rain.Generator;
 import radlab.rain.scoreboard.IScoreboard;
@@ -47,7 +47,7 @@ public abstract class CloudstoneNullOperation extends Operation
 	public void prepare( Generator generator )
 	{
 		this._generator = generator;
-		LoadUnit currentLoadProfile = generator.getLatestLoadProfile();
+		LoadDefinition currentLoadProfile = generator.getLatestLoadProfile();
 		if( currentLoadProfile != null )
 			this.setGeneratedDuringProfile( currentLoadProfile );
 	}

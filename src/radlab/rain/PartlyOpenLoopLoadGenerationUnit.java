@@ -80,7 +80,7 @@ public class PartlyOpenLoopLoadGenerationUnit extends LoadGenerationUnit {
 	 * is decided by this function.
 	 */
 	protected boolean isActive() {
-		LoadUnit loadProfile = loadManager.getCurrentLoadProfile();
+		LoadDefinition loadProfile = loadManager.getCurrentLoadProfile();
 		return (id < loadProfile.getNumberOfUsers());
 	}
 

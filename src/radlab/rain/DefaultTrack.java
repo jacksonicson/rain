@@ -50,7 +50,7 @@ public class DefaultTrack extends Track {
 		loadManager = new LoadManager(scenarioConfiguration.getRampUp());
 	}
 
-	public boolean validateLoadProfile(LoadUnit profile) {
+	public boolean validateLoadProfile(LoadDefinition profile) {
 		// Check number of users
 		if (profile.numberOfUsers <= 0) {
 			logger.info("Invalid load profile. Number of users <= 0. Profile details: " + profile.toString());

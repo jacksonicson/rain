@@ -11,7 +11,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import radlab.rain.LoadUnit;
+import radlab.rain.LoadDefinition;
 import radlab.rain.OperationExecution;
 import radlab.rain.util.NullSamplingStrategy;
 import radlab.rain.util.PoissonSamplingStrategy;
@@ -128,7 +128,7 @@ public class Scorecard {
 	}
 
 	void processProfileResult(OperationExecution result, double meanResponseTimeSamplingInterval) {
-		LoadUnit activeProfile = result._generatedDuring;
+		LoadDefinition activeProfile = result._generatedDuring;
 		activeCount = activeProfile._activeCount;
 		processResult(result, meanResponseTimeSamplingInterval);
 	}

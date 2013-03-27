@@ -50,7 +50,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import radlab.rain.Generator;
-import radlab.rain.LoadUnit;
+import radlab.rain.LoadDefinition;
 import radlab.rain.Operation;
 import radlab.rain.Track;
 import radlab.rain.scoreboard.IScoreboard;
@@ -121,7 +121,7 @@ public abstract class ScadrOperation extends Operation
 		this.refreshCache();
 		
 		this._http = scadrGenerator.getHttpTransport();
-		LoadUnit currentLoadProfile = scadrGenerator.getLatestLoadProfile();
+		LoadDefinition currentLoadProfile = scadrGenerator.getLatestLoadProfile();
 		if( currentLoadProfile != null )
 			this.setGeneratedDuringProfile( currentLoadProfile );
 	}

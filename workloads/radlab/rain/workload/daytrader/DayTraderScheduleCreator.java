@@ -36,25 +36,25 @@ import java.util.LinkedList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.LoadUnit;
+import radlab.rain.LoadDefinition;
 import radlab.rain.LoadScheduleCreator;
 
 public class DayTraderScheduleCreator extends LoadScheduleCreator 
 {
 	@Override
-	public LinkedList<LoadUnit> createSchedule(String track, JSONObject params ) throws JSONException 
+	public LinkedList<LoadDefinition> createSchedule(String track, JSONObject params ) throws JSONException 
 	{
-		LinkedList<LoadUnit> loadSchedule = new LinkedList<LoadUnit>();
+		LinkedList<LoadDefinition> loadSchedule = new LinkedList<LoadDefinition>();
 		
 		// Mix names used here should match what's in the behavior
-		LoadUnit i1 = new LoadUnit( 30, 20, "default", 0 );
-		LoadUnit i2 = new LoadUnit( 15, 40, "default", 0 );
-		LoadUnit i3 = new LoadUnit( 45, 100, "default", 0 );
-		LoadUnit i4 = new LoadUnit( 40, 150, "default", 0 );
-		LoadUnit i5 = new LoadUnit( 60, 200, "default", 0 );
-		LoadUnit i6 = new LoadUnit( 40, 150, "default", 0 );
-		LoadUnit i7 = new LoadUnit( 45, 100, "default", 0 );
-		LoadUnit i8 = new LoadUnit( 35, 40, "default", 0 );
+		LoadDefinition i1 = new LoadDefinition( 30, 20, "default", 0 );
+		LoadDefinition i2 = new LoadDefinition( 15, 40, "default", 0 );
+		LoadDefinition i3 = new LoadDefinition( 45, 100, "default", 0 );
+		LoadDefinition i4 = new LoadDefinition( 40, 150, "default", 0 );
+		LoadDefinition i5 = new LoadDefinition( 60, 200, "default", 0 );
+		LoadDefinition i6 = new LoadDefinition( 40, 150, "default", 0 );
+		LoadDefinition i7 = new LoadDefinition( 45, 100, "default", 0 );
+		LoadDefinition i8 = new LoadDefinition( 35, 40, "default", 0 );
 		
 		loadSchedule.add( i1 );
 		loadSchedule.add( i2 );

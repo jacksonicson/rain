@@ -8,7 +8,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import radlab.rain.Generator;
-import radlab.rain.LoadUnit;
+import radlab.rain.LoadDefinition;
 import radlab.rain.ObjectPool;
 import radlab.rain.Operation;
 import radlab.rain.Track;
@@ -102,7 +102,7 @@ public class RedisGenerator extends Generator
 	@Override
 	public Operation nextRequest(int lastOperation) 
 	{
-		LoadUnit currentLoad = this.getTrack().getCurrentLoadProfile();
+		LoadDefinition currentLoad = this.getTrack().getCurrentLoadProfile();
 		this.latestLoadProfile = currentLoad;
 		int key = -1;
 		

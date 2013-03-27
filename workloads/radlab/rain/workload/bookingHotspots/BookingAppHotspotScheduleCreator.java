@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.LoadUnit;
+import radlab.rain.LoadDefinition;
 import radlab.rain.LoadScheduleCreator;
 import radlab.rain.hotspots.IObjectGenerator;
 import radlab.rain.hotspots.Multinomial;
@@ -15,7 +15,7 @@ import radlab.rain.hotspots.SimpleObjectGenerator;
 public class BookingAppHotspotScheduleCreator extends LoadScheduleCreator {
 
 	@Override
-	public LinkedList<LoadUnit> createSchedule(String track, JSONObject params) throws JSONException {
+	public LinkedList<LoadDefinition> createSchedule(String track, JSONObject params) throws JSONException {
 		// create hotel objects
 		String hotelSearchArray[] = { "", "W Hotel", "Marriott", "Hilton", "Doubletree", "Ritz", "Super 8", "No Tell Motel", "Conrad",
 				"InterContinental", "Westin", "Mar", "Foo" };
@@ -30,7 +30,7 @@ public class BookingAppHotspotScheduleCreator extends LoadScheduleCreator {
 		// create hotel generator with the zipfian distribution
 		IObjectGenerator<Hotel> hotelGenerator = new SimpleObjectGenerator<Hotel>(hotels, m);
 
-		LinkedList<LoadUnit> loadSchedule = new LinkedList<LoadUnit>();
+		LinkedList<LoadDefinition> loadSchedule = new LinkedList<LoadDefinition>();
 		for (int i = 1; i <= 10; i++)
 			loadSchedule.add(new BookingLoadProfile(20, 10 * i, "default", hotelGenerator));
 

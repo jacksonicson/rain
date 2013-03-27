@@ -33,7 +33,7 @@ package radlab.rain.workload.scads;
 
 import radlab.rain.Generator;
 
-import radlab.rain.LoadUnit;
+import radlab.rain.LoadDefinition;
 import radlab.rain.Operation;
 import radlab.rain.Track;
 import radlab.rain.workload.scads.keys.KeyGenerator;
@@ -80,7 +80,7 @@ public class ScadsGenerator extends Generator
 	 */
 	public Operation nextRequest( int lastOperation )
 	{
-		LoadUnit currentLoad = this.getTrack().getCurrentLoadProfile();
+		LoadDefinition currentLoad = this.getTrack().getCurrentLoadProfile();
 
 		int nextOperation = -1;
 

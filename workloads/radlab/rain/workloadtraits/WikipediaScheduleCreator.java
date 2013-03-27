@@ -38,7 +38,7 @@ import java.util.LinkedList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.LoadUnit;
+import radlab.rain.LoadDefinition;
 import radlab.rain.LoadScheduleCreator;
 
 /* Create a load schedule based on the relative load-levels from 6/25/09 - 6/26/09, the 
@@ -88,7 +88,7 @@ public class WikipediaScheduleCreator extends LoadScheduleCreator {
 		this._incrementsPerInterval = val;
 	}
 
-	public LinkedList<LoadUnit> createSchedule(String target, JSONObject config) throws JSONException {
+	public LinkedList<LoadDefinition> createSchedule(String target, JSONObject config) throws JSONException {
 		// Pull out the base offset
 		if (config.has(CFG_INITIAL))
 			this._initialWorkload = config.getInt(CFG_INITIAL);
@@ -99,17 +99,17 @@ public class WikipediaScheduleCreator extends LoadScheduleCreator {
 		if (config.has(CFG_INCREMENTS_PER_INTERVAL))
 			this._incrementsPerInterval = config.getInt(CFG_INCREMENTS_PER_INTERVAL);
 
-		LinkedList<LoadUnit> loadSchedule = new LinkedList<LoadUnit>();
+		LinkedList<LoadDefinition> loadSchedule = new LinkedList<LoadDefinition>();
 
 		for (int i = 0; i < this._relativeLoads.length; i++) {
 			long intervalLength = this._incrementSize * this._incrementsPerInterval;
 			if (i == 0)
-				loadSchedule.add(new LoadUnit(intervalLength, this._initialWorkload, "default", 0, FORMATTER.format(i)));
+				loadSchedule.add(new LoadDefinition(intervalLength, this._initialWorkload, "default", 0, FORMATTER.format(i)));
 			else {
 				int users = 0;
 				users = (int) Math.round(loadSchedule.getLast().getNumberOfUsers() * this._relativeLoads[i]);
 
-				loadSchedule.add(new LoadUnit(intervalLength, users, "default", 0, FORMATTER.format(i)));
+				loadSchedule.add(new LoadDefinition(intervalLength, users, "default", 0, FORMATTER.format(i)));
 			}
 		}
 
@@ -120,8 +120,8 @@ public class WikipediaScheduleCreator extends LoadScheduleCreator {
 		WikipediaScheduleCreator creator = new WikipediaScheduleCreator();
 
 		// Would like to give a duration and have the workload stretched/compressed into that
-		LinkedList<LoadUnit> profiles = creator.createSchedule(null, new JSONObject());
-		for (LoadUnit p : profiles)
+		LinkedList<LoadDefinition> profiles = creator.createSchedule(null, new JSONObject());
+		for (LoadDefinition p : profiles)
 			System.out.println(p.getNumberOfUsers());
 	}
 }

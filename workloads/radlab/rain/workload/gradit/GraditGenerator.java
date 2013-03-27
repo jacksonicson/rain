@@ -32,7 +32,7 @@
 package radlab.rain.workload.gradit;
 
 import radlab.rain.Generator;
-import radlab.rain.LoadUnit;
+import radlab.rain.LoadDefinition;
 import radlab.rain.ObjectPool;
 import radlab.rain.Operation;
 import radlab.rain.RainConfig;
@@ -291,7 +291,7 @@ public class GraditGenerator extends Generator {
 		// Get the current load profile if we need to look inside of it to
 		// decide
 		// what to do next
-		LoadUnit currentLoad = this.getTrack().getCurrentLoadProfile();
+		LoadDefinition currentLoad = this.getTrack().getCurrentLoadProfile();
 		this.latestLoadProfile = currentLoad;
 
 		// if( true )

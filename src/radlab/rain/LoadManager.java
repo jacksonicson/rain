@@ -9,7 +9,7 @@ public class LoadManager extends Thread {
 	private static Logger logger = LoggerFactory.getLogger(LoadManager.class);
 
 	// Current load unit
-	private LoadUnit currentLoad = null;
+	private LoadDefinition currentLoad = null;
 
 	// Ramp up time
 	private final long rampUp;
@@ -55,9 +55,9 @@ public class LoadManager extends Thread {
 	 * transition period will yield the current load profile with 10% likelihood and the next load profile with 90%
 	 * likelihood).
 	 */
-	public LoadUnit getCurrentLoadProfile() {
+	public LoadDefinition getCurrentLoadProfile() {
 		// Leave it up to the load manager thread to determine the current and next load profiles
-		LoadUnit nextProfile = getNextLoadProfile();
+		LoadDefinition nextProfile = getNextLoadProfile();
 
 		// Calculate when the current interval ends and when the transition ends.
 		long now = System.currentTimeMillis();
@@ -138,7 +138,7 @@ public class LoadManager extends Thread {
 		logger.info("finished");
 	}
 
-	private LoadUnit getNextLoadProfile() {
+	private LoadDefinition getNextLoadProfile() {
 		int nextLoadScheduleIndex = (loadScheduleIndex + 1) % loadSchedule.size();
 		return loadSchedule.get(nextLoadScheduleIndex);
 	}
@@ -148,7 +148,7 @@ public class LoadManager extends Thread {
 	 * 
 	 * @return true if schedule advanced or false if at the end of the schedule
 	 */
-	public LoadUnit advanceSchedule() {
+	public LoadDefinition advanceSchedule() {
 		// Update load schedule index
 		loadScheduleIndex = (loadScheduleIndex + 1) % loadSchedule.size();
 
@@ -160,7 +160,7 @@ public class LoadManager extends Thread {
 		logger.debug("advancing load schedule");
 
 		// Get next load unit
-		LoadUnit next = loadSchedule.get(loadScheduleIndex);
+		LoadDefinition next = loadSchedule.get(loadScheduleIndex);
 
 		// Update profile stats
 		next.activate();

@@ -36,7 +36,7 @@ import java.util.LinkedList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.LoadUnit;
+import radlab.rain.LoadDefinition;
 import radlab.rain.LoadScheduleCreator;
 import radlab.rain.workloadtraits.WikipediaScheduleCreator;
 
@@ -46,7 +46,7 @@ public class ScadrLoadScheduleCreator extends LoadScheduleCreator {
 	}
 
 	@Override
-	public LinkedList<LoadUnit> createSchedule(String track, JSONObject params) throws JSONException {
+	public LinkedList<LoadDefinition> createSchedule(String track, JSONObject params) throws JSONException {
 		// Scale the wikipedia workload and return that
 		WikipediaScheduleCreator creator = new WikipediaScheduleCreator();
 		creator.setIncrementSize(20); // 20 second increments

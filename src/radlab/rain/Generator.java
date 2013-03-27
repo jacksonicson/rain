@@ -52,7 +52,7 @@ public abstract class Generator {
 	protected IScoreboard scoreboard = null;
 
 	// Latest load profile used
-	protected LoadUnit latestLoadProfile = null;
+	protected LoadDefinition latestLoadProfile = null;
 
 	public Generator() {
 	}

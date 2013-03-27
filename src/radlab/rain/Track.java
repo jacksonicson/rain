@@ -63,7 +63,7 @@ public abstract class Track {
 	protected ScenarioConfiguration scenarioConfiguration;
 
 	// Load schedule used by the generator and strategy
-	protected LoadUnit currentLoadUnit;
+	protected LoadDefinition currentLoadUnit;
 	protected LoadScheduleCreator loadScheduleCreator;
 	protected LoadSchedule loadSchedule;
 
@@ -84,7 +84,7 @@ public abstract class Track {
 		scoreboard.stop(); 
 	}
 
-	public abstract boolean validateLoadProfile(LoadUnit profile);
+	public abstract boolean validateLoadProfile(LoadDefinition profile);
 
 	void initialize(Timing timing, JSONObject jsonConfig) throws Exception {
 		// Timings

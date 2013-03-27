@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import radlab.rain.Benchmark;
-import radlab.rain.LoadUnit;
+import radlab.rain.LoadDefinition;
 import radlab.rain.Scenario;
 import radlab.rain.Track;
 import de.tum.in.storm.rain.Profile;
@@ -34,7 +34,7 @@ public class AsyncRainServiceImpl implements RainService.Iface {
 		if (track != null) {
 			logger.info(this + " Found target track");
 
-			LoadUnit profile = new LoadUnit(msg.getInterval(), (int) msg.getNumberOfUsers(), msg.getMixName(),
+			LoadDefinition profile = new LoadDefinition(msg.getInterval(), (int) msg.getNumberOfUsers(), msg.getMixName(),
 					msg.getTransitionTime(), msg.getName());
 
 			int validationResult = track.validateLoadProfile(profile);

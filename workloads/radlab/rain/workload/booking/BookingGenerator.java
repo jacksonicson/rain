@@ -4,7 +4,7 @@ import org.json.JSONObject;
 import org.json.JSONException;
 
 import radlab.rain.Generator;
-import radlab.rain.LoadUnit;
+import radlab.rain.LoadDefinition;
 import radlab.rain.ObjectPool;
 import radlab.rain.Operation;
 import radlab.rain.Track;
@@ -202,7 +202,7 @@ public class BookingGenerator extends Generator
 	 */
 	public Operation nextRequest( int lastOperation )
 	{
-		LoadUnit currentLoad = this.getTrack().getCurrentLoadProfile();
+		LoadDefinition currentLoad = this.getTrack().getCurrentLoadProfile();
 		this.latestLoadProfile = currentLoad;
 		int nextOperation = -1;
 

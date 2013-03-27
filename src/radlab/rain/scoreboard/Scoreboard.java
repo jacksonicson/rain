@@ -42,7 +42,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import radlab.rain.LoadUnit;
+import radlab.rain.LoadDefinition;
 import radlab.rain.OperationExecution;
 import radlab.rain.Track;
 import radlab.rain.util.MetricWriter;
@@ -381,7 +381,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 		// Update per-interval (profile) cards
 		// This code is still here and the data is logged but the data is NOT required for SPECj 
 		// and it is therefore not in the JSON reports!
-		LoadUnit activeProfile = result._generatedDuring;
+		LoadDefinition activeProfile = result._generatedDuring;
 		if (activeProfile != null) {
 			// For SPECj the profile names are not set. Profiles are generated based 
 			// on Times TS data. (Second condition is always false)

@@ -38,7 +38,7 @@ import java.text.NumberFormat;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.LoadUnit;
+import radlab.rain.LoadDefinition;
 import radlab.rain.LoadScheduleCreator;
 
 public class ScadrDemoScheduleCreator extends LoadScheduleCreator 
@@ -91,7 +91,7 @@ public class ScadrDemoScheduleCreator extends LoadScheduleCreator
 	public void setIncrementsPerInterval( int val ){ this._incrementsPerInterval = val; }
 		
 	@Override
-	public LinkedList<LoadUnit> createSchedule(String track, JSONObject config) throws JSONException 
+	public LinkedList<LoadDefinition> createSchedule(String track, JSONObject config) throws JSONException 
 	{
 		// Pull out the base offset
 		if( config.has( CFG_INITIAL ) )
@@ -103,7 +103,7 @@ public class ScadrDemoScheduleCreator extends LoadScheduleCreator
 		if( config.has( CFG_INCREMENTS_PER_INTERVAL) )
 			this._incrementsPerInterval = config.getInt( CFG_INCREMENTS_PER_INTERVAL );
 
-		LinkedList<LoadUnit> loadSchedule = new LinkedList<LoadUnit>();
+		LinkedList<LoadDefinition> loadSchedule = new LinkedList<LoadDefinition>();
 		
 		// Add a long interval with 1 thread for debugging
 		// loadSchedule.add( new LoadProfile( 300, 1, "default", 0, "debug" ) );
@@ -115,13 +115,13 @@ public class ScadrDemoScheduleCreator extends LoadScheduleCreator
 		{
 			long intervalLength = this._incrementSize * this._incrementsPerInterval;
 			if( i == 0 )
-				loadSchedule.add( new LoadUnit( intervalLength, this._initialWorkload, "default", transitionTime, FORMATTER.format(i) ) );
+				loadSchedule.add( new LoadDefinition( intervalLength, this._initialWorkload, "default", transitionTime, FORMATTER.format(i) ) );
 			else 
 			{	
 				int users = 0;
 				users = (int) Math.round( loadSchedule.getFirst().getNumberOfUsers() * this._relativeLoads[i] );
 				
-				loadSchedule.add( new LoadUnit( intervalLength, users, "default", transitionTime, FORMATTER.format(i) ) );
+				loadSchedule.add( new LoadDefinition( intervalLength, users, "default", transitionTime, FORMATTER.format(i) ) );
 			}
 		}
 		
@@ -135,8 +135,8 @@ public class ScadrDemoScheduleCreator extends LoadScheduleCreator
 		creator.setInitialWorkload( 10 );
 		
 		// Would like to give a duration and have the workload stretched/compressed into that
-		LinkedList<LoadUnit> profiles = creator.createSchedule(null,  new JSONObject() );
-		for( LoadUnit p : profiles )
+		LinkedList<LoadDefinition> profiles = creator.createSchedule(null,  new JSONObject() );
+		for( LoadDefinition p : profiles )
 			System.out.println( p.getNumberOfUsers() );
 	}
 }

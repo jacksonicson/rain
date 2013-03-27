@@ -10,7 +10,7 @@ import org.json.JSONObject;
 import com.basho.riak.client.RiakException;
 
 import radlab.rain.Generator;
-import radlab.rain.LoadUnit;
+import radlab.rain.LoadDefinition;
 import radlab.rain.ObjectPool;
 import radlab.rain.Operation;
 import radlab.rain.Track;
@@ -127,7 +127,7 @@ public class RiakGenerator extends Generator
 	@Override
 	public Operation nextRequest( int lastOperation ) 
 	{
-		LoadUnit currentLoad = this.getTrack().getCurrentLoadProfile();
+		LoadDefinition currentLoad = this.getTrack().getCurrentLoadProfile();
 		this.latestLoadProfile = currentLoad;
 		int key = -1;
 		

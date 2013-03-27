@@ -3,9 +3,9 @@ package radlab.rain.workload.scads;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.LoadUnit;
+import radlab.rain.LoadDefinition;
 
-public class ScadsLoadProfile extends LoadUnit
+public class ScadsLoadProfile extends LoadDefinition
 {
 	public static String CFG_LOAD_PROFILE_KEY_GENERATOR_KEY        = "keyGenerator";
 	public static String CFG_LOAD_PROFILE_KEY_GENERATOR_CONFIG_KEY = "keyGeneratorConfig";
