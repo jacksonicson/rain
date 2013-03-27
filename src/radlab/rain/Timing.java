@@ -35,6 +35,10 @@ public final class Timing {
 		}
 	}
 
+	final long steadyStateDuration() {
+		return endSteadyState - startSteadyState;
+	}
+
 	final void log() throws JSONException {
 		JSONObject schedule = new JSONObject();
 		schedule.put("start", start);

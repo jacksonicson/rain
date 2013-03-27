@@ -79,7 +79,10 @@ public abstract class Track {
 
 	public abstract void start();
 
-	public abstract void end();
+	public void end() 
+	{
+		scoreboard.stop(); 
+	}
 
 	public abstract boolean validateLoadProfile(LoadUnit profile);
 
@@ -192,5 +195,13 @@ public abstract class Track {
 				generator.dispose();
 			}
 		}
+	}
+
+	IScoreboard getScoreboard() {
+		return scoreboard;
+	}
+	
+	TrackConfiguration getConfiguration() {
+		return config; 
 	}
 }

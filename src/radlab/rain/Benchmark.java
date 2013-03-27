@@ -35,7 +35,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.TreeMap;
 
 import org.apache.log4j.LogManager;
 import org.json.JSONException;
@@ -44,7 +43,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import radlab.rain.communication.thrift.ThriftService;
-import radlab.rain.scoreboard.Scorecard;
 import radlab.rain.util.ConfigUtil;
 import radlab.rain.util.SonarRecorder;
 
@@ -56,72 +54,15 @@ public class Benchmark {
 
 	public void start(Scenario scenario) throws Exception {
 		Thread.currentThread().setName("benchmark");
-		
+
 		// Execute scenario
-		scenario.execute();
+		Timing timing = scenario.execute();
 
-		// Set up for stats aggregation across tracks based on the generators
-		// used
-		TreeMap<String, Scorecard> aggStats = new TreeMap<String, Scorecard>();
-		Scorecard globalCard = new Scorecard("global", "global", endSteadyState - startSteadyState);
+		// Wait for scenario to end
+		scenario.join();
 
-		// Shutdown the scoreboards and tally up the results.
-		for (Track track : scenario.getTracks().values()) {
-			// Aggregate stats across track based on the generator class name.
-			// If the generator
-			// class names are identical then there is potentially overlap in
-			// the operations issued
-			// based on the mix matrix used (if any)
-			// Stop the scoreboard
-			track.getScoreboard().stop();
-
-			// Write detailed statistics to sonar
-			JSONObject stats = track.getScoreboard().getStatistics();
-			String strStats = stats.toString();
-			logger.info("Track metrics: " + strStats);
-
-			// Get the name of the generator active for this track
-			String generatorClassName = track.getGeneratorClassName();
-			// Get the final scorecard for this track
-			Scorecard finalScorecard = track.getScoreboard().getFinalScorecard();
-			if (!aggStats.containsKey(generatorClassName)) {
-				Scorecard aggCard = new Scorecard("aggregated", generatorClassName,
-						finalScorecard.getIntervalDuration());
-				aggStats.put(generatorClassName, aggCard);
-			}
-			// Get the current aggregated scorecard for this generator
-			Scorecard aggCard = aggStats.get(generatorClassName);
-			// Merge the final card for this track with the current per-driver
-			// aggregated scorecard
-			aggCard.merge(finalScorecard);
-			aggStats.put(generatorClassName, aggCard);
-			// Collect scoreboard results
-			// Collect object pool results
-
-			// Merge global card
-			globalCard.merge(finalScorecard);
-
-			track.getObjectPool().shutdown();
-		}
-
-		// Check whether we're printing out aggregated stats
-		if (scenario.getAggregateStats()) {
-			// Print aggregated stats
-			if (aggStats.size() > 0)
-				logger.info("# aggregated stats: " + aggStats.size());
-
-			for (String generatorName : aggStats.keySet()) {
-				Scorecard card = aggStats.get(generatorName);
-
-				// Sonar output
-				JSONObject stats = card.getIntervalStatistics();
-				String strStats = stats.toString();
-				logger.info("Rain metrics: " + strStats);
-			}
-
-			// Dump global card
-			logger.info("Global metrics: " + globalCard.getIntervalStatistics().toString());
-		}
+		// Aggregate scorecards
+		scenario.aggregateScorecards(timing);
 
 		// Shutdown Sonar monitoring
 		SonarRecorder.getInstance().shutdown();
