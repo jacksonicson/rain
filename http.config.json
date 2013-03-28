@@ -12,9 +12,13 @@
     "metricWriterType" : "sonar",
     "metricWriterConf" : {},
     
-    "trackFactoryClass": "radlab.rain.DefaultTrackFactory",    
+    "trackFactoryClass": "radlab.rain.workload.http.HttpTrackFactory",    
     "trackFactoryParams": {
     	"amount" : 1,
+    	"trackParams" : {
+    	},
+    	"loadScheduleFactoryParams" : {
+    	},
     },
     
     "behavior" : {

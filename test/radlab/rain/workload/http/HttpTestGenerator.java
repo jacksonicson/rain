@@ -31,11 +31,8 @@
 
 package radlab.rain.workload.http;
 
-import org.json.JSONException;
-
 import radlab.rain.Generator;
 import radlab.rain.Operation;
-import radlab.rain.TrackConfiguration;
 import radlab.rain.util.HttpTransport;
 
 public class HttpTestGenerator extends Generator {
@@ -49,11 +46,6 @@ public class HttpTestGenerator extends Generator {
 
 	public void initialize() {
 		this._http = new HttpTransport();
-	}
-
-	@Override
-	public void configure(TrackConfiguration trackConfig) throws JSONException {
-		this._baseUrl = "http://" + trackConfig.targetHostname + ":" + trackConfig.targetPort;
 	}
 
 	/**

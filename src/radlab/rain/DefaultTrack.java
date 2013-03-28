@@ -44,15 +44,18 @@ public class DefaultTrack extends Track {
 	// Load manager runs through the load schedule
 	private LoadManager loadManager;
 
-	protected void initialize() throws Exception {
-		super.initialize();
+	public void init() throws Exception {
+		super.init();
 
 		// Create a new load manager
-		loadManager = new LoadManager(timing);
+		loadManager = new LoadManager(timing, loadSchedule);
+		loadManager.start();
 	}
 
 	protected LoadGeneratingUnit createLoadGeneratingUnit(long id, Generator generator) {
-		return new PartlyOpenLoopLoadGenerationUnit(id, loadManager, generator, timing);
+		PartlyOpenLoopLoadGenerationUnit lgUnit = new PartlyOpenLoopLoadGenerationUnit(id, loadManager, generator,
+				timing);
+		return lgUnit;
 	}
 
 	public boolean validateLoadDefinition(LoadDefinition profile) {
@@ -71,9 +74,9 @@ public class DefaultTrack extends Track {
 		return true;
 	}
 
-	public void start() {
+	public void start() throws Exception {
 		super.start();
-		
+
 		if (loadManager.isAlive())
 			return;
 

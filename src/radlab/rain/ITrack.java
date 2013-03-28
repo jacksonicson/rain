@@ -12,7 +12,9 @@ public interface ITrack {
 
 	public void setMetricWriterConf(JSONObject metricWriterConf);
 
-	public void start();
+	public void init() throws Exception;
+
+	public void start() throws Exception;
 
 	public void end();
 

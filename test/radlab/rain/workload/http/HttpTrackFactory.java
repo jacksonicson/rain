@@ -1,4 +1,4 @@
-package radlab.rain;
+package radlab.rain.workload.http;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -6,7 +6,13 @@ import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class DefaultTrackFactory implements TrackFactory {
+import radlab.rain.DefaultTrack;
+import radlab.rain.Generator;
+import radlab.rain.GeneratorFactory;
+import radlab.rain.ITrack;
+import radlab.rain.TrackFactory;
+
+public class HttpTrackFactory implements TrackFactory, GeneratorFactory {
 
 	private long amount;
 
@@ -27,9 +33,14 @@ public class DefaultTrackFactory implements TrackFactory {
 
 	protected ITrack createTrack() {
 		DefaultTrack track = new DefaultTrack();
-
-		
-		
+		track.setLoadScheduleCreator(new HttpTestScheduleCreator());
+		track.setGeneratorFactory(this);
 		return track;
+	}
+
+	@Override
+	public Generator createGenerator() {
+		HttpTestGenerator generator = new HttpTestGenerator();
+		return generator;
 	}
 }

@@ -104,6 +104,7 @@ public class Scenario {
 			track.setTiming(timing);
 			track.setMetricWriterType(metricWriterType);
 			track.setMetricWriterConf(metricWriterConf);
+			track.init(); 
 		}
 
 		// Start all tracks

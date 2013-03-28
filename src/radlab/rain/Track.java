@@ -31,7 +31,6 @@
 
 package radlab.rain;
 
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import radlab.rain.scoreboard.IScoreboard;
+import radlab.rain.scoreboard.Scoreboard;
 import radlab.rain.util.MetricWriter;
 import radlab.rain.util.MetricWriterFactory;
 
@@ -81,6 +81,9 @@ public abstract class Track implements ITrack {
 	// Scoreboard
 	protected IScoreboard scoreboard;
 
+	// Generator factory
+	protected GeneratorFactory generatorFactory;
+
 	// List of all load generating units
 	protected List<LoadGeneratingUnit> loadGeneratingUnits = new ArrayList<LoadGeneratingUnit>();
 
@@ -88,9 +91,6 @@ public abstract class Track implements ITrack {
 	protected LoadScheduleCreator loadScheduleCreator;
 	protected LoadDefinition currentLoadUnit;
 	protected LoadSchedule loadSchedule;
-
-	// Generator
-	private String classGenerator;
 
 	// Executer pool
 	protected ExecutorService executor;
@@ -108,31 +108,24 @@ public abstract class Track implements ITrack {
 		this.loadScheduleCreator = loadScheduleCreator;
 	}
 
-	public void setClassGenerator(String classGenerator) {
-		this.classGenerator = classGenerator;
+	public void setGeneratorFactory(GeneratorFactory generatorFactory) {
+		this.generatorFactory = generatorFactory;
 	}
 
-	protected void initialize() throws Exception {
+	public void init() throws Exception {
 		// Create scoreboard
 		scoreboard = createScoreboard();
 
 		// Create load schedule creator and load schedule
-		loadSchedule = loadScheduleCreator.createSchedule();
+		loadSchedule = loadScheduleCreator.createSchedule(null);
 
 		// Create a new thread pool
 		executor = Executors.newCachedThreadPool();
-
-		// Create load generating units
-		createLoadGeneratingUnits(executor);
 	}
 
-	public void start() {
-		// Initialize
-		try {
-			initialize();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	public void start() throws Exception {
+		// Create load generating units
+		createLoadGeneratingUnits(executor);
 
 		// Start the scoreboard
 		scoreboard.start();
@@ -160,13 +153,13 @@ public abstract class Track implements ITrack {
 	}
 
 	private IScoreboard createScoreboard() throws JSONException, Exception {
+		logger.debug("Creating track scoreboard...");
+
 		// Create a metric writer
 		MetricWriter metricWriter = MetricWriterFactory.createMetricWriter(metricWriterType, metricWriterConf);
 
 		// Create scoreboard
-		Class<IScoreboard> scoreboardClass = (Class<IScoreboard>) Class.forName("TODO");
-		Constructor<IScoreboard> scoreboardCtor = scoreboardClass.getConstructor(String.class);
-		IScoreboard scoreboard = (IScoreboard) scoreboardCtor.newInstance("TODO");
+		IScoreboard scoreboard = new Scoreboard("track");
 
 		// Set the log sampling probability for the scoreboard
 		scoreboard.initialize(timing);
@@ -181,14 +174,6 @@ public abstract class Track implements ITrack {
 		return scoreboard;
 	}
 
-	@SuppressWarnings("unchecked")
-	private Generator createGenerator() throws Exception {
-		Class<Generator> generatorClass = (Class<Generator>) Class.forName(classGenerator);
-		Constructor<Generator> generatorCtor = generatorClass.getConstructor();
-		Generator generator = (Generator) generatorCtor.newInstance();
-		return generator;
-	}
-
 	private void createLoadGeneratingUnits(ExecutorService executor) throws Exception {
 		// Determine maximum number of required lg units that are required by the schedule
 		long maxGenerators = loadSchedule.getMaxGenerators();
@@ -196,7 +181,7 @@ public abstract class Track implements ITrack {
 		// Create all lg units
 		for (int i = 0; i < maxGenerators; i++) {
 			// Setup generator
-			Generator generator = createGenerator();
+			Generator generator = generatorFactory.createGenerator();
 			generator.setScoreboard(scoreboard);
 			generator.setMeanCycleTime((long) (meanCycleTime * 1000));
 			generator.setMeanThinkTime((long) (meanThinkTime * 1000));

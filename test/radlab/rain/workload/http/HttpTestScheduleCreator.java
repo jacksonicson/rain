@@ -44,7 +44,7 @@ import radlab.rain.LoadScheduleCreator;
 public class HttpTestScheduleCreator implements LoadScheduleCreator {
 
 	@Override
-	public LoadSchedule createSchedule(JSONObject params) throws JSONException {
+	public LoadSchedule createSchedule(JSONObject config) throws JSONException {
 		List<LoadDefinition> loadSchedule = new ArrayList<LoadDefinition>();
 
 		LoadDefinition i1 = new LoadDefinition(30, 20, "default", 0, "first");

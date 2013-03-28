@@ -1,7 +1,8 @@
 package radlab.rain;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
 public interface LoadScheduleCreator {
-	LoadSchedule createSchedule() throws JSONException;
+	LoadSchedule createSchedule(JSONObject config) throws JSONException;
 }
