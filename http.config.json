@@ -12,9 +12,9 @@
     "metricWriterType" : "sonar",
     "metricWriterConf" : {},
     
-    "trackConfCreatorClass": "radlab.rain.workload.http.HttpTestTrackConfCreator",    
-    "trackConfCreatorParams": {
-    	
+    "trackFactoryClass": "radlab.rain.DefaultTrackFactory",    
+    "trackFactoryParams": {
+    	"amount" : 1,
     },
     
     "behavior" : {

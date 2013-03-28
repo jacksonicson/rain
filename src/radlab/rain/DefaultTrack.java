@@ -72,13 +72,13 @@ public class DefaultTrack extends Track {
 	}
 
 	public void start() {
+		super.start();
+		
 		if (loadManager.isAlive())
 			return;
 
 		logger.debug("Starting load manager");
 		loadManager.start();
-
-		super.start();
 	}
 
 	public void end() {

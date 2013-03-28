@@ -2,8 +2,8 @@ package radlab.rain.util;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -36,7 +36,7 @@ public class SonarRecorder extends Thread {
 	}
 
 	private boolean running = true;
-	private BlockingQueue<Job> queue = new ArrayBlockingQueue<Job>(0);
+	private BlockingQueue<Job> queue = new LinkedBlockingQueue<Job>();
 
 	private SonarRecorder() {
 		try {

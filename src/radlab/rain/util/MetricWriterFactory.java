@@ -17,6 +17,15 @@ public class MetricWriterFactory {
 		public String toString() {
 			return value;
 		}
+
+		public static Type getType(String value) {
+			if (value == null)
+				throw new IllegalArgumentException();
+			for (Type v : values())
+				if (value.equalsIgnoreCase(v.toString()))
+					return v;
+			throw new IllegalArgumentException();
+		}
 	}
 
 	private MetricWriterFactory() {

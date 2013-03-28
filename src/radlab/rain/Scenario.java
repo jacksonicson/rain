@@ -83,16 +83,14 @@ public class Scenario {
 		this.timing = new Timing(rampUp, duration, rampDown);
 
 		// Track factory
-		if (jsonConfig.has(ScenarioConfKeys.TRACK_FACTORY_CLASS.toString())) {
-			String trackConfClass = jsonConfig.getString(ScenarioConfKeys.TRACK_FACTORY_CLASS.toString());
-			trackFactory = createTrackFactory(trackConfClass);
+		String trackConfClass = jsonConfig.getString(ScenarioConfKeys.TRACK_FACTORY_CLASS.toString());
+		trackFactory = createTrackFactory(trackConfClass);
 
-			JSONObject params = jsonConfig.getJSONObject(ScenarioConfKeys.TRACK_FACTORY_CONF.toString());
-			trackFactory.configure(params);
-		}
+		JSONObject params = jsonConfig.getJSONObject(ScenarioConfKeys.TRACK_FACTORY_CONF.toString());
+		trackFactory.configure(params);
 
 		// Metric writer configuration
-		metricWriterType = MetricWriterFactory.Type.valueOf(jsonConfig.getString(ScenarioConfKeys.METRIC_WRITER_TYPE
+		metricWriterType = MetricWriterFactory.Type.getType(jsonConfig.getString(ScenarioConfKeys.METRIC_WRITER_TYPE
 				.toString()));
 		metricWriterConf = jsonConfig.getJSONObject(ScenarioConfKeys.METRIC_WRITER_CONF.toString());
 	}

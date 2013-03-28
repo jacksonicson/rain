@@ -12,8 +12,8 @@ public enum ScenarioConfKeys {
 	VERBOSE_ERRORS_KEY("verboseErrors"),
 
 	// Track configuration creator
-	TRACK_FACTORY_CLASS("trackConfCreatorClass"),
-	TRACK_FACTORY_CONF("trackConfCreatorParams"),
+	TRACK_FACTORY_CLASS("trackFactoryClass"),
+	TRACK_FACTORY_CONF("trackFactoryParams"),
 
 	// Wait for a start signal
 	WAIT_FOR_START_SIGNAL("waitForStartSignal"),
