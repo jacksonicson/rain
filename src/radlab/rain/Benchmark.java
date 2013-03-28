@@ -68,7 +68,7 @@ public class Benchmark {
 		SonarRecorder.getInstance().shutdown();
 
 		// Shutdown thrift server
-		if (RainConfig.getInstance()._useThrift) {
+		if (RainConfig.getInstance().useThrift) {
 			logger.debug("Shutting down the thrift communication!");
 			ThriftService.getInstance().stop();
 		}
@@ -129,7 +129,7 @@ public class Benchmark {
 			Benchmark benchmark = new Benchmark();
 
 			// Start thrift server for remote control
-			if (RainConfig.getInstance()._useThrift) {
+			if (RainConfig.getInstance().useThrift) {
 				ThriftService thrift = ThriftService.getInstance();
 				logger.info("Starting thrift communication! Using port: " + thrift.getPort());
 				thrift.start();

@@ -76,7 +76,7 @@ public class SonarRecorder extends Thread {
 
 	public static SonarRecorder getInstance() {
 		if (SonarRecorder.singleton == null) {
-			String sonarHost = RainConfig.getInstance()._sonarHost;
+			String sonarHost = RainConfig.getInstance().sonarHost;
 			SonarRecorder.singleton = new SonarRecorder(sonarHost);
 		}
 

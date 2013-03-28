@@ -101,13 +101,13 @@ public class ScenarioConfiguration {
 			// Set up Rain configuration params (if they've been provided)
 			if (jsonConfig.has(ScenarioConfKeys.VERBOSE_ERRORS_KEY.toString())) {
 				boolean val = jsonConfig.getBoolean(ScenarioConfKeys.VERBOSE_ERRORS_KEY.toString());
-				RainConfig.getInstance()._verboseErrors = val;
+				RainConfig.getInstance().verboseErrors = val;
 			}
 
 			// Setup sonar recorder
 			if (jsonConfig.has(ScenarioConfKeys.SONAR_HOSTNAME.toString())) {
 				String host = jsonConfig.getString(ScenarioConfKeys.SONAR_HOSTNAME.toString());
-				RainConfig.getInstance()._sonarHost = host;
+				RainConfig.getInstance().sonarHost = host;
 			}
 
 			// Check if thrift remote management is used
@@ -117,7 +117,7 @@ public class ScenarioConfiguration {
 
 			if (useThrift) {
 				// Set in the config that we're using pipes
-				RainConfig.getInstance()._useThrift = useThrift;
+				RainConfig.getInstance().useThrift = useThrift;
 
 				// Check whether we're supposed to wait for a start signal
 				if (jsonConfig.has(ScenarioConfKeys.WAIT_FOR_START_SIGNAL.toString())) {

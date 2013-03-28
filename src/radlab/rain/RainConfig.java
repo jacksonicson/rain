@@ -33,37 +33,35 @@ package radlab.rain;
 
 import radlab.rain.communication.thrift.ThriftService;
 
-// Singleton configuration class
+/**
+ * Singleton configuration class
+ */
 public class RainConfig {
 	// What can we configure?
-	public boolean _verboseErrors = true;
+	public boolean verboseErrors = true;
 
 	// Thrift communication server params
-	public boolean _useThrift = false;
-	public int _thriftPort = ThriftService.DEFAULT_PORT;
+	public boolean useThrift = false;
+	public int thriftPort = ThriftService.DEFAULT_PORT;
 
 	// Should we wait for a start message before we start the run, default is no
-	public boolean waitForStartSignal = false;
+	public boolean waitForStartSignal = true;
 
-	public String _sonarHost = "monitor0";
+	// Host that is running a Sonar collector
+	public String sonarHost = "monitor0";
 
-	private static Object configLock = new Object();
-	private static volatile RainConfig config = null;
+	private static Object singletonLock = new Object();
+	private static RainConfig config = null;
 
 	public static RainConfig getInstance() {
-		// Double-checked locking (avoids unnecessary locking after first
-		// initialization
-		// and mitigates against multiple parallel initializations)
-		if (config == null) {
-			synchronized (configLock) {
-				if (config == null)
-					config = new RainConfig();
-			}
+		synchronized (singletonLock) {
+			if (config == null)
+				config = new RainConfig();
 		}
-
 		return config;
 	}
 
 	private RainConfig() {
+		// No one is allowed to create a instance
 	}
 }
