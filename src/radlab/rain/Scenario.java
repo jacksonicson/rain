@@ -31,9 +31,7 @@
 
 package radlab.rain;
 
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -42,14 +40,13 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import radlab.rain.configuration.TrackConfKeys;
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.scoreboard.Scorecard;
 
 public class Scenario {
 	private static Logger logger = LoggerFactory.getLogger(Scenario.class);
 
-	private List<Track> tracks = new LinkedList<Track>();
+	private List<Track> tracks;
 
 	private ScenarioConfiguration conf;
 
@@ -75,21 +72,10 @@ public class Scenario {
 		return timing;
 	}
 
-	@SuppressWarnings("unchecked")
 	private void buildTracks(Timing timing) throws Exception {
-		// For all configured tracks
-		for (JSONObject trackConfig : conf.getTrackConfigurations()) {
-			String trackClassName = trackConfig.getString(TrackConfKeys.TRACK_CLASS_KEY.toString());
-			Class<Track> trackClass = (Class<Track>) Class.forName(trackClassName);
 
-			// Create new track instance
-			Constructor<Track> trackCtor = trackClass.getConstructor(new Class[] { Timing.class });
-			Track track = (Track) trackCtor.newInstance(timing);
-			track.initialize(trackConfig);
-
-			// Add track instance to the results
-			tracks.add(track);
-		}
+		List<Track> tracks = conf.getTrackFactory().createTracks();
+		this.tracks = tracks;
 	}
 
 	public void aggregateScorecards(Timing timing) throws JSONException {
@@ -109,7 +95,7 @@ public class Scenario {
 			logger.info("Track metrics: " + strStats);
 
 			// Get the name of the generator active for this track
-			String generatorClassName = track.getConfiguration().generatorClass;
+			String generatorClassName = "TODO";
 
 			// Get the final scorecard for this track
 			Scorecard finalScorecard = track.getScoreboard().getFinalScorecard();

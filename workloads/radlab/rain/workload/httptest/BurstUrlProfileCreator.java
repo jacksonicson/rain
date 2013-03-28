@@ -13,7 +13,7 @@ import java.util.Vector;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.TracksConfigurationCreator;
+import radlab.rain.TrackFactory;
 import radlab.rain.Scenario;
 import radlab.rain.Track;
 import radlab.rain.util.ConfigUtil;
@@ -21,7 +21,7 @@ import radlab.rain.workload.http.BurstUrlGenerator;
 import radlab.rain.workload.http.BurstUrlProfileCreator;
 import radlab.rain.workloadtraits.WikipediaScheduleCreator;
 
-public class BurstUrlProfileCreator extends TracksConfigurationCreator 
+public class BurstUrlProfileCreator extends TrackFactory 
 {
 	public static String CFG_HOST_LIST_FILE					= "hostListFile";
 	public static String CFG_NUM_HOST_TARGETS_KEY			= "numHostTargets";

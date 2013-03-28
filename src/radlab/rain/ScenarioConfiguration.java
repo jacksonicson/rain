@@ -26,7 +26,7 @@ public class ScenarioConfiguration {
 	private long rampDown;
 
 	// Factory to generate track configurations
-	TracksConfigurationCreator tracksConfigurationCreator;
+	TrackFactory tracksConfFactory;
 
 	public long getRampUp() {
 		return this.rampUp;
@@ -50,6 +50,10 @@ public class ScenarioConfiguration {
 
 	public void setDuration(long val) {
 		this.duration = val;
+	}
+
+	public TrackFactory getTrackFactory() {
+		return tracksConfFactory;
 	}
 
 	/**
@@ -101,9 +105,9 @@ public class ScenarioConfiguration {
 				// Programmatic generation class takes precedence
 				// Create profile creator class by reflection
 				String trackConfClass = jsonConfig.getString(ScenarioConfKeys.TRACK_CONF_CREATOR_CLASS_KEY.toString());
-				tracksConfigurationCreator = createLoadProfileCreator(trackConfClass);
+				tracksConfFactory = createLoadProfileCreator(trackConfClass);
 				JSONObject params = jsonConfig.getJSONObject(ScenarioConfKeys.TRACK_CONF_CREATOR_PARAMS_KEY.toString());
-				tracksConfigurationCreator.configure(params); 
+				tracksConfFactory.configure(params);
 			}
 
 		} catch (JSONException e) {
@@ -116,10 +120,10 @@ public class ScenarioConfiguration {
 	}
 
 	@SuppressWarnings("unchecked")
-	public TracksConfigurationCreator createLoadProfileCreator(String name) throws Exception {
-		Class<TracksConfigurationCreator> creatorClass = (Class<TracksConfigurationCreator>) Class.forName(name);
-		Constructor<TracksConfigurationCreator> creatorCtor = creatorClass.getConstructor(new Class[] {});
-		TracksConfigurationCreator creator = (TracksConfigurationCreator) creatorCtor.newInstance((Object[]) null);
+	public TrackFactory createLoadProfileCreator(String name) throws Exception {
+		Class<TrackFactory> creatorClass = (Class<TrackFactory>) Class.forName(name);
+		Constructor<TrackFactory> creatorCtor = creatorClass.getConstructor(new Class[] {});
+		TrackFactory creator = (TrackFactory) creatorCtor.newInstance((Object[]) null);
 		return creator;
 	}
 }

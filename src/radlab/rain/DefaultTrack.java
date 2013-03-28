@@ -46,8 +46,8 @@ public class DefaultTrack extends Track {
 	// Load manager runs through the load schedule
 	private LoadManager loadManager;
 
-	public DefaultTrack(Timing timing) throws Exception {
-		super(timing);
+	public void initialize() {
+		super.initialize();
 
 		// Create a new load manager
 		loadManager = new LoadManager(timing);
@@ -55,9 +55,10 @@ public class DefaultTrack extends Track {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	protected LoadGeneratingUnit createLoadGenerationStrategy(long id, Generator generator) throws Exception {
+	protected LoadGeneratingUnit createLoadGeneratingUnit(long id, Generator generator) throws Exception {
 		Class<LoadGeneratingUnit> loadGenStrategyClass = (Class<LoadGeneratingUnit>) Class
 				.forName(config.loadGenerationStrategyClass);
+		
 		Constructor<LoadGeneratingUnit> loadGenStrategyCtor = loadGenStrategyClass.getConstructor(new Class[] {
 				long.class, LoadManager.class, Generator.class, TrackConfiguration.class, Timing.class });
 		LoadGeneratingUnit loadGenStrategy = (LoadGeneratingUnit) loadGenStrategyCtor.newInstance(new Object[] { id,

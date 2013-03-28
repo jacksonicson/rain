@@ -38,7 +38,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,10 +77,32 @@ public abstract class Track {
 	// Abstract methods
 	protected abstract boolean validateLoadDefinition(LoadDefinition definition);
 
-	protected abstract LoadGeneratingUnit createLoadGenerationStrategy(long id, Generator generator) throws Exception;
+	protected abstract LoadGeneratingUnit createLoadGeneratingUnit(long id, Generator generator) throws Exception;
 
-	public Track(Timing timing) {
+	public void setTiming(Timing timing) {
 		this.timing = timing;
+	}
+
+	public void setTrackConfiguration(TrackConfiguration config) {
+		this.config = config;
+	}
+
+	public void setLoadScheduleCreator(LoadScheduleCreator loadScheduleCreator) {
+		this.loadScheduleCreator = loadScheduleCreator;
+	}
+
+	public void initialize() {
+		// Create scoreboard
+		scoreboard = createScoreboard();
+
+		// Create load schedule creator and load schedule
+		loadSchedule = loadScheduleCreator.createSchedule();
+
+		// Create a new thread pool
+		executor = Executors.newCachedThreadPool();
+
+		// Create load generating units
+		createLoadGeneratingUnits(executor);
 	}
 
 	public void start() {
@@ -108,25 +129,6 @@ public abstract class Track {
 
 		// Stop the scoreboard
 		scoreboard.stop();
-	}
-
-	void initialize(JSONObject jsonConfig) throws Exception {
-		// Load configuration
-		config = new TrackConfiguration();
-		config.initialize(jsonConfig);
-
-		// Create scoreboard
-		scoreboard = createScoreboard();
-
-		// Create load schedule creator and load schedule
-		loadScheduleCreator = createLoadScheduleCreator();
-		loadSchedule = loadScheduleCreator.createSchedule(config.loadSchedulerParams);
-
-		// Create a new thread pool
-		executor = Executors.newCachedThreadPool();
-
-		// Create load generating units
-		createLoadGeneratingUnits(executor);
 	}
 
 	private IScoreboard createScoreboard() throws JSONException, Exception {
@@ -174,7 +176,7 @@ public abstract class Track {
 			generator.initialize();
 
 			// Allow the load generation strategy to be configurable
-			LoadGeneratingUnit lgUnit = createLoadGenerationStrategy(i, generator);
+			LoadGeneratingUnit lgUnit = createLoadGeneratingUnit(i, generator);
 			lgUnit.setExecutorService(executor);
 			lgUnit.setTimeStarted(System.currentTimeMillis());
 

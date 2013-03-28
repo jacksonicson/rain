@@ -13,14 +13,14 @@ import java.io.IOException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.TracksConfigurationCreator;
+import radlab.rain.TrackFactory;
 import radlab.rain.Scenario;
 import radlab.rain.Track;
 import radlab.rain.util.ConfigUtil;
 import radlab.rain.workload.http.FixedUrlProfileCreator;
 import radlab.rain.workloadtraits.WikipediaScheduleCreator;
 
-public class FixedUrlProfileCreator extends TracksConfigurationCreator 
+public class FixedUrlProfileCreator extends TrackFactory 
 {
 	public static String CFG_HOST_LIST_FILE					= "hostListFile";
 	public static String CFG_NUM_HOST_TARGETS_KEY			= "numHostTargets";

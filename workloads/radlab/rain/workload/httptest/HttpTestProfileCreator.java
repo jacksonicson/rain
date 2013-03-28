@@ -31,7 +31,7 @@
 
 package radlab.rain.workload.httptest;
 
-import radlab.rain.TracksConfigurationCreator;
+import radlab.rain.TrackFactory;
 import radlab.rain.Track;
 
 import org.json.JSONArray;
@@ -41,7 +41,7 @@ import org.json.JSONObject;
 /* Example of a class that can programmatically create 1 or more tracks that describe a profile.
  * obviating the need for a profiles.config.xxx.json file. Useful if we had to generate 20+ tracks
  */
-public class HttpTestProfileCreator extends TracksConfigurationCreator
+public class HttpTestProfileCreator extends TrackFactory
 {
 	public static String CFG_BASE_HOST_IP_KEY 		= "baseHostIp";
 	public static String CFG_NUM_HOST_TARGETS_KEY	= "numHostTargets";

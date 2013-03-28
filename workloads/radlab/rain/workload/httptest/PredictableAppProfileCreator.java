@@ -34,7 +34,7 @@ package radlab.rain.workload.httptest;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.TracksConfigurationCreator;
+import radlab.rain.TrackFactory;
 //import radlab.rain.Scenario;
 import radlab.rain.Track;
 import radlab.rain.workload.http.PredictableAppProfileCreator;
@@ -47,7 +47,7 @@ import java.text.NumberFormat;
 import java.util.HashSet;
 import java.util.Random;
 
-public class PredictableAppProfileCreator extends TracksConfigurationCreator 
+public class PredictableAppProfileCreator extends TrackFactory 
 {
 	public static String CFG_BASE_HOST_IP_KEY 				= "baseHostIp";
 	public static String CFG_HOST_PORT_KEY					= "hostPort";

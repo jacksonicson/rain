@@ -6,15 +6,6 @@ import java.util.Map;
 public class TrackConfiguration {
 	public static long DEFAULT_MEAN_RESPONSE_TIME_SAMPLE_INTERVAL = 500;
 
-	// Which load generation strategy to use
-	public String loadGenerationStrategyClass = "";
-
-	// Which generator to use
-	public String generatorClass = "";
-
-	// Generator for the load schedule
-	public String loadScheduleCreatorClass;
-
 	// Markov chain matrices
 	public Map<String, MixMatrix> mixMatrices = new HashMap<String, MixMatrix>();
 
