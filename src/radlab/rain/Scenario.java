@@ -32,6 +32,7 @@
 package radlab.rain;
 
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeMap;
@@ -160,5 +161,17 @@ public class Scenario {
 
 		// Dump global card
 		logger.info("Global metrics: " + globalCard.getIntervalStatistics().toString());
+	}
+
+	public List<String> getTrackNames() {
+		List<String> names = new ArrayList<String>();
+		for (Track track : tracks) {
+			names.add(track.toString());
+		}
+		return names;
+	}
+
+	public ScenarioConfiguration getConfig() {
+		return conf;
 	}
 }

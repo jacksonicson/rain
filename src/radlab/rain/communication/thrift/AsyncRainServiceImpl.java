@@ -1,72 +1,36 @@
 package radlab.rain.communication.thrift;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import radlab.rain.Benchmark;
-import radlab.rain.LoadDefinition;
+import radlab.rain.RainConfig;
 import radlab.rain.Scenario;
-import radlab.rain.Track;
-import de.tum.in.storm.rain.Profile;
 import de.tum.in.storm.rain.RainService;
 
 public class AsyncRainServiceImpl implements RainService.Iface {
 
 	private static Logger logger = LoggerFactory.getLogger(AsyncRainServiceImpl.class);
 
+	private Scenario scenario;
+
+	public AsyncRainServiceImpl(Scenario scenario) {
+		this.scenario = scenario;
+	}
+
 	@Override
 	public boolean startBenchmark(long controllerTimestamp) throws TException {
-		logger.debug(this + " Received benchmark start message.");
-		Benchmark.getBenchmarkInstance().waitingForStartSignal = false;
+		logger.debug("received benchmark start message");
+		RainConfig.getInstance().waitForStartSignal = false;
 		return true;
 	}
 
 	@Override
-	public boolean dynamicLoadProfile(Profile msg) throws TException {
-		// Find the track it should go to and validate it.
-		// We should make Scenarios singletons since there's only one
-		// Scenario ever (a Scenario holds one or more ScenarioTracks)
-		Track track = Benchmark.getBenchmarkScenario().getTracks().get(msg.getDestTrackName());
-		if (track != null) {
-			logger.info(this + " Found target track");
-
-			LoadDefinition profile = new LoadDefinition(msg.getInterval(), (int) msg.getNumberOfUsers(), msg.getMixName(),
-					msg.getTransitionTime(), msg.getName());
-
-			int validationResult = track.validateLoadProfile(profile);
-			// Try to validate and submit to the track's load scheduler
-			if (validationResult == Track.VALID_LOAD_PROFILE) {
-				logger.info(this + " Profile validated");
-				// Submit to load scheduler thread
-				track.submitDynamicLoadProfile(profile);
-
-				return true;
-			} else // Dynamic LoadProfile failed validation
-			{
-				logger.info(this + " Profile validation failed!");
-				return false;
-			}
-		} else // Could not find track
-		{
-			logger.info(this + " Target track not found: " + msg.getDestTrackName());
-			return false;
-		}
-	}
-
-	@Override
 	public List<String> getTrackNames() throws TException {
-		logger.info(this + " Received track list request message.");
-
-		List<String> trackNames = new ArrayList<String>();
-		for (Track track : Benchmark.BenchmarkScenario.getTracks().values()) {
-			logger.info(this + " Adding track name: " + track.getName());
-			trackNames.add(track.getName());
-		}
-
+		logger.info("listing all track names");
+		List<String> trackNames = scenario.getTrackNames();
 		return trackNames;
 	}
 
@@ -77,19 +41,16 @@ public class AsyncRainServiceImpl implements RainService.Iface {
 
 	@Override
 	public long getRampUpTime() throws TException {
-		Scenario scenario = Benchmark.getBenchmarkScenario();
-		return scenario.getRampUp();
+		return scenario.getConfig().getRampUp(); 
 	}
 
 	@Override
 	public long getRampDownTime() throws TException {
-		Scenario scenario = Benchmark.getBenchmarkScenario();
-		return scenario.getRampDown();
+		return scenario.getConfig().getRampDown();
 	}
 
 	@Override
 	public long getDurationTime() throws TException {
-		Scenario scenario = Benchmark.getBenchmarkScenario();
-		return scenario.getDuration();
+		return scenario.getConfig().getDuration();
 	}
 }

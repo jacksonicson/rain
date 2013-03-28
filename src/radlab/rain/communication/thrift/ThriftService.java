@@ -8,19 +8,18 @@ import org.apache.thrift.transport.TNonblockingServerSocket;
 import org.apache.thrift.transport.TNonblockingServerTransport;
 import org.apache.thrift.transport.TTransportException;
 
+import radlab.rain.Scenario;
 import de.tum.in.storm.rain.RainService;
 
 public class ThriftService {
 
 	public static final int DEFAULT_PORT = 7852;
 
-	private static ThriftService instance;
-
 	private int port = ThriftService.DEFAULT_PORT;
-	
-	private static Object lock = new Object();
 
 	private RainNonblockingService serviceThread;
+
+	private Scenario scenario;
 
 	class RainNonblockingService extends Thread {
 
@@ -30,8 +29,9 @@ public class ThriftService {
 			try {
 				TNonblockingServerTransport serverTransport = new TNonblockingServerSocket(port);
 
-				AsyncRainServiceImpl service = new AsyncRainServiceImpl();
-				RainService.Processor<RainService.Iface> processor = new RainService.Processor<RainService.Iface>(service);
+				AsyncRainServiceImpl service = new AsyncRainServiceImpl(scenario);
+				RainService.Processor<RainService.Iface> processor = new RainService.Processor<RainService.Iface>(
+						service);
 
 				TNonblockingServer.Args args = new TNonblockingServer.Args(serverTransport);
 				args.processor(processor);
@@ -49,21 +49,12 @@ public class ThriftService {
 		}
 	}
 
-	public static ThriftService getInstance() {
-		synchronized (ThriftService.lock) {
-			if (instance == null)
-				instance = new ThriftService();
-
-			return instance;
-		}
-	}
-
-	private ThriftService() {
-		// No construction allowed
+	public ThriftService(Scenario scenario) {
+		this.scenario = scenario;
 	}
 
 	public int getPort() {
-		return this.port;
+		return port;
 	}
 
 	public void setPort(int val) {
@@ -71,30 +62,13 @@ public class ThriftService {
 	}
 
 	public void start() throws IOException {
-		if (this.serviceThread == null) {
-			this.serviceThread = new RainNonblockingService();
-			this.serviceThread.start();
+		if (serviceThread == null) {
+			serviceThread = new RainNonblockingService();
+			serviceThread.start();
 		}
 	}
 
-	public boolean stop() {
-		return this.disconnect();
-	}
-
-	public boolean disconnect() {
-		this.serviceThread.stopServer();
-		return true;
-	}
-
-	public static void main(String arg[]) {
-		ThriftService service = new ThriftService();
-		try {
-			service.start();
-			service.serviceThread.join();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+	public void stop() {
+		serviceThread.stopServer();
 	}
 }

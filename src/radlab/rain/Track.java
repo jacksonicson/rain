@@ -79,9 +79,8 @@ public abstract class Track {
 
 	public abstract void start();
 
-	public void end() 
-	{
-		scoreboard.stop(); 
+	public void end() {
+		scoreboard.stop();
 	}
 
 	public abstract boolean validateLoadProfile(LoadDefinition profile);
@@ -200,8 +199,8 @@ public abstract class Track {
 	IScoreboard getScoreboard() {
 		return scoreboard;
 	}
-	
+
 	TrackConfiguration getConfiguration() {
-		return config; 
+		return config;
 	}
 }

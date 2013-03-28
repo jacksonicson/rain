@@ -66,12 +66,6 @@ public class Benchmark {
 
 		// Shutdown Sonar monitoring
 		SonarRecorder.getInstance().shutdown();
-
-		// Shutdown thrift server
-		if (RainConfig.getInstance().useThrift) {
-			logger.debug("Shutting down the thrift communication!");
-			ThriftService.getInstance().stop();
-		}
 	}
 
 	private static JSONObject loadConfiguration(String filename) {
@@ -129,10 +123,11 @@ public class Benchmark {
 			Benchmark benchmark = new Benchmark();
 
 			// Start thrift server for remote control
+			ThriftService service = null; 
 			if (RainConfig.getInstance().useThrift) {
-				ThriftService thrift = ThriftService.getInstance();
-				logger.info("Starting thrift communication! Using port: " + thrift.getPort());
-				thrift.start();
+				service = new ThriftService(scenario); 
+				logger.info("Starting thrift communication! Using port: " + service.getPort());
+				service.start();
 			}
 
 			// Waiting for start signal
@@ -147,6 +142,12 @@ public class Benchmark {
 			// Start signal passed. Start scenario now
 			logger.info("Starting scenario (threads)");
 			benchmark.start(scenario);
+			
+			// Shutdown thrift communication
+			if (service != null) {
+				logger.info("Starting thrift communication! Using port: " + service.getPort());
+				service.stop();
+			}
 
 		} catch (Exception e) {
 			logger.error("error in benchmark", e);
