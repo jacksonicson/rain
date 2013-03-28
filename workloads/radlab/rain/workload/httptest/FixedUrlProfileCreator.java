@@ -47,7 +47,7 @@ public class FixedUrlProfileCreator extends TracksConfigurationCreator
 	{}
 
 	@Override
-	public JSONObject createProfile(JSONObject params) throws JSONException 
+	public JSONObject createConfiguration(JSONObject params) throws JSONException 
 	{
 		// Pull out all the parameters we need:
 		Vector<String> hostList = new Vector<String>();
@@ -238,7 +238,7 @@ public class FixedUrlProfileCreator extends TracksConfigurationCreator
 		JSONObject params = jsonConfigRoot.getJSONObject( Scenario.CFG_PROFILES_CREATOR_CLASS_PARAMS_KEY );
 		
 		FixedUrlProfileCreator creator = new FixedUrlProfileCreator(); 
-		JSONObject tracks = creator.createProfile( params );
+		JSONObject tracks = creator.createConfiguration( params );
 		System.out.println( tracks.toString() );
 	}
 }

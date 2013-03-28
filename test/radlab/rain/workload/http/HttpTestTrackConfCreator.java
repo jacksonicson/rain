@@ -35,45 +35,42 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import radlab.rain.TrackConfiguration;
 import radlab.rain.TracksConfigurationCreator;
 import radlab.rain.configuration.TrackConfKeys;
 
-public class HttpTestProfileCreator extends TracksConfigurationCreator {
-	public static final String CFG_BASE_HOST_IP_KEY = "baseHostIp";
-	public static final String CFG_NUM_HOST_TARGETS_KEY = "numHostTargets";
+public class HttpTestTrackConfCreator extends TracksConfigurationCreator {
 
-	public JSONObject createProfile(JSONObject params) throws JSONException {
-		String baseHostIP = "127.0.0.1";
-		int numHostTargets = 1;
+	enum ConfKeys {
+		BASE_HOST_IP_KEY("baseHostIp"), NUM_HOST_TARGETS_KEY("numHostTargets"), RESOURCE_PATH("resourcePath");
 
-		// See whether the input is non-null and has parameters for the base host ip prefix and/or
-		// the number of ip targets
-		if (params != null) {
-			if (params.has(CFG_BASE_HOST_IP_KEY))
-				baseHostIP = params.getString(CFG_BASE_HOST_IP_KEY);
+		private final String value;
 
-			if (params.has(CFG_NUM_HOST_TARGETS_KEY))
-				numHostTargets = params.getInt(CFG_NUM_HOST_TARGETS_KEY);
+		private ConfKeys(String value) {
+			this.value = value;
 		}
 
-		// We may or may not use the input
+		public String toString() {
+			return value;
+		}
+	}
+
+	public TrackConfiguration createConfiguration(JSONObject params) throws JSONException {
+		TrackConfiguration config = new TrackConfiguration(); 
+		
 		JSONObject trackConfig = new JSONObject();
 
-		// Create a track config with "numHostTargets" tracks
+		String baseHostIP = params.getString(ConfKeys.BASE_HOST_IP_KEY.toString());
+		int numHostTargets = params.getInt(ConfKeys.NUM_HOST_TARGETS_KEY.toString());
+
+		// Create a number of targets
 		for (int i = 0; i < numHostTargets; i++) {
-			String trackName = "";
-
-			if (i < 10)
-				trackName = "track-000" + i;
-			else
-				trackName = "track-00" + i;
-
 			JSONObject trackDetails = new JSONObject();
 
 			// Fill in details
 			trackDetails.put(TrackConfKeys.GENERATOR_KEY.toString(), "radlab.rain.workload.httptest.HttpTestGenerator");
 			trackDetails.put(TrackConfKeys.TRACK_CLASS_KEY.toString(), "radlab.rain.DefaultScenarioTrack");
-			trackDetails.put(TrackConfKeys.RESOURCE_PATH.toString(), "resources/");
+			trackDetails.put(ConfKeys.RESOURCE_PATH.toString(), "resources/");
 
 			JSONObject behaviorDetails = new JSONObject();
 
@@ -141,9 +138,105 @@ public class HttpTestProfileCreator extends TracksConfigurationCreator {
 			// memory overhead of storing samples
 			trackDetails.put(TrackConfKeys.MEAN_RESPONSE_TIME_SAMPLE_INTERVAL.toString(), 50);
 
+			String trackName = "track" + i;
 			trackConfig.put(trackName, trackDetails);
 		}
 
 		return trackConfig;
 	}
 }
+
+
+/*
+ * 
+ * 	public void initialize(JSONObject config) throws JSONException, Exception {
+		// Open-Loop Probability
+		openLoopProbability = config.getDouble(TrackConfKeys.OPEN_LOOP_PROBABILITY_KEY.toString());
+
+		// Target Information
+		JSONObject target = config.getJSONObject(TrackConfKeys.TARGET_KEY.toString());
+		targetHostname = target.getString(TrackConfKeys.TARGET_HOSTNAME_KEY.toString());
+		targetPort = target.getInt(TrackConfKeys.TARGET_PORT_KEY.toString());
+
+		// Concrete Generator
+		generatorClassName = config.getString(TrackConfKeys.GENERATOR_KEY.toString());
+		if (config.has(TrackConfKeys.GENERATOR_PARAMS_KEY.toString()))
+			generatorParams = config.getJSONObject(TrackConfKeys.GENERATOR_PARAMS_KEY.toString());
+
+		// Log Sampling Probability
+		logSamplingProbability = config.getDouble(TrackConfKeys.LOG_SAMPLING_PROBABILITY_KEY.toString());
+
+		// Mean Cycle Time
+		meanCycleTime = config.getDouble(TrackConfKeys.MEAN_CYCLE_TIME_KEY.toString());
+
+		// Mean Think Time
+		meanThinkTime = config.getDouble(TrackConfKeys.MEAN_THINK_TIME_KEY.toString());
+
+		// Concrete Load Profile and Load Profile Array
+		if (config.has(TrackConfKeys.LOAD_PROFILE_CLASS_KEY.toString()))
+			loadProfileClassName = config.getString(TrackConfKeys.LOAD_PROFILE_CLASS_KEY.toString());
+		else
+			loadProfileClassName = DEFAULT_LOAD_PROFILE_CLASS;
+
+		// Create the load schedule creator
+		loadScheduleCreatorClass = config.getString(TrackConfKeys.LOAD_SCHEDULE_CREATOR_KEY.toString());
+
+		// Look for load scheduler parameters if any exist
+		if (config.has(TrackConfKeys.LOAD_SCHEDULE_CREATOR_PARAMS_KEY.toString()))
+			loadSchedulerParams = config.getJSONObject(TrackConfKeys.LOAD_SCHEDULE_CREATOR_PARAMS_KEY.toString());
+
+		// Load Mix Matrices/Behavior Directives
+		JSONObject behavior = config.getJSONObject(TrackConfKeys.BEHAVIOR_KEY.toString());
+		Iterator<String> keyIt = behavior.keys();
+
+		// Each of the keys in the behavior section should be for some mix matrix
+		while (keyIt.hasNext()) {
+			String mixName = keyIt.next();
+
+			// Now we need to get this object and parse it
+			JSONArray mix = behavior.getJSONArray(mixName);
+			double[][] data = null;
+			for (int i = 0; i < mix.length(); i++) {
+				if (i == 0) {
+					data = new double[mix.length()][mix.length()];
+				}
+				// Each row is itself an array of doubles
+				JSONArray row = mix.getJSONArray(i);
+				for (int j = 0; j < row.length(); j++) {
+					data[i][j] = row.getDouble(j);
+				}
+			}
+			mixMatrices.put(mixName, new MixMatrix(data));
+		}
+
+		// Snapshot interval
+		if (config.has(TrackConfKeys.METRIC_SNAPSHOT_INTERVAL.toString()))
+			metricSnapshotInterval = config.getDouble(TrackConfKeys.METRIC_SNAPSHOT_INTERVAL.toString());
+
+		// Snapshot file suffix
+		if (config.has(TrackConfKeys.METRIC_SNAPSHOT_FILE_SUFFIX.toString()))
+			metricSnapshotFileSuffix = config.getString(TrackConfKeys.METRIC_SNAPSHOT_FILE_SUFFIX.toString());
+
+		if (config.has(TrackConfKeys.METRIC_SNAPSHOT_CONFIG.toString()))
+			metricWriterParams = config.getJSONObject(TrackConfKeys.METRIC_SNAPSHOT_CONFIG.toString());
+
+		// Configure the response time sampler
+		if (config.has(TrackConfKeys.MEAN_RESPONSE_TIME_SAMPLE_INTERVAL.toString()))
+			meanResponseTimeSamplingInterval = config.getLong(TrackConfKeys.MEAN_RESPONSE_TIME_SAMPLE_INTERVAL
+					.toString());
+
+		// Configure the maxUsers if specified
+		if (config.has(TrackConfKeys.MAX_USERS.toString()))
+			maxUsersFromConfig = config.getInt(TrackConfKeys.MAX_USERS.toString());
+
+		// Look for a load generation strategy
+		loadGenerationStrategyClassName = config.getString(TrackConfKeys.LOAD_GENERATION_STRATEGY_KEY.toString());
+
+		// Check for parameters
+		if (config.has(TrackConfKeys.LOAD_GENERATION_STRATEGY_PARAMS_KEY.toString()))
+			loadGenerationStrategyParams = config.getJSONObject(TrackConfKeys.LOAD_GENERATION_STRATEGY_PARAMS_KEY
+					.toString());
+	}
+ * 
+ */
+*/

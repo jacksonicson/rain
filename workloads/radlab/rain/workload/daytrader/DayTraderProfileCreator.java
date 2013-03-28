@@ -43,7 +43,7 @@ import org.json.JSONObject;
  */
 public class DayTraderProfileCreator extends TracksConfigurationCreator
 {
-	public JSONObject createProfile( JSONObject input ) throws JSONException
+	public JSONObject createConfiguration( JSONObject input ) throws JSONException
 	{
 		// We may or may not use the input
 		JSONObject trackConfig = new JSONObject();

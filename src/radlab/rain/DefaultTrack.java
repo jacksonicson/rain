@@ -57,7 +57,7 @@ public class DefaultTrack extends Track {
 	@Override
 	protected LoadGeneratingUnit createLoadGenerationStrategy(long id, Generator generator) throws Exception {
 		Class<LoadGeneratingUnit> loadGenStrategyClass = (Class<LoadGeneratingUnit>) Class
-				.forName(config.loadGenerationStrategyClassName);
+				.forName(config.loadGenerationStrategyClass);
 		Constructor<LoadGeneratingUnit> loadGenStrategyCtor = loadGenStrategyClass.getConstructor(new Class[] {
 				long.class, LoadManager.class, Generator.class, TrackConfiguration.class, Timing.class });
 		LoadGeneratingUnit loadGenStrategy = (LoadGeneratingUnit) loadGenStrategyCtor.newInstance(new Object[] { id,

@@ -36,9 +36,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -64,10 +61,6 @@ public class Scenario {
 		// Calculate timing
 		Timing timing = new Timing(conf.getRampUp(), conf.getDuration(), conf.getRampDown());
 
-		// Threads
-		int sharedThreads = conf.getMaxSharedThreads();
-		ExecutorService pool = Executors.newFixedThreadPool(sharedThreads);
-
 		// Build tracks based on static configuration
 		buildTracks(timing);
 
@@ -78,17 +71,6 @@ public class Scenario {
 		// Join all running tracks
 		for (Track track : tracks)
 			track.end();
-
-		// Shutdown thread pool
-		pool.shutdown();
-		try {
-			logger.debug("waiting up to 10 seconds for shared threadpool to shutdown!");
-			pool.awaitTermination(10000, TimeUnit.MILLISECONDS);
-			if (!pool.isTerminated())
-				pool.shutdownNow();
-		} catch (InterruptedException ie) {
-			logger.debug("INTERRUPTED while waiting for shared threadpool to shutdown!");
-		}
 
 		return timing;
 	}
@@ -127,7 +109,7 @@ public class Scenario {
 			logger.info("Track metrics: " + strStats);
 
 			// Get the name of the generator active for this track
-			String generatorClassName = track.getConfiguration().generatorClassName;
+			String generatorClassName = track.getConfiguration().generatorClass;
 
 			// Get the final scorecard for this track
 			Scorecard finalScorecard = track.getScoreboard().getFinalScorecard();

@@ -44,7 +44,7 @@ public class ScadrFlatProfileCreator extends TracksConfigurationCreator
 	{}
 
 	@Override
-	public JSONObject createProfile(JSONObject params) throws JSONException 
+	public JSONObject createConfiguration(JSONObject params) throws JSONException 
 	{
 		// We may or may not use the input
 		JSONObject trackConfig = new JSONObject();

@@ -46,7 +46,7 @@ public class HttpTestProfileCreator extends TracksConfigurationCreator
 	public static String CFG_BASE_HOST_IP_KEY 		= "baseHostIp";
 	public static String CFG_NUM_HOST_TARGETS_KEY	= "numHostTargets";
 	
-	public JSONObject createProfile( JSONObject params ) throws JSONException
+	public JSONObject createConfiguration( JSONObject params ) throws JSONException
 	{
 		String baseHostIP = "127.0.0.1";
 		int numHostTargets = 1;

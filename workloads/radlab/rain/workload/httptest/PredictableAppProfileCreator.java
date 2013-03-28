@@ -111,7 +111,7 @@ public class PredictableAppProfileCreator extends TracksConfigurationCreator
 	}
 	
 	@Override
-	public JSONObject createProfile(JSONObject params) throws JSONException 
+	public JSONObject createConfiguration(JSONObject params) throws JSONException 
 	{
 		// Pull out all the parameters we need:
 		if( params.has( CFG_BASE_HOST_IP_KEY) )

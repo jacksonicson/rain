@@ -2,13 +2,25 @@ package radlab.rain.configuration;
 
 public enum ScenarioConfKeys {
 
-	PROFILES_KEY("profiles"), PROFILES_CREATOR_CLASS_KEY("profilesCreatorClass"), PROFILES_CREATOR_CLASS_PARAMS_KEY(
-			"profilesCreatorClassParams"), TIMING_KEY("timing"), RAMP_UP_KEY(
-			"rampUp"), DURATION_KEY("duration"), RAMP_DOWN_KEY("rampDown"), VERBOSE_ERRORS_KEY(
-			"verboseErrors"), SONAR_HOSTNAME("sonarHost"), USE_THRIFT(
-			"useThrift"), WAIT_FOR_START_SIGNAL(
-			"waitForStartSignal"), MAX_SHARED_THREADS("maxSharedThreads"), AGGREGATE_STATS(
-			"aggregateStats");
+	// Timing section
+	TIMING_KEY("timing"),
+	RAMP_UP_KEY("rampUp"),
+	DURATION_KEY("duration"),
+	RAMP_DOWN_KEY("rampDown"),
+
+	// Verbose errors
+	VERBOSE_ERRORS_KEY("verboseErrors"),
+
+	// Track configuration creator
+	TRACK_CONF_CREATOR_CLASS_KEY("trackConfCreatorClass"),
+	TRACK_CONF_CREATOR_PARAMS_KEY("trackConfCreatorParams"),
+
+	// Wait for a start signal
+	WAIT_FOR_START_SIGNAL("waitForStartSignal"),
+
+	// Thrift and sonar configuration
+	USE_THRIFT("useThrift"),
+	SONAR_HOSTNAME("sonarHost");
 
 	private String configuration;
 

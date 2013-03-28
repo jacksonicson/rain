@@ -1,0 +1,25 @@
+{
+    "timing": {
+        "rampUp": 20,
+        "duration": 100,
+        "rampDown": 10,
+    },
+    
+    "waitForStartSignal": false,
+    "useThrift": true,
+    "sonarHost" : "monitor0",
+    
+    "trackConfCreatorClass": "radlab.rain.workload.http.HttpTestTrackConfCreator",    
+    "trackConfCreatorParams": {
+    	"targets" : {
+    	
+    	}
+    },
+    
+    "behavior" : {
+		"default" : [
+    		[0.0,  0.0],
+    		[0.0,  0.0],
+    	],
+	},
+}
