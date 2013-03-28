@@ -67,6 +67,9 @@ public abstract class Target implements ITarget {
 	private MetricWriterFactory.Type metricWriterType;
 	private JSONObject metricWriterConf;
 
+	// Load manager
+	private LoadManager loadManager;
+
 	// Markov chain matrices
 	public Map<String, MixMatrix> mixMatrices = new HashMap<String, MixMatrix>();
 
@@ -98,10 +101,26 @@ public abstract class Target implements ITarget {
 	// Executer pool
 	protected ExecutorService executor;
 
-	// Abstract methods
-	protected abstract boolean validateLoadDefinition(LoadDefinition definition);
+	public boolean validateLoadDefinition(LoadDefinition profile) {
+		// Check number of users
+		if (profile.numberOfUsers <= 0) {
+			logger.info("Invalid load profile. Number of users <= 0. Profile details: " + profile.toString());
+			return false;
+		}
 
-	protected abstract Agent createLoadGeneratingUnit(long id, Generator generator) throws Exception;
+		// Check references to the mix matrix
+		if (profile.mixName.length() > 0 && !mixMatrices.containsKey(profile.mixName)) {
+			logger.info("Invalid load profile. mixname not in track's mixmap. Profile details: " + profile.toString());
+			return false;
+		}
+
+		return true;
+	}
+
+	protected Agent createLoadGeneratingUnit(long id, Generator generator) {
+		POLAgent lgUnit = new POLAgent(id, loadManager, generator, timing);
+		return lgUnit;
+	}
 
 	public void setTiming(Timing timing) {
 		this.timing = timing;
@@ -122,11 +141,17 @@ public abstract class Target implements ITarget {
 		// Create load schedule creator and load schedule
 		loadSchedule = loadScheduleCreator.createSchedule();
 
+		// Create a new load manager
+		loadManager = new LoadManager(timing, loadSchedule);
+
 		// Create a new thread pool
 		executor = Executors.newCachedThreadPool();
 	}
 
 	public void start() throws Exception {
+		// Starting load manager
+		loadManager.start();
+
 		// Create load generating units
 		createLoadGeneratingUnits(executor);
 
@@ -186,6 +211,14 @@ public abstract class Target implements ITarget {
 	}
 
 	public void end() {
+		// Shutdown load manager
+		try {
+			loadManager.setDone(true);
+			loadManager.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
 		// Wait for all load generating units to exit
 		for (Agent generator : loadGeneratingUnits) {
 			try {
