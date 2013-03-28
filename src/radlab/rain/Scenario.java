@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
 import radlab.rain.configuration.ScenarioConfKeys;
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.scoreboard.Scorecard;
+import radlab.rain.util.MetricWriter;
 import radlab.rain.util.MetricWriterFactory;
 
 public class Scenario {
@@ -68,8 +69,11 @@ public class Scenario {
 
 		// Configure tracks
 		for (ITarget target : targets) {
+			// Create a metric writer
+			MetricWriter metricWriter = MetricWriterFactory.createMetricWriter(metricWriterType, metricWriterConf);
+
 			target.setTiming(timing);
-			target.setMetricWriter(metricWriterType, metricWriterConf);
+			target.setMetricWriter(metricWriter);
 			target.init();
 		}
 

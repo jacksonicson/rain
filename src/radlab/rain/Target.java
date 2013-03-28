@@ -49,7 +49,6 @@ import radlab.rain.configuration.TrackConfKeys;
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.scoreboard.Scoreboard;
 import radlab.rain.util.MetricWriter;
-import radlab.rain.util.MetricWriterFactory;
 
 /**
  * The ScenarioTrack abstract class represents a single workload among potentially many that are simultaneously run
@@ -64,8 +63,7 @@ public abstract class Target implements ITarget {
 	protected Timing timing;
 
 	// Metric writer configuration
-	private MetricWriterFactory.Type metricWriterType;
-	private JSONObject metricWriterConf;
+	private MetricWriter metricWriter;
 
 	// Load manager
 	private LoadManager loadManager;
@@ -238,9 +236,6 @@ public abstract class Target implements ITarget {
 	private IScoreboard createScoreboard() throws JSONException, Exception {
 		logger.debug("Creating track scoreboard...");
 
-		// Create a metric writer
-		MetricWriter metricWriter = MetricWriterFactory.createMetricWriter(metricWriterType, metricWriterConf);
-
 		// Create scoreboard
 		IScoreboard scoreboard = new Scoreboard("track");
 
@@ -284,8 +279,7 @@ public abstract class Target implements ITarget {
 		return scoreboard;
 	}
 
-	public void setMetricWriter(MetricWriterFactory.Type metricWriterType, JSONObject metricWriterConf) {
-		this.metricWriterType = metricWriterType;
-		this.metricWriterConf = metricWriterConf;
+	public void setMetricWriter(MetricWriter metricWriter) {
+		this.metricWriter = metricWriter;
 	}
 }

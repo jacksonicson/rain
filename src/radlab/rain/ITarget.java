@@ -1,14 +1,12 @@
 package radlab.rain;
 
-import org.json.JSONObject;
-
 import radlab.rain.scoreboard.IScoreboard;
-import radlab.rain.util.MetricWriterFactory.Type;
+import radlab.rain.util.MetricWriter;
 
 public interface ITarget {
 	public void setTiming(Timing timing);
 
-	public void setMetricWriter(Type metricWriterType, JSONObject metricWriterConf);
+	public void setMetricWriter(MetricWriter metricWriter);
 
 	public void init() throws Exception;
 
