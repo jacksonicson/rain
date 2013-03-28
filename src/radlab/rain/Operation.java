@@ -127,6 +127,10 @@ public abstract class Operation implements Runnable {
 
 	public abstract void cleanup();
 
+	public void trace() {
+		numberOfActionsPerformed++;
+	}
+
 	public void trace(String msg) {
 		numberOfActionsPerformed++;
 	}
@@ -201,6 +205,10 @@ public abstract class Operation implements Runnable {
 
 	public LoadDefinition getGeneratedDuringProfile() {
 		return this.generatedDuringLoadDefinition;
+	}
+
+	public void setGeneratedByGenerator(Generator gen) {
+		this.generatedByGenerator = gen;
 	}
 
 	public void setGeneratedDuringProfile(LoadDefinition val) {

@@ -32,7 +32,6 @@
 package radlab.rain;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import radlab.rain.scoreboard.IScoreboard;
 
@@ -60,7 +59,7 @@ public abstract class Generator {
 
 	public abstract void dispose();
 
-	public void configure(JSONObject config) throws JSONException {
+	public void configure(TrackConfiguration trackConfig) throws JSONException {
 		// Overwrite this
 	}
 

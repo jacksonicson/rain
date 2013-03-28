@@ -29,41 +29,34 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package radlab.rain.test;
-
-import static org.junit.Assert.*;
+package radlab.rain.workload.http;
 
 import java.io.IOException;
 
-import org.junit.Before;
-import org.junit.Test;
+import radlab.rain.scoreboard.IScoreboard;
 
-import radlab.rain.util.HttpTransport;
+public class PingHomePageOperation extends HttpTestOperation {
+	public static String NAME = "PingHome";
 
-public class HttpTransportTest {
-	
-	private HttpTransport transport;
-	private String baseUrl = "http://ec2-204-236-196-7.compute-1.amazonaws.com";
-	
-	@Before
-	public void setUp() {
-		transport = new HttpTransport();
+	public PingHomePageOperation(IScoreboard scoreboard) {
+		super(scoreboard);
+
+		this.operationName = NAME;
+		this.operationIndex = HttpTestGenerator.PING_HOMEPAGE;
 	}
 
-	@Test
-	public void testReadUrlGet() throws IOException {
-		transport.fetchUrl("http://www.berkeley.edu");
-		int size = transport.getResponseLength();
-		assertTrue(size > 0);
-	}
+	@Override
+	public void execute() throws Throwable {
+		// Fetch the base url
+		StringBuilder response = this.http.fetchUrl(((HttpTestGenerator) generatedByGenerator)._baseUrl);
+		trace();
 
-	@Test
-	public void testReadUrlPost() throws IOException {
-		String checkNameUrl = baseUrl + "/users/check_name";
-		String username = "Alice";
-		transport.fetchUrl(checkNameUrl, "name=" + username);
-		int size = transport.getResponseLength();
-		System.out.println(transport.getResponseBuffer());
-		assertTrue(size > 0);
+		if (response.length() == 0) {
+			String errorMessage = "Home page GET ERROR - Received an empty response";
+			throw new IOException(errorMessage);
+		}
+
+		// Once we get here mark the operation as successful
+		this.setFailed(false);
 	}
 }

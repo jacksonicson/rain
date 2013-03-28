@@ -188,7 +188,7 @@ public abstract class Track {
 		Class<Generator> generatorClass = (Class<Generator>) Class.forName(config.generatorClassName);
 		Constructor<Generator> generatorCtor = generatorClass.getConstructor();
 		Generator generator = (Generator) generatorCtor.newInstance();
-		generator.configure(config.generatorParams);
+		generator.configure(config);
 		return generator;
 	}
 

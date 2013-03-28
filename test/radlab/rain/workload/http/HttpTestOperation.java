@@ -31,53 +31,30 @@
 
 package radlab.rain.workload.http;
 
-import radlab.rain.Generator;
-import radlab.rain.LoadDefinition;
 import radlab.rain.Operation;
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.util.HttpTransport;
 import radlab.rain.workload.httptest.HttpTestGenerator;
 
 /**
- * The HttpTestOperation class contains common static methods for use by the
- * operations that inherit from this abstract class.
+ * The HttpTestOperation class contains common static methods for use by the operations that inherit from this abstract
+ * class.
  */
-public abstract class HttpTestOperation extends Operation 
-{
-	// These references will be set by the Generator.
-	protected HttpTransport _http;
-	
-	/**
-	 * Returns the Generator that created this operation.
-	 * 
-	 * @return      The Generator that created this operation.
-	 */
-	public HttpTestGenerator getGenerator()
-	{
-		return (HttpTestGenerator) this.generatedByGenerator;
+public abstract class HttpTestOperation extends Operation {
+
+	protected HttpTransport http;
+
+	public HttpTestOperation(IScoreboard scoreboard) {
+		super(scoreboard);
 	}
-	
-	public HttpTestOperation( boolean interactive, IScoreboard scoreboard )
-	{
-		super( interactive, scoreboard );
-	}
-	
+
 	@Override
-	public void prepare(Generator generator) 
-	{
-		this.generatedByGenerator = generator;
-		HttpTestGenerator httpTestGenerator = (HttpTestGenerator) generator;
-		
-		LoadDefinition currentLoadProfile = generator.getLatestLoadProfile();
-		if( currentLoadProfile != null )
-			this.setGeneratedDuringProfile( currentLoadProfile );
-		
-		this._http = httpTestGenerator.getHttpTransport();
+	public void prepare() {
+		HttpTestGenerator httpTestGenerator = (HttpTestGenerator) generatedByGenerator;
+		http = httpTestGenerator.getHttpTransport();
 	}
-	
+
 	@Override
-	public void cleanup()
-	{
-		
+	public void cleanup() {
 	}
 }

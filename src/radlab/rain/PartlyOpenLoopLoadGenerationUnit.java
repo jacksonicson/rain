@@ -115,6 +115,10 @@ public class PartlyOpenLoopLoadGenerationUnit extends LoadGeneratingUnit {
 					// Generate next operation
 					Operation nextOperation = generator.nextRequest(lastOperationIndex);
 					if (nextOperation != null) {
+						// Initialize operation
+						nextOperation.setGeneratedDuringProfile(loadManager.getCurrentLoadProfile());
+						nextOperation.setGeneratedByGenerator(generator);
+
 						// Update last operation index.
 						lastOperationIndex = nextOperation.getOperationIndex();
 
