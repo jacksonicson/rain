@@ -43,7 +43,7 @@ import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import radlab.rain.DefaultTrack;
+import radlab.rain.LoadManagedTrack;
 import radlab.rain.Timing;
 
 /**
@@ -53,7 +53,7 @@ import radlab.rain.Timing;
  * outstanding requests to a target throughout a run. For now we just expect generators that use this track to pick the
  * least loaded server to avoid being backed up behind a slow server.
  */
-public abstract class ZKGatingScenarioTrack extends DefaultTrack {
+public abstract class ZKGatingScenarioTrack extends LoadManagedTrack {
 	private static Logger logger = LoggerFactory.getLogger(ZKGatingScenarioTrack.class);
 	public static final int DEFAULT_ZOOKEEPER_SESSION_TIMEOUT = 30000;
 	public static final String APP_SERVER_LIST_SEPARATOR = "\n";

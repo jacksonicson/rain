@@ -6,7 +6,7 @@ import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.DefaultTrack;
+import radlab.rain.LoadManagedTrack;
 import radlab.rain.Generator;
 import radlab.rain.GeneratorFactory;
 import radlab.rain.ITrack;
@@ -32,7 +32,7 @@ public class HttpTrackFactory implements TrackFactory, GeneratorFactory {
 	}
 
 	protected ITrack createTrack() {
-		DefaultTrack track = new DefaultTrack();
+		LoadManagedTrack track = new LoadManagedTrack();
 		track.setLoadScheduleCreator(new HttpTestScheduleCreator());
 		track.setGeneratorFactory(this);
 		return track;

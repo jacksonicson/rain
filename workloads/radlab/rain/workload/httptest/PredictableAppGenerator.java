@@ -38,7 +38,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.DefaultTrack;
+import radlab.rain.LoadManagedTrack;
 import radlab.rain.Generator;
 import radlab.rain.LoadDefinition;
 import radlab.rain.ObjectPool;
@@ -388,7 +388,7 @@ public class PredictableAppGenerator extends Generator
 		testScenario.setRampUp( 10 );
 		testScenario.setDuration( 600 );
 		testScenario.setRampDown( 10 );
-		DefaultTrack track = new DefaultTrack( testScenario );
+		LoadManagedTrack track = new LoadManagedTrack( testScenario );
 		track.initialize( generatorClassName, hostname, port );
 				
 		PredictableAppGenerator gen = new PredictableAppGenerator( track );

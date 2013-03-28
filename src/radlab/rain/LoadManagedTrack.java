@@ -38,8 +38,8 @@ import org.slf4j.LoggerFactory;
  * The DefaultScenarioTrack class is a generic implementation of the abstract <code>ScenarioTrack</code> class that
  * supports load profiles that specify the interval, number of users, mix behavior, and any transitions.
  */
-public class DefaultTrack extends Track {
-	private Logger logger = LoggerFactory.getLogger(DefaultTrack.class.getName() + " " + this);
+public class LoadManagedTrack extends Track {
+	private Logger logger = LoggerFactory.getLogger(LoadManagedTrack.class.getName() + " " + this);
 
 	// Load manager runs through the load schedule
 	private LoadManager loadManager;

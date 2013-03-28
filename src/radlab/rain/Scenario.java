@@ -179,4 +179,8 @@ public class Scenario {
 		}
 		return names;
 	}
+	
+	public Timing getTiming() {
+		return this.timing; 
+	}
 }
