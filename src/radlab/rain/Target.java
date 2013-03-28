@@ -33,16 +33,19 @@ package radlab.rain;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import radlab.rain.configuration.TrackConfKeys;
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.scoreboard.Scoreboard;
 import radlab.rain.util.MetricWriter;
@@ -117,7 +120,7 @@ public abstract class Target implements ITarget {
 		scoreboard = createScoreboard();
 
 		// Create load schedule creator and load schedule
-		loadSchedule = loadScheduleCreator.createSchedule(null);
+		loadSchedule = loadScheduleCreator.createSchedule();
 
 		// Create a new thread pool
 		executor = Executors.newCachedThreadPool();
@@ -133,6 +136,53 @@ public abstract class Target implements ITarget {
 		// Start load generating unit threads
 		for (Agent generator : loadGeneratingUnits)
 			generator.start();
+	}
+
+	public void configure(JSONObject config) throws JSONException {
+		// Open-Loop Probability
+		openLoopProbability = config.getDouble(TrackConfKeys.OPEN_LOOP_PROBABILITY_KEY.toString());
+
+		// Log Sampling Probability
+		logSamplingProbability = config.getDouble(TrackConfKeys.LOG_SAMPLING_PROBABILITY_KEY.toString());
+
+		// Mean Cycle Time
+		meanCycleTime = config.getDouble(TrackConfKeys.MEAN_CYCLE_TIME_KEY.toString());
+
+		// Mean Think Time
+		meanThinkTime = config.getDouble(TrackConfKeys.MEAN_THINK_TIME_KEY.toString());
+
+		// Load Mix Matrices/Behavior Directives
+		JSONObject behavior = config.getJSONObject(TrackConfKeys.BEHAVIOR_KEY.toString());
+		Iterator<String> keyIt = behavior.keys();
+
+		// Each of the keys in the behavior section should be for some mix matrix
+		while (keyIt.hasNext()) {
+			String mixName = keyIt.next();
+
+			// Now we need to get this object and parse it
+			JSONArray mix = behavior.getJSONArray(mixName);
+			double[][] data = null;
+			for (int i = 0; i < mix.length(); i++) {
+				if (i == 0) {
+					data = new double[mix.length()][mix.length()];
+				}
+				// Each row is itself an array of doubles
+				JSONArray row = mix.getJSONArray(i);
+				for (int j = 0; j < row.length(); j++) {
+					data[i][j] = row.getDouble(j);
+				}
+			}
+			mixMatrices.put(mixName, new MixMatrix(data));
+		}
+
+		// Snapshot interval
+		if (config.has(TrackConfKeys.METRIC_SNAPSHOT_INTERVAL.toString()))
+			metricSnapshotInterval = config.getDouble(TrackConfKeys.METRIC_SNAPSHOT_INTERVAL.toString());
+
+		// Configure the response time sampler
+		if (config.has(TrackConfKeys.MEAN_RESPONSE_TIME_SAMPLE_INTERVAL.toString()))
+			meanResponseTimeSamplingInterval = config.getLong(TrackConfKeys.MEAN_RESPONSE_TIME_SAMPLE_INTERVAL
+					.toString());
 	}
 
 	public void end() {

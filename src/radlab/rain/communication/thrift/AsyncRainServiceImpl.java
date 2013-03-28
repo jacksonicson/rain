@@ -30,7 +30,7 @@ public class AsyncRainServiceImpl implements RainService.Iface {
 	@Override
 	public List<String> getTrackNames() throws TException {
 		logger.info("listing all track names");
-		List<String> trackNames = scenario.getTrackNames();
+		List<String> trackNames = scenario.getTargetNames();
 		return trackNames;
 	}
 

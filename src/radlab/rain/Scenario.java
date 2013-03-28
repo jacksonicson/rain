@@ -51,12 +51,12 @@ public class Scenario {
 
 	private Timing timing;
 
-	private TargetFactory trackFactory;
+	private TargetFactory targetFactory;
 
 	private MetricWriterFactory.Type metricWriterType;
 	private JSONObject metricWriterConf;
 
-	private List<ITarget> tracks;
+	private List<ITarget> targets;
 
 	public Scenario(JSONObject config) throws Exception {
 		configure(config);
@@ -64,22 +64,22 @@ public class Scenario {
 
 	Timing execute() throws Exception {
 		// Build tracks based on static configuration
-		tracks = trackFactory.createTracks();
+		targets = targetFactory.createTracks();
 
 		// Configure tracks
-		for (ITarget track : tracks) {
-			track.setTiming(timing);
-			track.setMetricWriter(metricWriterType, metricWriterConf);
-			track.init();
+		for (ITarget target : targets) {
+			target.setTiming(timing);
+			target.setMetricWriter(metricWriterType, metricWriterConf);
+			target.init();
 		}
 
 		// Start all tracks
-		for (ITarget track : tracks)
-			track.start();
+		for (ITarget target : targets)
+			target.start();
 
 		// Join all running tracks
-		for (ITarget track : tracks)
-			track.end();
+		for (ITarget target : targets)
+			target.end();
 
 		return timing;
 	}
@@ -93,12 +93,12 @@ public class Scenario {
 		this.timing = new Timing(rampUp, duration, rampDown);
 
 		// New track factory
-		String trackConfClass = jsonConfig.getString(ScenarioConfKeys.TARGET_FACTORY_CLASS.toString());
-		trackFactory = createTrackFactory(trackConfClass);
+		String targetFacClass = jsonConfig.getString(ScenarioConfKeys.TARGET_FACTORY_CLASS.toString());
+		targetFactory = createTargetFactory(targetFacClass);
 
 		// Configure track factory
 		JSONObject params = jsonConfig.getJSONObject(ScenarioConfKeys.TARGET_FACTORY_CONF.toString());
-		trackFactory.configure(params);
+		targetFactory.configure(params);
 
 		// Metric writer configuration
 		metricWriterType = MetricWriterFactory.Type.getType(jsonConfig.getString(ScenarioConfKeys.METRIC_WRITER_TYPE
@@ -107,7 +107,7 @@ public class Scenario {
 	}
 
 	@SuppressWarnings("unchecked")
-	private TargetFactory createTrackFactory(String name) throws BenchmarkFailedException {
+	private TargetFactory createTargetFactory(String name) throws BenchmarkFailedException {
 		try {
 			Class<TargetFactory> creatorClass = (Class<TargetFactory>) Class.forName(name);
 			Constructor<TargetFactory> creatorCtor = creatorClass.getConstructor(new Class[] {});
@@ -123,7 +123,7 @@ public class Scenario {
 		Scorecard globalCard = new Scorecard("global", "global", timing.steadyStateDuration());
 
 		// Shutdown the scoreboards and tally up the results.
-		for (ITarget track : tracks) {
+		for (ITarget track : targets) {
 			// Scoreboard of the track
 			IScoreboard scoreboard = track.getScoreboard();
 
@@ -172,9 +172,9 @@ public class Scenario {
 		logger.info("Global metrics: " + globalCard.getIntervalStatistics().toString());
 	}
 
-	public List<String> getTrackNames() {
+	public List<String> getTargetNames() {
 		List<String> names = new ArrayList<String>();
-		for (ITarget track : tracks) {
+		for (ITarget track : targets) {
 			names.add(track.toString());
 		}
 		return names;
