@@ -38,9 +38,9 @@ import org.json.JSONException;
 
 import radlab.rain.LoadDefinition;
 import radlab.rain.LoadSchedule;
-import radlab.rain.LoadScheduleCreator;
+import radlab.rain.LoadScheduleFactory;
 
-public class HttpTestScheduleCreator implements LoadScheduleCreator {
+public class HttpTestScheduleCreator implements LoadScheduleFactory {
 
 	@Override
 	public LoadSchedule createSchedule() throws JSONException {

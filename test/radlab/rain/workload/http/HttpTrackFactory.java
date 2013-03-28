@@ -40,7 +40,7 @@ public class HttpTrackFactory implements TargetFactory, GeneratorFactory {
 			e.printStackTrace();
 		}
 		
-		track.setLoadScheduleCreator(new HttpTestScheduleCreator());
+		track.setLoadScheduleFactory(new HttpTestScheduleCreator());
 		track.setGeneratorFactory(this);
 		return track;
 	}

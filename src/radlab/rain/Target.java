@@ -66,21 +66,7 @@ public abstract class Target implements ITarget {
 	private MetricWriter metricWriter;
 
 	// Load manager
-	private LoadManager loadManager;
-
-	// Markov chain matrices
-	public Map<String, MixMatrix> mixMatrices = new HashMap<String, MixMatrix>();
-
-	// Execution times
-	public double openLoopProbability;
-	public double meanCycleTime;
-	public double meanThinkTime;
-
-	// Sampling
-	public double logSamplingProbability = 1.0;
-	public double metricSnapshotInterval = 60.0;
-	public boolean useMetricSnapshots = false;
-	public long meanResponseTimeSamplingInterval = 500;
+	protected LoadManager loadManager;
 
 	// Scoreboard
 	protected IScoreboard scoreboard;
@@ -88,18 +74,36 @@ public abstract class Target implements ITarget {
 	// Generator factory
 	protected GeneratorFactory generatorFactory;
 
-	// List of all load generating units
-	protected List<Agent> loadGeneratingUnits = new ArrayList<Agent>();
-
 	// Load schedule used by the generator and strategy
-	protected LoadScheduleCreator loadScheduleCreator;
-	protected LoadDefinition currentLoadUnit;
+	protected LoadScheduleFactory loadScheduleFactory;
+
+	// Load schedule
 	protected LoadSchedule loadSchedule;
+
+	// Current load definition
+	protected LoadDefinition currentLoadDefinition;
+
+	// Markov chain matrices
+	protected Map<String, MixMatrix> mixMatrices = new HashMap<String, MixMatrix>();
+
+	// Execution times
+	protected double openLoopProbability;
+	protected double meanCycleTime;
+	protected double meanThinkTime;
+
+	// Sampling
+	protected double logSamplingProbability = 1.0;
+	protected double metricSnapshotInterval = 60.0;
+	protected boolean useMetricSnapshots = false;
+	protected long meanResponseTimeSamplingInterval = 500;
+
+	// List of all load generating units
+	protected List<Agent> agents = new ArrayList<Agent>();
 
 	// Executer pool
 	protected ExecutorService executor;
 
-	public boolean validateLoadDefinition(LoadDefinition profile) {
+	private boolean validateLoadDefinition(LoadDefinition profile) {
 		// Check number of users
 		if (profile.numberOfUsers <= 0) {
 			logger.info("Invalid load profile. Number of users <= 0. Profile details: " + profile.toString());
@@ -115,21 +119,9 @@ public abstract class Target implements ITarget {
 		return true;
 	}
 
-	protected Agent createLoadGeneratingUnit(long id, Generator generator) {
-		AgentPOL lgUnit = new AgentPOL(id, loadManager, generator, timing);
-		return lgUnit;
-	}
-
-	public void setTiming(Timing timing) {
-		this.timing = timing;
-	}
-
-	public void setLoadScheduleCreator(LoadScheduleCreator loadScheduleCreator) {
-		this.loadScheduleCreator = loadScheduleCreator;
-	}
-
-	public void setGeneratorFactory(GeneratorFactory generatorFactory) {
-		this.generatorFactory = generatorFactory;
+	protected Agent createAgent(long id, Generator generator) {
+		AgentPOL agent = new AgentPOL(id, loadManager, generator, timing);
+		return agent;
 	}
 
 	public void init() throws Exception {
@@ -137,7 +129,7 @@ public abstract class Target implements ITarget {
 		scoreboard = createScoreboard();
 
 		// Create load schedule creator and load schedule
-		loadSchedule = loadScheduleCreator.createSchedule();
+		loadSchedule = loadScheduleFactory.createSchedule();
 
 		// Create a new load manager
 		loadManager = new LoadManager(timing, loadSchedule);
@@ -157,7 +149,7 @@ public abstract class Target implements ITarget {
 		scoreboard.start();
 
 		// Start load generating unit threads
-		for (Agent generator : loadGeneratingUnits)
+		for (Agent generator : agents)
 			generator.start();
 	}
 
@@ -218,7 +210,7 @@ public abstract class Target implements ITarget {
 		}
 
 		// Wait for all load generating units to exit
-		for (Agent generator : loadGeneratingUnits) {
+		for (Agent generator : agents) {
 			try {
 				generator.join();
 				logger.info("Thread joined: " + generator.getName());
@@ -266,13 +258,17 @@ public abstract class Target implements ITarget {
 			generator.initialize();
 
 			// Allow the load generation strategy to be configurable
-			Agent lgUnit = createLoadGeneratingUnit(i, generator);
+			Agent lgUnit = createAgent(i, generator);
 			lgUnit.setExecutorService(executor);
 			lgUnit.setTimeStarted(System.currentTimeMillis());
 
 			// Add thread to thread list and start the thread
-			loadGeneratingUnits.add(lgUnit);
+			agents.add(lgUnit);
 		}
+	}
+
+	public void setTiming(Timing timing) {
+		this.timing = timing;
 	}
 
 	public IScoreboard getScoreboard() {
@@ -281,5 +277,13 @@ public abstract class Target implements ITarget {
 
 	public void setMetricWriter(MetricWriter metricWriter) {
 		this.metricWriter = metricWriter;
+	}
+
+	public void setLoadScheduleFactory(LoadScheduleFactory loadScheduleFactory) {
+		this.loadScheduleFactory = loadScheduleFactory;
+	}
+
+	public void setGeneratorFactory(GeneratorFactory generatorFactory) {
+		this.generatorFactory = generatorFactory;
 	}
 }
