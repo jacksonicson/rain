@@ -37,6 +37,7 @@ import org.json.JSONObject;
 import radlab.rain.ProfileCreator;
 //import radlab.rain.Scenario;
 import radlab.rain.Track;
+import radlab.rain.workload.http.PredictableAppProfileCreator;
 //import radlab.rain.util.ConfigUtil;
 import radlab.rain.workloadtraits.WikipediaScheduleCreator;
 

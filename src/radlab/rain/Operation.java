@@ -115,40 +115,21 @@ public abstract class Operation implements Runnable {
 		}
 	}
 
-	/**
-	 * Prepares this operation for execution. This involves copying any features about the current state into this
-	 * operation.
-	 * 
-	 * @param generator
-	 *            The generator containing the state to copy.
-	 */
-	public abstract void prepare(Generator generator);
+	public abstract void prepare();
 
-	/**
-	 * Hook method for actions to be performed right before execution starts (before the clock starts to time the
-	 * execute method). There's no throws clause on this method so if something fails the methods need to deal with it.
-	 */
 	public void preExecute() {
 	}
 
-	/**
-	 * Executes this operation. This method is responsible for saving its trace record and execution metrics.
-	 * 
-	 * @throws Throwable
-	 */
 	public abstract void execute() throws Throwable;
 
-	/**
-	 * Hook method for actions to be performed right after execution finishes (after the clock stops to time the execute
-	 * method). There's no throws clause on this method so if something fails the methods need to deal with it.
-	 */
 	public void postExecute() {
 	}
 
-	/**
-	 * Do any potential cleanup necessary after execution of this operation.
-	 */
 	public abstract void cleanup();
+
+	public void trace(String msg) {
+		numberOfActionsPerformed++;
+	}
 
 	/**
 	 * Getter & Setters

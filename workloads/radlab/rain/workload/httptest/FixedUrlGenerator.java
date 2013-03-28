@@ -12,6 +12,7 @@ import radlab.rain.Operation;
 import radlab.rain.Track;
 import radlab.rain.util.HttpTransport;
 import radlab.rain.util.NegativeExponential;
+import radlab.rain.workload.http.FixedUrlOperation;
 
 public class FixedUrlGenerator extends Generator 
 {

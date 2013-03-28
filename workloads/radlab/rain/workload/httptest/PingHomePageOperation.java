@@ -34,6 +34,8 @@ package radlab.rain.workload.httptest;
 import java.io.IOException;
 
 import radlab.rain.scoreboard.IScoreboard;
+import radlab.rain.workload.http.HttpTestGenerator;
+import radlab.rain.workload.http.HttpTestOperation;
 
 public class PingHomePageOperation extends HttpTestOperation 
 {

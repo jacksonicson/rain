@@ -36,6 +36,7 @@ import radlab.rain.LoadDefinition;
 import radlab.rain.Operation;
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.util.HttpTransport;
+import radlab.rain.workload.http.HttpTestGenerator;
 
 /**
  * The HttpTestOperation class contains common static methods for use by the

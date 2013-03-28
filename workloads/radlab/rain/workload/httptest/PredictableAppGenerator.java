@@ -48,6 +48,8 @@ import radlab.rain.Track;
 import radlab.rain.util.ConfigUtil;
 import radlab.rain.util.HttpTransport;
 import radlab.rain.util.NegativeExponential;
+import radlab.rain.workload.http.PredictableAppGenerator;
+import radlab.rain.workload.http.PredictableAppOperation;
 
 public class PredictableAppGenerator extends Generator 
 {

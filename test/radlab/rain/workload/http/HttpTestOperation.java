@@ -29,62 +29,55 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package radlab.rain;
+package radlab.rain.workload.http;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
+import radlab.rain.Generator;
+import radlab.rain.LoadDefinition;
+import radlab.rain.Operation;
 import radlab.rain.scoreboard.IScoreboard;
+import radlab.rain.util.HttpTransport;
+import radlab.rain.workload.httptest.HttpTestGenerator;
 
 /**
- * The Generator abstract class provides a default constructor, required properties, and specifies the methods that must
- * be implemented in order to interface with the benchmark architecture.
- * 
- * The basic Generator has a name, associates itself with a scenario track, and keeps a reference to a scoreboard in
- * which operation results are dropped off.
+ * The HttpTestOperation class contains common static methods for use by the
+ * operations that inherit from this abstract class.
  */
-public abstract class Generator {
-	// Think time and cycle time
-	protected long thinkTime;
-	protected long cycleTime;
-
-	// Scoreboard to drop results off at
-	protected IScoreboard scoreboard = null;
-
-	// Latest load profile used
-	protected LoadDefinition latestLoadProfile = null;
-
-	public abstract void initialize();
-
-	public abstract Operation nextRequest(int lastOperation);
-
-	public abstract void dispose();
-
-	public void configure(JSONObject config) throws JSONException {
-		// Overwrite this
+public abstract class HttpTestOperation extends Operation 
+{
+	// These references will be set by the Generator.
+	protected HttpTransport _http;
+	
+	/**
+	 * Returns the Generator that created this operation.
+	 * 
+	 * @return      The Generator that created this operation.
+	 */
+	public HttpTestGenerator getGenerator()
+	{
+		return (HttpTestGenerator) this.generatedByGenerator;
 	}
-
-	public void setScoreboard(IScoreboard scoreboard) {
-		this.scoreboard = scoreboard;
+	
+	public HttpTestOperation( boolean interactive, IScoreboard scoreboard )
+	{
+		super( interactive, scoreboard );
 	}
-
-	public void setMeanCycleTime(long cycleTime) {
-		this.cycleTime = cycleTime;
+	
+	@Override
+	public void prepare(Generator generator) 
+	{
+		this.generatedByGenerator = generator;
+		HttpTestGenerator httpTestGenerator = (HttpTestGenerator) generator;
+		
+		LoadDefinition currentLoadProfile = generator.getLatestLoadProfile();
+		if( currentLoadProfile != null )
+			this.setGeneratedDuringProfile( currentLoadProfile );
+		
+		this._http = httpTestGenerator.getHttpTransport();
 	}
-
-	public void setMeanThinkTime(long thinkTime) {
-		this.thinkTime = thinkTime;
-	}
-
-	public IScoreboard getScoreboard() {
-		return scoreboard;
-	}
-
-	public long getCycleTime() {
-		return cycleTime;
-	}
-
-	public long getThinkTime() {
-		return thinkTime;
+	
+	@Override
+	public void cleanup()
+	{
+		
 	}
 }

@@ -29,7 +29,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package radlab.rain.workload.httptest;
+package radlab.rain.workload.http;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -40,7 +40,7 @@ import radlab.rain.ObjectPool;
 import radlab.rain.Operation;
 import radlab.rain.Track;
 import radlab.rain.util.HttpTransport;
-import radlab.rain.workload.http.PingHomePageOperation;
+import radlab.rain.workload.httptest.PingHomePageOperation;
 
 /**
  * The HttpTest class generates operations for a single user thread

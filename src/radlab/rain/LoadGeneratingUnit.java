@@ -46,9 +46,7 @@ public abstract class LoadGeneratingUnit extends Thread {
 	// Thread state is used to block some threads in order to adapt the
 	// active number of load generating units
 	public enum ThreadStates {
-		Initialized,
-		Active,
-		Inactive
+		Initialized, Active, Inactive
 	}
 
 	// Constants
@@ -84,15 +82,21 @@ public abstract class LoadGeneratingUnit extends Thread {
 	// The shared pool of worker threads
 	protected ExecutorService executorService;
 
+	/**
+	 * Create new load generating unit
+	 */
 	public LoadGeneratingUnit(long id, LoadManager loadManager, Generator generator, TrackConfiguration trackConfig,
 			Timing timing) {
 		this.id = id;
-		this.timing = timing; 
+		this.timing = timing;
 		this.generator = generator;
 		this.loadManager = loadManager;
 		this.trackConfig = trackConfig;
 	}
 
+	/**
+	 * Abstract methods
+	 */
 	public abstract void run();
 
 	public abstract void dispose();

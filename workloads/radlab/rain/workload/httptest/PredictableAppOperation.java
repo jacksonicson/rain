@@ -40,6 +40,7 @@ import radlab.rain.LoadDefinition;
 import radlab.rain.Operation;
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.util.HttpTransport;
+import radlab.rain.workload.http.PredictableAppGenerator;
 
 public class PredictableAppOperation extends Operation 
 {

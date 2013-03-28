@@ -17,6 +17,7 @@ import radlab.rain.ProfileCreator;
 import radlab.rain.Scenario;
 import radlab.rain.Track;
 import radlab.rain.util.ConfigUtil;
+import radlab.rain.workload.http.FixedUrlProfileCreator;
 import radlab.rain.workloadtraits.WikipediaScheduleCreator;
 
 public class FixedUrlProfileCreator extends ProfileCreator 

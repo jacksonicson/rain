@@ -7,6 +7,7 @@ import radlab.rain.LoadDefinition;
 import radlab.rain.Operation;
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.util.HttpTransport;
+import radlab.rain.workload.http.FixedUrlGenerator;
 
 public class FixedUrlOperation extends Operation 
 {

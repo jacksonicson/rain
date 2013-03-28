@@ -29,62 +29,45 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package radlab.rain;
+package radlab.rain.workload.http;
+
+import java.util.LinkedList;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.scoreboard.IScoreboard;
+import radlab.rain.LoadDefinition;
+import radlab.rain.LoadScheduleCreator;
 
-/**
- * The Generator abstract class provides a default constructor, required properties, and specifies the methods that must
- * be implemented in order to interface with the benchmark architecture.
- * 
- * The basic Generator has a name, associates itself with a scenario track, and keeps a reference to a scoreboard in
- * which operation results are dropped off.
- */
-public abstract class Generator {
-	// Think time and cycle time
-	protected long thinkTime;
-	protected long cycleTime;
-
-	// Scoreboard to drop results off at
-	protected IScoreboard scoreboard = null;
-
-	// Latest load profile used
-	protected LoadDefinition latestLoadProfile = null;
-
-	public abstract void initialize();
-
-	public abstract Operation nextRequest(int lastOperation);
-
-	public abstract void dispose();
-
-	public void configure(JSONObject config) throws JSONException {
-		// Overwrite this
-	}
-
-	public void setScoreboard(IScoreboard scoreboard) {
-		this.scoreboard = scoreboard;
-	}
-
-	public void setMeanCycleTime(long cycleTime) {
-		this.cycleTime = cycleTime;
-	}
-
-	public void setMeanThinkTime(long thinkTime) {
-		this.thinkTime = thinkTime;
-	}
-
-	public IScoreboard getScoreboard() {
-		return scoreboard;
-	}
-
-	public long getCycleTime() {
-		return cycleTime;
-	}
-
-	public long getThinkTime() {
-		return thinkTime;
+public class HttpTestScheduleCreator extends LoadScheduleCreator 
+{
+	//@Override
+	public LinkedList<LoadDefinition> createSchedule(String track, JSONObject params ) throws JSONException  
+	{
+		LinkedList<LoadDefinition> loadSchedule = new LinkedList<LoadDefinition>();
+		
+		// Mix names used here should match what's in the behavior
+		//LoadProfile i1 = new LoadProfile( 310, 1, "default", 0, "first" );
+		
+		LoadDefinition i1 = new LoadDefinition( 30, 20, "default", 0, "first" );// 10
+		LoadDefinition i2 = new LoadDefinition( 40, 25, "default", 0, "second" );// 15
+		/*LoadProfile i2 = new LoadProfile( 15, 40, "default", 0 );
+		LoadProfile i3 = new LoadProfile( 45, 100, "default", 0 );
+		LoadProfile i4 = new LoadProfile( 40, 150, "default", 0 );
+		LoadProfile i5 = new LoadProfile( 60, 200, "default", 0 );
+		LoadProfile i6 = new LoadProfile( 40, 150, "default", 0 );
+		LoadProfile i7 = new LoadProfile( 45, 100, "default", 0 );
+		LoadProfile i8 = new LoadProfile( 35, 40, "default", 0 );*/
+		
+		loadSchedule.add( i1 );
+		loadSchedule.add( i2 );/*
+		loadSchedule.add( i3 );
+		loadSchedule.add( i4 );
+		loadSchedule.add( i5 );
+		loadSchedule.add( i6 );
+		loadSchedule.add( i7 );
+		loadSchedule.add( i8 );*/
+		
+		return loadSchedule;
 	}
 }
