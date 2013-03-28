@@ -51,27 +51,37 @@ public class Scenario {
 
 	private Timing timing;
 
-	private TrackFactory trackFactory;
+	private TargetFactory trackFactory;
 
 	private MetricWriterFactory.Type metricWriterType;
 	private JSONObject metricWriterConf;
 
-	private List<ITrack> tracks;
+	private List<ITarget> tracks;
 
 	public Scenario(JSONObject config) throws Exception {
 		configure(config);
 	}
 
-	@SuppressWarnings("unchecked")
-	private TrackFactory createTrackFactory(String name) throws BenchmarkFailedException {
-		try {
-			Class<TrackFactory> creatorClass = (Class<TrackFactory>) Class.forName(name);
-			Constructor<TrackFactory> creatorCtor = creatorClass.getConstructor(new Class[] {});
-			TrackFactory creator = (TrackFactory) creatorCtor.newInstance((Object[]) null);
-			return creator;
-		} catch (Exception e) {
-			throw new BenchmarkFailedException("Unable to instantiate track factory", e);
+	Timing execute() throws Exception {
+		// Build tracks based on static configuration
+		tracks = trackFactory.createTracks();
+
+		// Configure tracks
+		for (ITarget track : tracks) {
+			track.setTiming(timing);
+			track.setMetricWriter(metricWriterType, metricWriterConf);
+			track.init();
 		}
+
+		// Start all tracks
+		for (ITarget track : tracks)
+			track.start();
+
+		// Join all running tracks
+		for (ITarget track : tracks)
+			track.end();
+
+		return timing;
 	}
 
 	private void configure(JSONObject jsonConfig) throws JSONException, BenchmarkFailedException {
@@ -82,11 +92,12 @@ public class Scenario {
 		long rampDown = timing.getLong(ScenarioConfKeys.RAMP_DOWN_KEY.toString());
 		this.timing = new Timing(rampUp, duration, rampDown);
 
-		// Track factory
-		String trackConfClass = jsonConfig.getString(ScenarioConfKeys.TRACK_FACTORY_CLASS.toString());
+		// New track factory
+		String trackConfClass = jsonConfig.getString(ScenarioConfKeys.TARGET_FACTORY_CLASS.toString());
 		trackFactory = createTrackFactory(trackConfClass);
 
-		JSONObject params = jsonConfig.getJSONObject(ScenarioConfKeys.TRACK_FACTORY_CONF.toString());
+		// Configure track factory
+		JSONObject params = jsonConfig.getJSONObject(ScenarioConfKeys.TARGET_FACTORY_CONF.toString());
 		trackFactory.configure(params);
 
 		// Metric writer configuration
@@ -95,27 +106,16 @@ public class Scenario {
 		metricWriterConf = jsonConfig.getJSONObject(ScenarioConfKeys.METRIC_WRITER_CONF.toString());
 	}
 
-	Timing execute() throws Exception {
-		// Build tracks based on static configuration
-		tracks = trackFactory.createTracks();
-
-		// Configure tracks
-		for (ITrack track : tracks) {
-			track.setTiming(timing);
-			track.setMetricWriterType(metricWriterType);
-			track.setMetricWriterConf(metricWriterConf);
-			track.init(); 
+	@SuppressWarnings("unchecked")
+	private TargetFactory createTrackFactory(String name) throws BenchmarkFailedException {
+		try {
+			Class<TargetFactory> creatorClass = (Class<TargetFactory>) Class.forName(name);
+			Constructor<TargetFactory> creatorCtor = creatorClass.getConstructor(new Class[] {});
+			TargetFactory creator = (TargetFactory) creatorCtor.newInstance((Object[]) null);
+			return creator;
+		} catch (Exception e) {
+			throw new BenchmarkFailedException("Unable to instantiate track factory", e);
 		}
-
-		// Start all tracks
-		for (ITrack track : tracks)
-			track.start();
-
-		// Join all running tracks
-		for (ITrack track : tracks)
-			track.end();
-
-		return timing;
 	}
 
 	public void aggregateScorecards(Timing timing) throws JSONException {
@@ -123,7 +123,7 @@ public class Scenario {
 		Scorecard globalCard = new Scorecard("global", "global", timing.steadyStateDuration());
 
 		// Shutdown the scoreboards and tally up the results.
-		for (ITrack track : tracks) {
+		for (ITarget track : tracks) {
 			// Scoreboard of the track
 			IScoreboard scoreboard = track.getScoreboard();
 
@@ -174,13 +174,13 @@ public class Scenario {
 
 	public List<String> getTrackNames() {
 		List<String> names = new ArrayList<String>();
-		for (ITrack track : tracks) {
+		for (ITarget track : tracks) {
 			names.add(track.toString());
 		}
 		return names;
 	}
-	
+
 	public Timing getTiming() {
-		return this.timing; 
+		return this.timing;
 	}
 }

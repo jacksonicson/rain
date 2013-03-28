@@ -9,10 +9,10 @@ import org.json.JSONObject;
 import radlab.rain.LoadManagedTarget;
 import radlab.rain.Generator;
 import radlab.rain.GeneratorFactory;
-import radlab.rain.ITrack;
-import radlab.rain.TrackFactory;
+import radlab.rain.ITarget;
+import radlab.rain.TargetFactory;
 
-public class HttpTrackFactory implements TrackFactory, GeneratorFactory {
+public class HttpTrackFactory implements TargetFactory, GeneratorFactory {
 
 	private long amount;
 
@@ -22,8 +22,8 @@ public class HttpTrackFactory implements TrackFactory, GeneratorFactory {
 	}
 
 	@Override
-	public List<ITrack> createTracks() throws JSONException {
-		List<ITrack> tracks = new LinkedList<ITrack>();
+	public List<ITarget> createTracks() throws JSONException {
+		List<ITarget> tracks = new LinkedList<ITarget>();
 		for (int i = 0; i < amount; i++) {
 			tracks.add(createTrack());
 		}
@@ -31,7 +31,7 @@ public class HttpTrackFactory implements TrackFactory, GeneratorFactory {
 		return tracks;
 	}
 
-	protected ITrack createTrack() {
+	protected ITarget createTrack() {
 		LoadManagedTarget track = new LoadManagedTarget();
 		track.setLoadScheduleCreator(new HttpTestScheduleCreator());
 		track.setGeneratorFactory(this);

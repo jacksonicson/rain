@@ -5,12 +5,10 @@ import org.json.JSONObject;
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.util.MetricWriterFactory.Type;
 
-public interface ITrack {
+public interface ITarget {
 	public void setTiming(Timing timing);
 
-	public void setMetricWriterType(Type metricWriterType);
-
-	public void setMetricWriterConf(JSONObject metricWriterConf);
+	public void setMetricWriter(Type metricWriterType, JSONObject metricWriterConf);
 
 	public void init() throws Exception;
 

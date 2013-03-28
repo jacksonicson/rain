@@ -54,7 +54,7 @@ import radlab.rain.util.MetricWriterFactory;
  * <br />
  * The ScenarioTrack is responsible for reading in the configuration of a workload and generating the load profiles.
  */
-public abstract class Target implements ITrack {
+public abstract class Target implements ITarget {
 	private static Logger logger = LoggerFactory.getLogger(Target.class);
 
 	// Timings
@@ -201,11 +201,8 @@ public abstract class Target implements ITrack {
 		return scoreboard;
 	}
 
-	public void setMetricWriterType(MetricWriterFactory.Type metricWriterType) {
+	public void setMetricWriter(MetricWriterFactory.Type metricWriterType, JSONObject metricWriterConf) {
 		this.metricWriterType = metricWriterType;
-	}
-
-	public void setMetricWriterConf(JSONObject metricWriterConf) {
 		this.metricWriterConf = metricWriterConf;
 	}
 }
