@@ -15,7 +15,7 @@ import radlab.rain.Generator;
 import radlab.rain.LoadDefinition;
 import radlab.rain.ObjectPool;
 import radlab.rain.Operation;
-import radlab.rain.Track;
+import radlab.rain.Target;
 
 public class S3Generator extends Generator 
 {
@@ -69,7 +69,7 @@ public class S3Generator extends Generator
 	@SuppressWarnings("unused")
 	private S3Request<String> _lastRequest 	= null;
 	
-	public S3Generator(Track track) 
+	public S3Generator(Target track) 
 	{
 		super(track);
 	}

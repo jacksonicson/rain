@@ -36,7 +36,7 @@ import org.json.JSONObject;
 
 import radlab.rain.OperationExecution;
 import radlab.rain.Timing;
-import radlab.rain.Track;
+import radlab.rain.Target;
 import radlab.rain.util.MetricWriter;
 
 /**
@@ -54,7 +54,7 @@ public interface IScoreboard {
 
 	void initialize(Timing timing, long maxUsers);
 
-	void setScenarioTrack(Track val);
+	void setScenarioTrack(Target val);
 
 	void setMetricWriter(MetricWriter val);
 
@@ -95,5 +95,5 @@ public interface IScoreboard {
 
 	long getEndTimestamp();
 
-	Track getScenarioTrack();
+	Target getScenarioTrack();
 }

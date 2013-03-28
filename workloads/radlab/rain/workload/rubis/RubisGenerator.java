@@ -34,7 +34,7 @@ package radlab.rain.workload.rubis;
 import radlab.rain.Generator;
 import radlab.rain.LoadDefinition;
 import radlab.rain.Operation;
-import radlab.rain.Track;
+import radlab.rain.Target;
 import radlab.rain.util.HttpTransport;
 
 /**
@@ -83,7 +83,7 @@ public class RubisGenerator extends Generator
 	 * 
 	 * @param track     The track configuration with which to run this generator.
 	 */
-	public RubisGenerator( Track track )
+	public RubisGenerator( Target track )
 	{
 		super( track );
 		

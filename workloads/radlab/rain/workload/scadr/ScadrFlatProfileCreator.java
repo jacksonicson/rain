@@ -36,7 +36,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import radlab.rain.TrackFactory;
-import radlab.rain.Track;
+import radlab.rain.Target;
 
 public class ScadrFlatProfileCreator extends TrackFactory 
 {
@@ -55,7 +55,7 @@ public class ScadrFlatProfileCreator extends TrackFactory
 			String trackName = "scadr-00" + i;
 			JSONObject trackDetails = new JSONObject();
 			// Fill in details
-			trackDetails.put( Track.CFG_GENERATOR_KEY, "radlab.rain.workload.scadr.ScadrGenerator" );
+			trackDetails.put( Target.CFG_GENERATOR_KEY, "radlab.rain.workload.scadr.ScadrGenerator" );
 			// Construct generator parameters
 			JSONObject generatorParams = new JSONObject();
 			
@@ -63,10 +63,10 @@ public class ScadrFlatProfileCreator extends TrackFactory
 			generatorParams.put( ScadrGenerator.CFG_USE_POOLING_KEY, true );
 			generatorParams.put( ScadrGenerator.CFG_DEBUG_KEY, true );
 			
-			trackDetails.put( Track.CFG_GENERATOR_PARAMS_KEY, generatorParams );
+			trackDetails.put( Target.CFG_GENERATOR_PARAMS_KEY, generatorParams );
 			
-			trackDetails.put( Track.CFG_TRACK_CLASS_KEY, "radlab.rain.workload.scadr.ScadrScenarioTrack" );
-			trackDetails.put( Track.CFG_RESOURCE_PATH, "resources/" );
+			trackDetails.put( Target.CFG_TRACK_CLASS_KEY, "radlab.rain.workload.scadr.ScadrScenarioTrack" );
+			trackDetails.put( Target.CFG_RESOURCE_PATH, "resources/" );
 			// Add in behavior and loadProfileCreatorClass
 			
 			/*
@@ -106,31 +106,31 @@ public class ScadrFlatProfileCreator extends TrackFactory
 			behaviorDetails.put( "default", mix1 );
 			
 			// Store the behavior details in the track config
-			trackDetails.put( Track.CFG_BEHAVIOR_KEY, behaviorDetails );
+			trackDetails.put( Target.CFG_BEHAVIOR_KEY, behaviorDetails );
 			
 			// Specifiy the load creator class
-			trackDetails.put( Track.CFG_LOAD_SCHEDULE_CREATOR_KEY, "radlab.rain.workload.scadr.ScadrFlatScheduleCreator" );
+			trackDetails.put( Target.CFG_LOAD_SCHEDULE_CREATOR_KEY, "radlab.rain.workload.scadr.ScadrFlatScheduleCreator" );
 						
 			JSONObject targetDetails = new JSONObject();
-			targetDetails.put( Track.CFG_TARGET_HOSTNAME_KEY, "ec2-50-16-105-73.compute-1.amazonaws.com" );
-			targetDetails.put( Track.CFG_TARGET_PORT_KEY, 8080 );
+			targetDetails.put( Target.CFG_TARGET_HOSTNAME_KEY, "ec2-50-16-105-73.compute-1.amazonaws.com" );
+			targetDetails.put( Target.CFG_TARGET_PORT_KEY, 8080 );
 			
-			trackDetails.put( Track.CFG_TARGET_KEY, targetDetails );
-			trackDetails.put( Track.CFG_LOG_SAMPLING_PROBABILITY_KEY, 0.0 ); // No log sampling
-			trackDetails.put( Track.CFG_OPEN_LOOP_PROBABILITY_KEY, 0.0 );
-			trackDetails.put( Track.CFG_MEAN_CYCLE_TIME_KEY, 0 );
-			trackDetails.put( Track.CFG_MEAN_THINK_TIME_KEY, 0 );
-			trackDetails.put( Track.CFG_INTERACTIVE_KEY, true );
+			trackDetails.put( Target.CFG_TARGET_KEY, targetDetails );
+			trackDetails.put( Target.CFG_LOG_SAMPLING_PROBABILITY_KEY, 0.0 ); // No log sampling
+			trackDetails.put( Target.CFG_OPEN_LOOP_PROBABILITY_KEY, 0.0 );
+			trackDetails.put( Target.CFG_MEAN_CYCLE_TIME_KEY, 0 );
+			trackDetails.put( Target.CFG_MEAN_THINK_TIME_KEY, 0 );
+			trackDetails.put( Target.CFG_INTERACTIVE_KEY, true );
 
 			// Set response time sampling interval - should be tuned based on the expected 
 			// order of the expected number of operations/requests that will be issued/served
 			// e.g. lower values if we're doing a short run with few operations and
 			// larger values if we're doing a long run with many operations so we reduce
 			// memory overhead of storing samples
-			trackDetails.put( Track.CFG_MEAN_RESPONSE_TIME_SAMPLE_INTERVAL, 50 );
-			trackDetails.put( Track.CFG_METRIC_SNAPSHOT_INTERVAL, 60 ); // Specify the metric snapshot interval in seconds
-			trackDetails.put( Track.CFG_METRIC_SNAPSHOTS, true );
-			trackDetails.put( Track.CFG_METRIC_DB, "dev-mini-demosql.cwppbyvyquau.us-east-1.rds.amazonaws.com,radlab_dev,randyAndDavelab" );
+			trackDetails.put( Target.CFG_MEAN_RESPONSE_TIME_SAMPLE_INTERVAL, 50 );
+			trackDetails.put( Target.CFG_METRIC_SNAPSHOT_INTERVAL, 60 ); // Specify the metric snapshot interval in seconds
+			trackDetails.put( Target.CFG_METRIC_SNAPSHOTS, true );
+			trackDetails.put( Target.CFG_METRIC_DB, "dev-mini-demosql.cwppbyvyquau.us-east-1.rds.amazonaws.com,radlab_dev,randyAndDavelab" );
 			trackConfig.put( trackName, trackDetails );
 		}
 		

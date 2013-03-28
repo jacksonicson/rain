@@ -3,7 +3,7 @@ package radlab.rain.workload.bookingHotspots;
 import radlab.rain.Generator;
 //import radlab.rain.LoadProfile;
 import radlab.rain.Operation;
-import radlab.rain.Track;
+import radlab.rain.Target;
 import radlab.rain.util.HttpTransport;
 
 /**
@@ -127,7 +127,7 @@ public class BookingGenerator extends Generator
 	 * 
 	 * @param track     The track configuration with which to run this generator.
 	 */
-	public BookingGenerator( Track track )
+	public BookingGenerator( Target track )
 	{
 		super( track );
 		

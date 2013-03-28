@@ -32,7 +32,7 @@
 package radlab.rain.workload.scadr;
 
 
-import radlab.rain.LoadManagedTrack;
+import radlab.rain.LoadManagedTarget;
 import radlab.rain.Scenario;
 import radlab.rain.util.AppServerStats;
 
@@ -46,7 +46,7 @@ import java.text.NumberFormat;
 import java.util.Hashtable;
 import java.util.Iterator;
 
-public class ScadrScenarioTrack extends LoadManagedTrack 
+public class ScadrScenarioTrack extends LoadManagedTarget 
 {
 	public static final int DEFAULT_ZOOKEEPER_SESSION_TIMEOUT 	= 30000;
 	public static final String APP_SERVER_LIST_SEPARATOR 		= "\n";

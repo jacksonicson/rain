@@ -38,7 +38,7 @@ import radlab.rain.Generator;
 import radlab.rain.LoadDefinition;
 import radlab.rain.ObjectPool;
 import radlab.rain.Operation;
-import radlab.rain.Track;
+import radlab.rain.Target;
 import radlab.rain.util.HttpTransport;
 import radlab.rain.workload.http.PingHomePageOperation;
 
@@ -67,7 +67,7 @@ public class HttpTestGenerator extends Generator
 	 * 
 	 * @param track     The track configuration with which to run this generator.
 	 */
-	public HttpTestGenerator( Track track )
+	public HttpTestGenerator( Target track )
 	{
 		super( track );
 		this._baseUrl 	= "http://" + this._loadTrack.getTargetHostName() + ":" + this._loadTrack.getTargetHostPort();

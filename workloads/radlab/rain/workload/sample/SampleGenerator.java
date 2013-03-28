@@ -34,7 +34,7 @@ package radlab.rain.workload.sample;
 import radlab.rain.Generator;
 import radlab.rain.LoadDefinition;
 import radlab.rain.Operation;
-import radlab.rain.Track;
+import radlab.rain.Target;
 import radlab.rain.util.HttpTransport;
 
 /**
@@ -56,7 +56,7 @@ public class SampleGenerator extends Generator
 	 * 
 	 * @param track     The track configuration with which to run this generator.
 	 */
-	public SampleGenerator( Track track )
+	public SampleGenerator( Target track )
 	{
 		super( track );
 		

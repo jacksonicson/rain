@@ -36,7 +36,7 @@ import radlab.rain.LoadDefinition;
 import radlab.rain.ObjectPool;
 import radlab.rain.Operation;
 import radlab.rain.RainConfig;
-import radlab.rain.Track;
+import radlab.rain.Target;
 import radlab.rain.util.HttpTransport;
 import radlab.rain.util.NegativeExponential;
 import radlab.rain.util.AppServerStats;
@@ -454,7 +454,7 @@ public class ScadrGenerator extends Generator
 	//private String _lastAppServer = "";
 	
 	
-	public ScadrGenerator(Track track) 
+	public ScadrGenerator(Target track) 
 	{
 		super(track);
 		this._rand = new Random();

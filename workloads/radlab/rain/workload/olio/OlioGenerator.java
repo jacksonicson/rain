@@ -41,7 +41,7 @@ import java.util.logging.Logger;
 import radlab.rain.Generator;
 import radlab.rain.LoadDefinition;
 import radlab.rain.Operation;
-import radlab.rain.Track;
+import radlab.rain.Target;
 import radlab.rain.util.HttpTransport;
 import radlab.rain.util.NegativeExponential;
 
@@ -250,7 +250,7 @@ public class OlioGenerator extends Generator
 	 * 
 	 * @param track     The track configuration with which to run this generator.
 	 */
-	public OlioGenerator( Track track )
+	public OlioGenerator( Target track )
 	{
 		super( track );
 		

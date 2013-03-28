@@ -35,7 +35,7 @@ import radlab.rain.Generator;
 
 import radlab.rain.LoadDefinition;
 import radlab.rain.Operation;
-import radlab.rain.Track;
+import radlab.rain.Target;
 import radlab.rain.workload.scads.keys.KeyGenerator;
 
 /**
@@ -59,7 +59,7 @@ public class ScadsGenerator extends Generator
 	 * 
 	 * @param track     The track configuration with which to run this generator.
 	 */
-	public ScadsGenerator( Track track )
+	public ScadsGenerator( Target track )
 	{
 		super( track );
 	}

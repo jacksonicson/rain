@@ -36,7 +36,7 @@ import java.util.logging.Logger;
 import radlab.rain.Generator;
 import radlab.rain.LoadDefinition;
 import radlab.rain.Operation;
-import radlab.rain.Track;
+import radlab.rain.Target;
 import radlab.rain.ObjectPool;
 import radlab.rain.util.NegativeExponential;
 
@@ -72,7 +72,7 @@ public class CloudstoneNullGenerator extends Generator
 	@SuppressWarnings("unused")
 	private NegativeExponential _cycleTimeGenerator = null;
 	
-	public CloudstoneNullGenerator(Track trk) 
+	public CloudstoneNullGenerator(Target trk) 
 	{
 		super(trk);
 		
