@@ -119,11 +119,6 @@ public abstract class Target implements ITarget {
 		return true;
 	}
 
-	protected Agent createAgent(long id, Generator generator) {
-		AgentPOL agent = new AgentPOL(id, loadManager, generator, timing);
-		return agent;
-	}
-
 	public void init() throws Exception {
 		// Create scoreboard
 		scoreboard = createScoreboard();
@@ -143,7 +138,7 @@ public abstract class Target implements ITarget {
 		loadManager.start();
 
 		// Create load generating units
-		createLoadGeneratingUnits(executor);
+		createAgents(executor);
 
 		// Start the scoreboard
 		scoreboard.start();
@@ -151,6 +146,54 @@ public abstract class Target implements ITarget {
 		// Start load generating unit threads
 		for (Agent generator : agents)
 			generator.start();
+	}
+
+	private void createAgents(ExecutorService executor) throws Exception {
+		// Determine maximum number of required lg units that are required by the schedule
+		long maxGenerators = loadSchedule.getMaxGenerators();
+
+		// Create all agents
+		for (int i = 0; i < maxGenerators; i++) {
+			// Setup generator
+			Generator generator = generatorFactory.createGenerator();
+			generator.setScoreboard(scoreboard);
+			generator.setMeanCycleTime((long) (meanCycleTime * 1000));
+			generator.setMeanThinkTime((long) (meanThinkTime * 1000));
+			generator.initialize();
+
+			// Allow the load generation strategy to be configurable
+			AgentPOL agent = new AgentPOL(i, loadManager, generator, timing);
+			agent.setExecutorService(executor);
+			agent.setTimeStarted(System.currentTimeMillis());
+
+			// Add thread to thread list and start the thread
+			agents.add(agent);
+		}
+	}
+
+	public void end() {
+		// Shutdown load manager
+		try {
+			loadManager.setDone(true);
+			loadManager.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		// Wait for all load generating units to exit
+		for (Agent generator : agents) {
+			try {
+				generator.join();
+				logger.info("Thread joined: " + generator.getName());
+			} catch (InterruptedException ie) {
+				logger.error("Main thread interrupted... exiting!");
+			} finally {
+				generator.dispose();
+			}
+		}
+
+		// Stop the scoreboard
+		scoreboard.stop();
 	}
 
 	public void configure(JSONObject config) throws JSONException {
@@ -200,31 +243,6 @@ public abstract class Target implements ITarget {
 					.toString());
 	}
 
-	public void end() {
-		// Shutdown load manager
-		try {
-			loadManager.setDone(true);
-			loadManager.join();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-
-		// Wait for all load generating units to exit
-		for (Agent generator : agents) {
-			try {
-				generator.join();
-				logger.info("Thread joined: " + generator.getName());
-			} catch (InterruptedException ie) {
-				logger.error("Main thread interrupted... exiting!");
-			} finally {
-				generator.dispose();
-			}
-		}
-
-		// Stop the scoreboard
-		scoreboard.stop();
-	}
-
 	private IScoreboard createScoreboard() throws JSONException, Exception {
 		logger.debug("Creating track scoreboard...");
 
@@ -242,29 +260,6 @@ public abstract class Target implements ITarget {
 		scoreboard.start();
 
 		return scoreboard;
-	}
-
-	private void createLoadGeneratingUnits(ExecutorService executor) throws Exception {
-		// Determine maximum number of required lg units that are required by the schedule
-		long maxGenerators = loadSchedule.getMaxGenerators();
-
-		// Create all lg units
-		for (int i = 0; i < maxGenerators; i++) {
-			// Setup generator
-			Generator generator = generatorFactory.createGenerator();
-			generator.setScoreboard(scoreboard);
-			generator.setMeanCycleTime((long) (meanCycleTime * 1000));
-			generator.setMeanThinkTime((long) (meanThinkTime * 1000));
-			generator.initialize();
-
-			// Allow the load generation strategy to be configurable
-			Agent lgUnit = createAgent(i, generator);
-			lgUnit.setExecutorService(executor);
-			lgUnit.setTimeStarted(System.currentTimeMillis());
-
-			// Add thread to thread list and start the thread
-			agents.add(lgUnit);
-		}
 	}
 
 	public void setTiming(Timing timing) {
