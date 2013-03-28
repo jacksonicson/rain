@@ -49,11 +49,10 @@ public class LoadManagedTrack extends Track {
 
 		// Create a new load manager
 		loadManager = new LoadManager(timing, loadSchedule);
-		loadManager.start();
 	}
 
-	protected LoadGeneratingUnit createLoadGeneratingUnit(long id, Generator generator) {
-		PartlyOpenLoopLoadGenerationUnit lgUnit = new PartlyOpenLoopLoadGenerationUnit(id, loadManager, generator,
+	protected Agent createLoadGeneratingUnit(long id, Generator generator) {
+		POLAgent lgUnit = new POLAgent(id, loadManager, generator,
 				timing);
 		return lgUnit;
 	}
@@ -75,13 +74,13 @@ public class LoadManagedTrack extends Track {
 	}
 
 	public void start() throws Exception {
-		super.start();
-
 		if (loadManager.isAlive())
 			return;
 
 		logger.debug("Starting load manager");
 		loadManager.start();
+
+		super.start();
 	}
 
 	public void end() {

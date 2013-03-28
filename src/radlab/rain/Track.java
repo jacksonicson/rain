@@ -85,7 +85,7 @@ public abstract class Track implements ITrack {
 	protected GeneratorFactory generatorFactory;
 
 	// List of all load generating units
-	protected List<LoadGeneratingUnit> loadGeneratingUnits = new ArrayList<LoadGeneratingUnit>();
+	protected List<Agent> loadGeneratingUnits = new ArrayList<Agent>();
 
 	// Load schedule used by the generator and strategy
 	protected LoadScheduleCreator loadScheduleCreator;
@@ -98,7 +98,7 @@ public abstract class Track implements ITrack {
 	// Abstract methods
 	protected abstract boolean validateLoadDefinition(LoadDefinition definition);
 
-	protected abstract LoadGeneratingUnit createLoadGeneratingUnit(long id, Generator generator) throws Exception;
+	protected abstract Agent createLoadGeneratingUnit(long id, Generator generator) throws Exception;
 
 	public void setTiming(Timing timing) {
 		this.timing = timing;
@@ -131,13 +131,13 @@ public abstract class Track implements ITrack {
 		scoreboard.start();
 
 		// Start load generating unit threads
-		for (LoadGeneratingUnit generator : loadGeneratingUnits)
+		for (Agent generator : loadGeneratingUnits)
 			generator.start();
 	}
 
 	public void end() {
 		// Wait for all load generating units to exit
-		for (LoadGeneratingUnit generator : loadGeneratingUnits) {
+		for (Agent generator : loadGeneratingUnits) {
 			try {
 				generator.join();
 				logger.info("Thread joined: " + generator.getName());
@@ -188,7 +188,7 @@ public abstract class Track implements ITrack {
 			generator.initialize();
 
 			// Allow the load generation strategy to be configurable
-			LoadGeneratingUnit lgUnit = createLoadGeneratingUnit(i, generator);
+			Agent lgUnit = createLoadGeneratingUnit(i, generator);
 			lgUnit.setExecutorService(executor);
 			lgUnit.setTimeStarted(System.currentTimeMillis());
 

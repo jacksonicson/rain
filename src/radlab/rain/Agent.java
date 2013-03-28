@@ -40,8 +40,8 @@ import org.slf4j.LoggerFactory;
  * The LoadGenerationStrategy abstract class is a basic thread that keeps track of its state (waiting to begin, active,
  * or inactive) and associates itself with a generator that creates operations.
  */
-public abstract class LoadGeneratingUnit extends Thread {
-	private static Logger logger = LoggerFactory.getLogger(LoadGeneratingUnit.class);
+public abstract class Agent extends Thread {
+	private static Logger logger = LoggerFactory.getLogger(Agent.class);
 
 	// Thread state is used to block some threads in order to adapt the
 	// active number of load generating units
@@ -84,7 +84,7 @@ public abstract class LoadGeneratingUnit extends Thread {
 	/**
 	 * Create new load generating unit
 	 */
-	public LoadGeneratingUnit(long id, LoadManager loadManager, Generator generator, Timing timing) {
+	public Agent(long id, LoadManager loadManager, Generator generator, Timing timing) {
 		this.id = id;
 		this.timing = timing;
 		this.generator = generator;
