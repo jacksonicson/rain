@@ -35,10 +35,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.ProfileCreator;
+import radlab.rain.TracksConfigurationCreator;
 import radlab.rain.Track;
 
-public class GraditRampProfileCreator extends ProfileCreator 
+public class GraditRampProfileCreator extends TracksConfigurationCreator 
 {
 		
 	public GraditRampProfileCreator() 

@@ -134,7 +134,7 @@ public class ScenarioConfiguration {
 				// Create profile creator class by reflection
 				String profileCreatorClass = jsonConfig.getString(ScenarioConfKeys.PROFILES_CREATOR_CLASS_KEY
 						.toString());
-				ProfileCreator creator = createLoadProfileCreator(profileCreatorClass);
+				TracksConfigurationCreator creator = createLoadProfileCreator(profileCreatorClass);
 				JSONObject params = null;
 				// Look for profile creator params - if we find some then
 				// pass them
@@ -196,10 +196,10 @@ public class ScenarioConfiguration {
 	}
 
 	@SuppressWarnings("unchecked")
-	public ProfileCreator createLoadProfileCreator(String name) throws Exception {
-		Class<ProfileCreator> creatorClass = (Class<ProfileCreator>) Class.forName(name);
-		Constructor<ProfileCreator> creatorCtor = creatorClass.getConstructor(new Class[] {});
-		ProfileCreator creator = (ProfileCreator) creatorCtor.newInstance((Object[]) null);
+	public TracksConfigurationCreator createLoadProfileCreator(String name) throws Exception {
+		Class<TracksConfigurationCreator> creatorClass = (Class<TracksConfigurationCreator>) Class.forName(name);
+		Constructor<TracksConfigurationCreator> creatorCtor = creatorClass.getConstructor(new Class[] {});
+		TracksConfigurationCreator creator = (TracksConfigurationCreator) creatorCtor.newInstance((Object[]) null);
 		return creator;
 	}
 }

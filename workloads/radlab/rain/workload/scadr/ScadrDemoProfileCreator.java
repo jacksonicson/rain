@@ -35,10 +35,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.ProfileCreator;
+import radlab.rain.TracksConfigurationCreator;
 import radlab.rain.Track;
 
-public class ScadrDemoProfileCreator extends ProfileCreator 
+public class ScadrDemoProfileCreator extends TracksConfigurationCreator 
 {
 		
 	public ScadrDemoProfileCreator() 
