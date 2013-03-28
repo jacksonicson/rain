@@ -168,4 +168,8 @@ public class LoadDefinition {
 		activeCount++;
 		setTimeStarted(System.currentTimeMillis());
 	}
+	
+	public long getActivations() {
+		return activeCount;
+	}
 }

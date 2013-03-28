@@ -101,35 +101,33 @@ public class Scorecard {
 		operationSummary.processResult(result, meanResponseTimeSamplingInterval);
 
 		// Process result for this scorecard
-		if (result.isFailed()) {
+		if (result.failed) {
 			totalOpsFailed++;
 		} else { // Result successful
 			totalOpsSuccessful++;
 
-			totalActionsSuccessful += result.getActionsPerformed();
+			totalActionsSuccessful += result.actionsPerformed;
 
 			// Count operations
-			if (result.isAsynchronous())
+			if (result.async)
 				totalOpsAsync++;
 			else
 				totalOpsSync++;
 
-			if (result.isInteractive()) {
-				long responseTime = result.getExecutionTime();
+			long responseTime = result.getExecutionTime();
 
-				// Response time
-				totalOpResponseTime += responseTime;
+			// Response time
+			totalOpResponseTime += responseTime;
 
-				// Update max and min response time
-				maxResponseTime = Math.max(maxResponseTime, responseTime);
-				minResponseTime = Math.min(minResponseTime, responseTime);
-			}
+			// Update max and min response time
+			maxResponseTime = Math.max(maxResponseTime, responseTime);
+			minResponseTime = Math.min(minResponseTime, responseTime);
 		}
 	}
 
 	void processProfileResult(OperationExecution result, double meanResponseTimeSamplingInterval) {
 		LoadDefinition activeProfile = result.generatedDuring;
-		activeCount = activeProfile._activeCount;
+		activeCount = activeProfile.getActivations();
 		processResult(result, meanResponseTimeSamplingInterval);
 	}
 

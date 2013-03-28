@@ -63,31 +63,29 @@ public class OperationSummary {
 	}
 
 	void processResult(OperationExecution result, double meanResponseTimeSamplingInterval) {
-		if (result.isFailed()) {
+		if (result.failed) {
 			opsFailed++;
 		} else { // Result successful
 			opsSuccessful++;
 
-			actionsSuccessful += result.getActionsPerformed();
+			actionsSuccessful += result.actionsPerformed;
 
 			// Count operations
-			if (result.isAsynchronous()) {
+			if (result.async) {
 				asyncInvocations++;
 			} else {
 				syncInvocations++;
 			}
 
-			if (result.isInteractive()) {
-				long responseTime = result.getExecutionTime();
-				responseTimeSampler.accept(responseTime);
+			long responseTime = result.getExecutionTime();
+			responseTimeSampler.accept(responseTime);
 
-				// Response time
-				totalResponseTime += responseTime;
+			// Response time
+			totalResponseTime += responseTime;
 
-				// Update max and min response time
-				maxResponseTime = Math.max(maxResponseTime, responseTime);
-				minResponseTime = Math.min(minResponseTime, responseTime);
-			}
+			// Update max and min response time
+			maxResponseTime = Math.max(maxResponseTime, responseTime);
+			minResponseTime = Math.min(minResponseTime, responseTime);
 		}
 	}
 

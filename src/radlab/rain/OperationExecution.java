@@ -39,19 +39,19 @@ import radlab.rain.scoreboard.TraceLabels;
  */
 public class OperationExecution {
 
-	final String operationName;
-	final String operationRequest;
+	final public String operationName;
+	final public String operationRequest;
 
-	final LoadDefinition generatedDuring;
+	final public LoadDefinition generatedDuring;
 
-	final boolean async;
-	final boolean failed;
+	final public boolean async;
+	final public boolean failed;
 
-	final long timeStarted;
-	final long timeFinished;
-	final long profileStartTime;
+	final public long timeStarted;
+	final public long timeFinished;
+	final public long profileStartTime;
 
-	final long actionsPerformed;
+	final public long actionsPerformed;
 
 	private TraceLabels traceLabel = TraceLabels.NO_TRACE_LABEL;
 

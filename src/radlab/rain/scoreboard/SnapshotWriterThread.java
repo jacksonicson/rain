@@ -5,7 +5,6 @@ import java.util.LinkedList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import radlab.rain.ObjectPoolGeneric;
 import radlab.rain.util.MetricWriter;
 
 class SnapshotWriterThread extends Thread {
@@ -20,24 +19,15 @@ class SnapshotWriterThread extends Thread {
 	private Object _responseTimeQLock = new Object();
 
 	private LinkedList<ResponseTimeStat> _processingQ = new LinkedList<ResponseTimeStat>();
-	private ObjectPoolGeneric _statsObjPool = null;
 
 	public SnapshotWriterThread(String trackName) {
 		this._trackName = trackName;
-
-		// Create object pool
-		this._statsObjPool = new ObjectPoolGeneric(80000);
-		this._statsObjPool.setTrackName(trackName);
 	}
 
 	void accept(ResponseTimeStat responseTimeStat) {
 		synchronized (this._responseTimeQLock) {
 			this._responseTimeQ.add(responseTimeStat);
 		}
-	}
-
-	public ResponseTimeStat provisionRTSObject() {
-		return (ResponseTimeStat) this._statsObjPool.rentObject(ResponseTimeStat.NAME);
 	}
 
 	public void run() {
@@ -61,11 +51,7 @@ class SnapshotWriterThread extends Thread {
 							this._metricWriter.write(stat);
 
 					} catch (Exception e) {
-					} finally {
-						// Important
-						// Return the stats object to the pool
-						if (stat != null)
-							this._statsObjPool.returnObject(stat);
+						// Do nothing
 					}
 				}
 
@@ -86,10 +72,6 @@ class SnapshotWriterThread extends Thread {
 				log.error("failed while closing metric writer", e);
 			}
 		}
-
-		// Shutdown object pool
-		if (this._statsObjPool.isActive())
-			this._statsObjPool.shutdown();
 	}
 
 	public void set_done(boolean _done) {

@@ -44,22 +44,22 @@ import org.slf4j.LoggerFactory;
 
 import radlab.rain.LoadDefinition;
 import radlab.rain.OperationExecution;
+import radlab.rain.Timing;
 import radlab.rain.Track;
 import radlab.rain.util.MetricWriter;
 import radlab.rain.util.PoissonSamplingStrategy;
-import radlab.rain.util.SonarRecorder;
 
 /**
- * The Scoreboard class implements the IScoreboard interface. Each Scoreboard is specific to a single instantiation of a track
- * (i.e. the statistical results of a a scoreboard pertain to the operations executed by only the. scenario track with which this
- * scoreboard is associated).<br />
+ * The Scoreboard class implements the IScoreboard interface. Each Scoreboard is specific to a single instantiation of a
+ * track (i.e. the statistical results of a a scoreboard pertain to the operations executed by only the. scenario track
+ * with which this scoreboard is associated).<br />
  * <br />
  * The graphs we want to show/statistics we want to record:
  * <ol>
  * <li>Offered load timeline (in ops or requests per sec in a bucket of time)</li>
  * <li>Offered load during the run (in ops or requests per sec)</li>
- * <li>Effective load during the run (in ops or requests per sec) (avg number of operations/requests that completed successfully
- * during the run duration</li>
+ * <li>Effective load during the run (in ops or requests per sec) (avg number of operations/requests that completed
+ * successfully during the run duration</li>
  * <li>Data distribution for each operation type - histogram of id's generated/used</li>
  * </ol>
  */
@@ -140,9 +140,15 @@ public class Scoreboard implements Runnable, IScoreboard {
 		this.trackName = trackName;
 	}
 
-	public void initialize(long startTime, long endTime, long maxUsers) {
-		this.startTime = startTime;
-		this.endTime = endTime;
+	@Override
+	public void initialize(Timing timing) {
+		initialize(timing, 0);
+	}
+
+	@Override
+	public void initialize(Timing timing, long maxUsers) {
+		this.startTime = timing.start;
+		this.endTime = timing.endRun;
 
 		long runDuration = this.endTime - this.startTime;
 		log.debug("run duration: " + runDuration);
@@ -150,11 +156,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 		finalCard = new Scorecard("final", trackName, runDuration, maxUsers);
 		reset();
 	}
-
-	public void initialize(long startTime, long endTime) {
-		initialize(startTime, endTime, 0);
-	}
-
+	
 	@Override
 	public void reset() {
 		// Reset final card
@@ -201,13 +203,13 @@ public class Scoreboard implements Runnable, IScoreboard {
 			return;
 
 		// Set result label
-		if (this.isRampUp(result.getTimeStarted()))
+		if (this.isRampUp(result.timeStarted))
 			result.setTraceLabel(TraceLabels.RAMP_UP_LABEL);
-		else if (this.isSteadyState(result.getTimeFinished()))
+		else if (this.isSteadyState(result.timeFinished))
 			result.setTraceLabel(TraceLabels.STEADY_STATE_TRACE_LABEL);
-		else if (this.isSteadyState(result.getTimeStarted()))
+		else if (this.isSteadyState(result.timeStarted))
 			result.setTraceLabel(TraceLabels.LATE_LABEL);
-		else if (this.isRampDown(result.getTimeStarted()))
+		else if (this.isRampDown(result.timeStarted))
 			result.setTraceLabel(TraceLabels.RAMP_DOWN_LABEL);
 
 		// Put all results into the dropoff queue
@@ -225,19 +227,6 @@ public class Scoreboard implements Runnable, IScoreboard {
 		}
 
 		// TODO: If operation failed - log error reason
-
-		// Flip a coin to determine whether we log or not? (reduces amount of log information)
-		double randomVal = this._random.nextDouble();
-		if (this._logSamplingProbability == 1.0 || randomVal <= this._logSamplingProbability) {
-			// TODO: If needed file logging can be done here
-		} else // not logging
-		{
-			result.getOperation().disposeOfTrace();
-		}
-
-		// ATTENTION: Return operation object to pool
-		if (this.scenarioTrack.getObjectPool().isActive())
-			this.scenarioTrack.getObjectPool().returnObject(result.getOperation());
 	}
 
 	private final boolean isDone() {
@@ -379,11 +368,11 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 	private void processSteadyStateResult(OperationExecution result) {
 		// Update per-interval (profile) cards
-		// This code is still here and the data is logged but the data is NOT required for SPECj 
+		// This code is still here and the data is logged but the data is NOT required for SPECj
 		// and it is therefore not in the JSON reports!
 		LoadDefinition activeProfile = result.generatedDuring;
 		if (activeProfile != null) {
-			// For SPECj the profile names are not set. Profiles are generated based 
+			// For SPECj the profile names are not set. Profiles are generated based
 			// on Times TS data. (Second condition is always false)
 			if ((activeProfile._name != null && activeProfile._name.length() > 0)) {
 				// Get scorecard for this interval
@@ -391,7 +380,8 @@ public class Scoreboard implements Runnable, IScoreboard {
 				Scorecard profileScorecard = this.profileScorecards.get(profileName);
 				// Create a new scorecard if needed
 				if (profileScorecard == null) {
-					profileScorecard = new Scorecard(profileName, trackName, activeProfile.interval, activeProfile.numberOfUsers);
+					profileScorecard = new Scorecard(profileName, trackName, activeProfile.interval,
+							activeProfile.numberOfUsers);
 					profileScorecards.put(profileName, profileScorecard);
 				}
 
@@ -404,27 +394,25 @@ public class Scoreboard implements Runnable, IScoreboard {
 		finalCard.processResult(result, meanResponseTimeSamplingInterval);
 
 		// If interactive, look at the total response time.
-		if (!result.isFailed() && result.isInteractive() && this.usingMetricSnapshots)
+		if (!result.failed && this.usingMetricSnapshots)
 			issueMetricSnapshot(result);
 	}
 
 	private void issueMetricSnapshot(OperationExecution result) {
 		long responseTime = result.getExecutionTime();
-		ResponseTimeStat responseTimeStat = this.snapshotThread.provisionRTSObject();
-		if (responseTimeStat == null)
-			responseTimeStat = new ResponseTimeStat();
+		ResponseTimeStat responseTimeStat = new ResponseTimeStat();
 
 		// Fill response time stat
-		responseTimeStat._timestamp = result.getTimeFinished();
-		responseTimeStat._responseTime = responseTime;
-		responseTimeStat._totalResponseTime = finalCard.getTotalOpResponseTime();
-		responseTimeStat._numObservations = finalCard.getTotalOpsSuccessful();
-		responseTimeStat._operationName = result.operationName;
-		responseTimeStat._trackName = trackName;
-		responseTimeStat._operationRequest = result.operationRequest;
+		responseTimeStat.timestamp = result.timeFinished;
+		responseTimeStat.responseTime = responseTime;
+		responseTimeStat.totalResponseTime = finalCard.getTotalOpResponseTime();
+		responseTimeStat.numObservations = finalCard.getTotalOpsSuccessful();
+		responseTimeStat.operationName = result.operationName;
+		responseTimeStat.trackName = trackName;
+		responseTimeStat.operationRequest = result.operationRequest;
 
 		if (result.generatedDuring != null)
-			responseTimeStat._generatedDuring = result.generatedDuring._name;
+			responseTimeStat.generatedDuring = result.generatedDuring._name;
 
 		// Push this stat onto a Queue for the snapshot thread
 		this.snapshotThread.accept(responseTimeStat);
@@ -544,5 +532,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 	public String toString() {
 		return "[SCOREBOARD TRACK: " + this.trackName + "]";
 	}
+
+	
 
 }

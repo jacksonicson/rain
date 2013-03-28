@@ -2,49 +2,27 @@ package radlab.rain.scoreboard;
 
 import java.io.Serializable;
 
-import radlab.rain.Poolable;
+public class ResponseTimeStat implements Serializable {
+	private static final long serialVersionUID = -9080553943704545836L;
 
-public class ResponseTimeStat extends Poolable implements Serializable 
-{
-	private static final long serialVersionUID = 1L;
-	public static final String NAME = "ResponseTimeStat";
-	
-	public long _timestamp = -1;
-	public long _responseTime = -1;
-	public long _totalResponseTime = -1;
-	public long _numObservations = -1; // totalResponseTime/numObservations => avg response time thus far
-	public String _operationName = "";
-	public String _operationRequest = "";
-	public String _generatedDuring = "";
-	public String _trackName = "";
-	
-	public ResponseTimeStat()
-	{
-		super( NAME );
-	}
-	
-	public ResponseTimeStat(String tag) 
-	{
-		super( tag );
+	public long timestamp = -1;
+	public long responseTime = -1;
+	public long totalResponseTime = -1;
+	public long numObservations = -1;
+	public String operationName = "";
+	public String operationRequest = "";
+	public String generatedDuring = "";
+	public String trackName = "";
+
+	public ResponseTimeStat() {
 	}
 
 	@Override
-	public void cleanup() 
-	{
-		this._timestamp = -1;
-		this._responseTime = -1;
-		this._totalResponseTime = -1;
-		this._numObservations = -1;
-		this._operationName = "";
-		this._operationRequest = ""; // Any details about the operation, e.g., what was requested
-		this._generatedDuring = ""; // Interval name (if any) of when this operation was generated during a run
-	}
-	
-	@Override
-	public String toString()
-	{
+	public String toString() {
 		StringBuffer buf = new StringBuffer();
-		buf.append( "[" ).append( this._generatedDuring ).append( "] " ).append( this._timestamp ).append( " " ).append( this._operationName ).append( " " ).append( this._responseTime ).append( " [" ).append( this._operationRequest ).append( "] ").append( this._totalResponseTime ).append( " " ).append( this._numObservations );
+		buf.append("[").append(this.generatedDuring).append("] ").append(this.timestamp).append(" ").append(
+				this.responseTime).append(" [").append(this.operationRequest).append("] ").append(
+				this.totalResponseTime).append(" ").append(this.numObservations);
 		return buf.toString();
 	}
 }
