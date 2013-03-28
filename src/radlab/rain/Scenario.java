@@ -54,23 +54,10 @@ public class Scenario {
 
 	private List<Track> tracks = new LinkedList<Track>();
 
-	private ScenarioConfiguration conf = new ScenarioConfiguration();
+	private ScenarioConfiguration conf;
 
-	public Scenario(JSONObject jsonConfig) throws Exception {
-		conf.loadProfile(jsonConfig);
-	}
-
-	private void buildTracks(Timing timing) throws Exception {
-		for (JSONObject trackConfig : conf.getTrackConfigurations()) {
-			String trackClassName = trackConfig.getString(TrackConfKeys.TRACK_CLASS_KEY.toString());
-
-			Class<Track> trackClass = (Class<Track>) Class.forName(trackClassName);
-			Constructor<Track> trackCtor = trackClass.getConstructor(new Class[] { String.class, Scenario.class });
-			Track track = (Track) trackCtor.newInstance();
-			track.initialize(timing, trackConfig);
-
-			this.tracks.add(track);
-		}
+	public Scenario(ScenarioConfiguration conf) throws Exception {
+		this.conf = conf;
 	}
 
 	Timing execute() throws Exception {
@@ -84,10 +71,13 @@ public class Scenario {
 		// Build tracks based on static configuration
 		buildTracks(timing);
 
+		// Start all tracks
+		for (Track track : tracks)
+			track.start();
+
 		// Join all running tracks
-		for (Track track : tracks) {
+		for (Track track : tracks)
 			track.join();
-		}
 
 		// Shutdown thread pool
 		pool.shutdown();
@@ -103,8 +93,18 @@ public class Scenario {
 		return timing;
 	}
 
-	void join() {
-		// TODO: Implementation
+	@SuppressWarnings("unchecked")
+	private void buildTracks(Timing timing) throws Exception {
+		for (JSONObject trackConfig : conf.getTrackConfigurations()) {
+			String trackClassName = trackConfig.getString(TrackConfKeys.TRACK_CLASS_KEY.toString());
+
+			Class<Track> trackClass = (Class<Track>) Class.forName(trackClassName);
+			Constructor<Track> trackCtor = trackClass.getConstructor(new Class[] { ScenarioConfiguration.class });
+			Track track = (Track) trackCtor.newInstance(conf);
+			track.initialize(timing, trackConfig);
+
+			tracks.add(track);
+		}
 	}
 
 	public void aggregateScorecards(Timing timing) throws JSONException {

@@ -43,12 +43,11 @@ import org.slf4j.LoggerFactory;
 public abstract class LoadGeneratingUnit extends Thread {
 	private static Logger logger = LoggerFactory.getLogger(LoadGeneratingUnit.class);
 
+	// Thread state is used to block some threads in order to adapt the
+	// active number of load generating units
 	public enum ThreadStates {
-		// Waiting until the start time to begin
-		WaitingToBegin,
-		// Is active
+		Initialized,
 		Active,
-		// Thread is sleeping
 		Inactive
 	}
 
@@ -76,7 +75,7 @@ public abstract class LoadGeneratingUnit extends Thread {
 	protected long timeToQuit = TIME_NOT_SET;
 
 	// The current state of this thread
-	protected ThreadStates threadState = ThreadStates.WaitingToBegin;
+	protected ThreadStates threadState = ThreadStates.Initialized;
 
 	// Determine whether we async requests should be limited/throttled down to a max of x/sec
 	protected long sendNextRequest = NO_OPERATION_INDEX;
@@ -85,8 +84,8 @@ public abstract class LoadGeneratingUnit extends Thread {
 	// The shared pool of worker threads
 	protected ExecutorService executorService;
 
-	public LoadGeneratingUnit(long id, LoadManager loadManager, Generator generator,
-			TrackConfiguration trackConfig, ScenarioConfiguration scenarioConfig) {
+	public LoadGeneratingUnit(long id, LoadManager loadManager, Generator generator, TrackConfiguration trackConfig,
+			ScenarioConfiguration scenarioConfig) {
 		this.id = id;
 		this.generator = generator;
 		this.loadManager = loadManager;

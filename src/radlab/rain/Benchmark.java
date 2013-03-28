@@ -53,13 +53,11 @@ public class Benchmark {
 	private static Logger logger = LoggerFactory.getLogger(Benchmark.class);
 
 	public void start(Scenario scenario) throws Exception {
+		// Set current thread name
 		Thread.currentThread().setName("benchmark");
 
 		// Execute scenario
 		Timing timing = scenario.execute();
-
-		// Wait for scenario to end
-		scenario.join();
 
 		// Aggregate scorecards
 		scenario.aggregateScorecards(timing);
@@ -117,15 +115,14 @@ public class Benchmark {
 			JSONObject jsonConfig = loadConfiguration(args[0]);
 
 			// Build scenario based on the configuration
-			Scenario scenario = new Scenario(jsonConfig);
-
-			// Set the global Scenario instance for the Driver
-			Benchmark benchmark = new Benchmark();
+			ScenarioConfiguration conf = new ScenarioConfiguration();
+			conf.loadProfile(jsonConfig);
+			Scenario scenario = new Scenario(conf);
 
 			// Start thrift server for remote control
-			ThriftService service = null; 
+			ThriftService service = null;
 			if (RainConfig.getInstance().useThrift) {
-				service = new ThriftService(scenario); 
+				service = new ThriftService(scenario);
 				logger.info("Starting thrift communication! Using port: " + service.getPort());
 				service.start();
 			}
@@ -139,10 +136,11 @@ public class Benchmark {
 				logger.trace("Checking for wakeup");
 			}
 
-			// Start signal passed. Start scenario now
+			// Set the global Scenario instance for the Driver
+			Benchmark benchmark = new Benchmark();
 			logger.info("Starting scenario (threads)");
 			benchmark.start(scenario);
-			
+
 			// Shutdown thrift communication
 			if (service != null) {
 				logger.info("Starting thrift communication! Using port: " + service.getPort());

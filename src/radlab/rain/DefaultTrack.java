@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 public class DefaultTrack extends Track {
 	private Logger logger = LoggerFactory.getLogger(DefaultTrack.class.getName() + " " + this);
 
+	// Load manager runs through the load schedule
 	private LoadManager loadManager;
 
 	public DefaultTrack(ScenarioConfiguration scenarioConfig) throws Exception {
@@ -72,9 +73,12 @@ public class DefaultTrack extends Track {
 
 		logger.debug("Starting load manager");
 		loadManager.start();
+		
+		super.start(); 
 	}
 
 	public void end() {
+		super.end(); 
 		if (!loadManager.isAlive())
 			return;
 

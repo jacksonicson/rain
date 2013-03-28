@@ -14,10 +14,10 @@ public final class Timing {
 	 */
 	private static final long TIME_TO_START = 10000;
 
-	public final long start;
-	public final long startSteadyState;
-	public final long endSteadyState;
-	public final long endRun;
+	public final long start; // start of ramp up phase
+	public final long startSteadyState; // start steady state phase
+	public final long endSteadyState; // end steady state phase
+	public final long endRun; // end ramp down phase
 
 	public Timing(long rampUp, long duration, long rampDown) throws BenchmarkFailedException {
 		// Calculate the run timings that will be used for all threads.

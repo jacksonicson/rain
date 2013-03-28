@@ -77,7 +77,14 @@ public abstract class Track {
 		this.scenarioConfiguration = scenarioConfiguration;
 	}
 
-	public abstract void start();
+	public void start() {
+		// Start the scoreboard
+		scoreboard.start(); 
+		
+		// Start load generating unit threads
+		for (LoadGeneratingUnit generator : generators)
+			generator.start();
+	}
 
 	public void end() {
 		scoreboard.stop();
