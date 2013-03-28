@@ -8,5 +8,5 @@ import org.json.JSONObject;
 public interface TrackFactory {
 	public abstract void configure(JSONObject params) throws JSONException;
 	
-	public abstract List<Track> createTracks() throws JSONException;
+	public abstract List<ITrack> createTracks() throws JSONException;
 }

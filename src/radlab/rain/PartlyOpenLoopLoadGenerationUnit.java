@@ -57,10 +57,13 @@ public class PartlyOpenLoopLoadGenerationUnit extends LoadGeneratingUnit {
 	// Statistic: number of asynchronous operations run
 	protected long asynchOperations = 0;
 
-	public PartlyOpenLoopLoadGenerationUnit(long id, LoadManager loadManager, Generator generator,
-			TrackConfiguration trackConfig, Timing timing) {
-		super(id, loadManager, generator, trackConfig, timing);
+	public PartlyOpenLoopLoadGenerationUnit(long id, LoadManager loadManager, Generator generator, Timing timing) {
+		super(id, loadManager, generator, timing);
 		Thread.setDefaultUncaughtExceptionHandler(new UnexpectedDeathHandler());
+	}
+
+	public void setOpenLoopProbability(double openLoopProbability) {
+		this.openLoopProbability = openLoopProbability;
 	}
 
 	// Resets the number of synchronous/asynchronous operations run
@@ -220,8 +223,6 @@ public class PartlyOpenLoopLoadGenerationUnit extends LoadGeneratingUnit {
 	 *            The track from which to load the configuration.
 	 */
 	protected void loadTrackConfiguration() {
-		openLoopProbability = trackConfig.openLoopProbability;
-
 		// This value gets set by Benchmark
 		timeStarted = System.currentTimeMillis();
 

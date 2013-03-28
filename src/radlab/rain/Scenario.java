@@ -31,6 +31,7 @@
 
 package radlab.rain;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
@@ -40,42 +41,82 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import radlab.rain.configuration.ScenarioConfKeys;
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.scoreboard.Scorecard;
+import radlab.rain.util.MetricWriterFactory;
 
 public class Scenario {
 	private static Logger logger = LoggerFactory.getLogger(Scenario.class);
 
-	private List<Track> tracks;
+	private Timing timing;
 
-	private ScenarioConfiguration conf;
+	private TrackFactory trackFactory;
 
-	public Scenario(ScenarioConfiguration conf) throws Exception {
-		this.conf = conf;
+	private MetricWriterFactory.Type metricWriterType;
+	private JSONObject metricWriterConf;
+
+	private List<ITrack> tracks;
+
+	public Scenario(JSONObject config) throws Exception {
+		configure(config);
+	}
+
+	@SuppressWarnings("unchecked")
+	private TrackFactory createTrackFactory(String name) throws BenchmarkFailedException {
+		try {
+			Class<TrackFactory> creatorClass = (Class<TrackFactory>) Class.forName(name);
+			Constructor<TrackFactory> creatorCtor = creatorClass.getConstructor(new Class[] {});
+			TrackFactory creator = (TrackFactory) creatorCtor.newInstance((Object[]) null);
+			return creator;
+		} catch (Exception e) {
+			throw new BenchmarkFailedException("Unable to instantiate track factory", e);
+		}
+	}
+
+	private void configure(JSONObject jsonConfig) throws JSONException, BenchmarkFailedException {
+		// Read timing
+		JSONObject timing = jsonConfig.getJSONObject(ScenarioConfKeys.TIMING_KEY.toString());
+		long rampUp = timing.getLong(ScenarioConfKeys.RAMP_UP_KEY.toString());
+		long duration = timing.getLong(ScenarioConfKeys.DURATION_KEY.toString());
+		long rampDown = timing.getLong(ScenarioConfKeys.RAMP_DOWN_KEY.toString());
+		this.timing = new Timing(rampUp, duration, rampDown);
+
+		// Track factory
+		if (jsonConfig.has(ScenarioConfKeys.TRACK_FACTORY_CLASS.toString())) {
+			String trackConfClass = jsonConfig.getString(ScenarioConfKeys.TRACK_FACTORY_CLASS.toString());
+			trackFactory = createTrackFactory(trackConfClass);
+
+			JSONObject params = jsonConfig.getJSONObject(ScenarioConfKeys.TRACK_FACTORY_CONF.toString());
+			trackFactory.configure(params);
+		}
+
+		// Metric writer configuration
+		metricWriterType = MetricWriterFactory.Type.valueOf(jsonConfig.getString(ScenarioConfKeys.METRIC_WRITER_TYPE
+				.toString()));
+		metricWriterConf = jsonConfig.getJSONObject(ScenarioConfKeys.METRIC_WRITER_CONF.toString());
 	}
 
 	Timing execute() throws Exception {
-		// Calculate timing
-		Timing timing = new Timing(conf.getRampUp(), conf.getDuration(), conf.getRampDown());
-
 		// Build tracks based on static configuration
-		buildTracks(timing);
+		tracks = trackFactory.createTracks();
+
+		// Configure tracks
+		for (ITrack track : tracks) {
+			track.setTiming(timing);
+			track.setMetricWriterType(metricWriterType);
+			track.setMetricWriterConf(metricWriterConf);
+		}
 
 		// Start all tracks
-		for (Track track : tracks)
+		for (ITrack track : tracks)
 			track.start();
 
 		// Join all running tracks
-		for (Track track : tracks)
+		for (ITrack track : tracks)
 			track.end();
 
 		return timing;
-	}
-
-	private void buildTracks(Timing timing) throws Exception {
-
-		List<Track> tracks = conf.getTrackFactory().createTracks();
-		this.tracks = tracks;
 	}
 
 	public void aggregateScorecards(Timing timing) throws JSONException {
@@ -83,9 +124,7 @@ public class Scenario {
 		Scorecard globalCard = new Scorecard("global", "global", timing.steadyStateDuration());
 
 		// Shutdown the scoreboards and tally up the results.
-		for (Track track : tracks) {
-			track.end();
-
+		for (ITrack track : tracks) {
 			// Scoreboard of the track
 			IScoreboard scoreboard = track.getScoreboard();
 
@@ -136,13 +175,9 @@ public class Scenario {
 
 	public List<String> getTrackNames() {
 		List<String> names = new ArrayList<String>();
-		for (Track track : tracks) {
+		for (ITrack track : tracks) {
 			names.add(track.toString());
 		}
 		return names;
-	}
-
-	public ScenarioConfiguration getConfig() {
-		return conf;
 	}
 }

@@ -31,8 +31,6 @@
 
 package radlab.rain;
 
-import org.json.JSONException;
-
 import radlab.rain.scoreboard.IScoreboard;
 
 /**
@@ -58,10 +56,6 @@ public abstract class Generator {
 	public abstract Operation nextRequest(int lastOperation);
 
 	public abstract void dispose();
-
-	public void configure(TrackConfiguration trackConfig) throws JSONException {
-		// Overwrite this
-	}
 
 	public void setScoreboard(IScoreboard scoreboard) {
 		this.scoreboard = scoreboard;

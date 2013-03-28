@@ -43,6 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import radlab.rain.communication.thrift.ThriftService;
+import radlab.rain.configuration.ScenarioConfKeys;
 import radlab.rain.util.ConfigUtil;
 import radlab.rain.util.SonarRecorder;
 
@@ -96,6 +97,38 @@ public class Benchmark {
 		return null;
 	}
 
+	private static void configureGlobals(JSONObject jsonConfig) throws JSONException {
+		// Read global configuration settings
+		// Set up Rain configuration params
+		if (jsonConfig.has(ScenarioConfKeys.VERBOSE_ERRORS_KEY.toString())) {
+			boolean val = jsonConfig.getBoolean(ScenarioConfKeys.VERBOSE_ERRORS_KEY.toString());
+			RainConfig.getInstance().verboseErrors = val;
+		}
+
+		// Setup sonar recorder
+		if (jsonConfig.has(ScenarioConfKeys.SONAR_HOSTNAME.toString())) {
+			String host = jsonConfig.getString(ScenarioConfKeys.SONAR_HOSTNAME.toString());
+			RainConfig.getInstance().sonarHost = host;
+		}
+
+		// Check if thrift remote management is used
+		boolean useThrift = false;
+		if (jsonConfig.has(ScenarioConfKeys.USE_THRIFT.toString()))
+			useThrift = jsonConfig.getBoolean(ScenarioConfKeys.USE_THRIFT.toString());
+
+		if (useThrift) {
+			// Set in the config that we're using pipes
+			RainConfig.getInstance().useThrift = useThrift;
+
+			// Check whether we're supposed to wait for a start signal
+			if (jsonConfig.has(ScenarioConfKeys.WAIT_FOR_START_SIGNAL.toString())) {
+				RainConfig.getInstance().waitForStartSignal = jsonConfig
+						.getBoolean(ScenarioConfKeys.WAIT_FOR_START_SIGNAL.toString());
+			}
+		}
+
+	}
+
 	/**
 	 * Runs the benchmark. The only required argument is the configuration file path (e.g.
 	 * config/rain.config.sample.json).
@@ -113,11 +146,10 @@ public class Benchmark {
 
 			// Load configuration
 			JSONObject jsonConfig = loadConfiguration(args[0]);
+			configureGlobals(jsonConfig);
 
 			// Build scenario based on the configuration
-			ScenarioConfiguration conf = new ScenarioConfiguration();
-			conf.loadProfile(jsonConfig);
-			Scenario scenario = new Scenario(conf);
+			Scenario scenario = new Scenario(jsonConfig);
 
 			// Start thrift server for remote control
 			ThriftService service = null;

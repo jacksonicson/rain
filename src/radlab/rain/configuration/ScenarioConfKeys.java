@@ -12,15 +12,17 @@ public enum ScenarioConfKeys {
 	VERBOSE_ERRORS_KEY("verboseErrors"),
 
 	// Track configuration creator
-	TRACK_CONF_CREATOR_CLASS_KEY("trackConfCreatorClass"),
-	TRACK_CONF_CREATOR_PARAMS_KEY("trackConfCreatorParams"),
+	TRACK_FACTORY_CLASS("trackConfCreatorClass"),
+	TRACK_FACTORY_CONF("trackConfCreatorParams"),
 
 	// Wait for a start signal
 	WAIT_FOR_START_SIGNAL("waitForStartSignal"),
 
 	// Thrift and sonar configuration
 	USE_THRIFT("useThrift"),
-	SONAR_HOSTNAME("sonarHost");
+	SONAR_HOSTNAME("sonarHost"),
+	METRIC_WRITER_TYPE("metricWriterType"),
+	METRIC_WRITER_CONF("metricWriterConf");
 
 	private String configuration;
 

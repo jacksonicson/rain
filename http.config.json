@@ -9,11 +9,12 @@
     "useThrift": true,
     "sonarHost" : "monitor0",
     
+    "metricWriterType" : "sonar",
+    "metricWriterConf" : {},
+    
     "trackConfCreatorClass": "radlab.rain.workload.http.HttpTestTrackConfCreator",    
     "trackConfCreatorParams": {
-    	"targets" : {
     	
-    	}
     },
     
     "behavior" : {

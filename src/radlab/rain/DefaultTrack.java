@@ -31,8 +31,6 @@
 
 package radlab.rain;
 
-import java.lang.reflect.Constructor;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,24 +44,15 @@ public class DefaultTrack extends Track {
 	// Load manager runs through the load schedule
 	private LoadManager loadManager;
 
-	public void initialize() {
+	protected void initialize() throws Exception {
 		super.initialize();
 
 		// Create a new load manager
 		loadManager = new LoadManager(timing);
 	}
 
-	@SuppressWarnings("unchecked")
-	@Override
-	protected LoadGeneratingUnit createLoadGeneratingUnit(long id, Generator generator) throws Exception {
-		Class<LoadGeneratingUnit> loadGenStrategyClass = (Class<LoadGeneratingUnit>) Class
-				.forName(config.loadGenerationStrategyClass);
-		
-		Constructor<LoadGeneratingUnit> loadGenStrategyCtor = loadGenStrategyClass.getConstructor(new Class[] {
-				long.class, LoadManager.class, Generator.class, TrackConfiguration.class, Timing.class });
-		LoadGeneratingUnit loadGenStrategy = (LoadGeneratingUnit) loadGenStrategyCtor.newInstance(new Object[] { id,
-				loadManager, generator, config, timing });
-		return loadGenStrategy;
+	protected LoadGeneratingUnit createLoadGeneratingUnit(long id, Generator generator) {
+		return new PartlyOpenLoopLoadGenerationUnit(id, loadManager, generator, timing);
 	}
 
 	public boolean validateLoadDefinition(LoadDefinition profile) {
@@ -74,7 +63,7 @@ public class DefaultTrack extends Track {
 		}
 
 		// Check references to the mix matrix
-		if (profile.mixName.length() > 0 && !config.mixMatrices.containsKey(profile.mixName)) {
+		if (profile.mixName.length() > 0 && !mixMatrices.containsKey(profile.mixName)) {
 			logger.info("Invalid load profile. mixname not in track's mixmap. Profile details: " + profile.toString());
 			return false;
 		}

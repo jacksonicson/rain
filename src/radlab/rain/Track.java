@@ -33,11 +33,14 @@ package radlab.rain;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,14 +54,29 @@ import radlab.rain.util.MetricWriterFactory;
  * <br />
  * The ScenarioTrack is responsible for reading in the configuration of a workload and generating the load profiles.
  */
-public abstract class Track {
+public abstract class Track implements ITrack {
 	private static Logger logger = LoggerFactory.getLogger(Track.class);
 
 	// Timings
 	protected Timing timing;
 
-	// Configuration
-	protected TrackConfiguration config;
+	// Metric writer configuration
+	private MetricWriterFactory.Type metricWriterType;
+	private JSONObject metricWriterConf;
+
+	// Markov chain matrices
+	public Map<String, MixMatrix> mixMatrices = new HashMap<String, MixMatrix>();
+
+	// Execution times
+	public double openLoopProbability;
+	public double meanCycleTime;
+	public double meanThinkTime;
+
+	// Sampling
+	public double logSamplingProbability = 1.0;
+	public double metricSnapshotInterval = 60.0;
+	public boolean useMetricSnapshots = false;
+	public long meanResponseTimeSamplingInterval = 500;
 
 	// Scoreboard
 	protected IScoreboard scoreboard;
@@ -67,9 +85,12 @@ public abstract class Track {
 	protected List<LoadGeneratingUnit> loadGeneratingUnits = new ArrayList<LoadGeneratingUnit>();
 
 	// Load schedule used by the generator and strategy
-	protected LoadDefinition currentLoadUnit;
 	protected LoadScheduleCreator loadScheduleCreator;
+	protected LoadDefinition currentLoadUnit;
 	protected LoadSchedule loadSchedule;
+
+	// Generator
+	private String classGenerator;
 
 	// Executer pool
 	protected ExecutorService executor;
@@ -83,15 +104,15 @@ public abstract class Track {
 		this.timing = timing;
 	}
 
-	public void setTrackConfiguration(TrackConfiguration config) {
-		this.config = config;
-	}
-
 	public void setLoadScheduleCreator(LoadScheduleCreator loadScheduleCreator) {
 		this.loadScheduleCreator = loadScheduleCreator;
 	}
 
-	public void initialize() {
+	public void setClassGenerator(String classGenerator) {
+		this.classGenerator = classGenerator;
+	}
+
+	protected void initialize() throws Exception {
 		// Create scoreboard
 		scoreboard = createScoreboard();
 
@@ -106,6 +127,13 @@ public abstract class Track {
 	}
 
 	public void start() {
+		// Initialize
+		try {
+			initialize();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 		// Start the scoreboard
 		scoreboard.start();
 
@@ -133,8 +161,7 @@ public abstract class Track {
 
 	private IScoreboard createScoreboard() throws JSONException, Exception {
 		// Create a metric writer
-		MetricWriter metricWriter = MetricWriterFactory.createMetricWriter(config.metricWriterParams
-				.getString(MetricWriter.CFG_TYPE_KEY), config.metricWriterParams);
+		MetricWriter metricWriter = MetricWriterFactory.createMetricWriter(metricWriterType, metricWriterConf);
 
 		// Create scoreboard
 		Class<IScoreboard> scoreboardClass = (Class<IScoreboard>) Class.forName("TODO");
@@ -144,10 +171,10 @@ public abstract class Track {
 		// Set the log sampling probability for the scoreboard
 		scoreboard.initialize(timing);
 		scoreboard.setScenarioTrack(this);
-		scoreboard.setLogSamplingProbability(config.logSamplingProbability);
-		scoreboard.setUsingMetricSnapshots(config.useMetricSnapshots);
-		scoreboard.setMeanResponseTimeSamplingInterval(config.meanResponseTimeSamplingInterval);
-		scoreboard.setMetricSnapshotInterval((long) (config.metricSnapshotInterval * 1000));
+		scoreboard.setLogSamplingProbability(logSamplingProbability);
+		scoreboard.setUsingMetricSnapshots(useMetricSnapshots);
+		scoreboard.setMeanResponseTimeSamplingInterval(meanResponseTimeSamplingInterval);
+		scoreboard.setMetricSnapshotInterval((long) (metricSnapshotInterval * 1000));
 		scoreboard.setMetricWriter(metricWriter);
 		scoreboard.start();
 
@@ -155,11 +182,11 @@ public abstract class Track {
 	}
 
 	@SuppressWarnings("unchecked")
-	private LoadScheduleCreator createLoadScheduleCreator() throws Exception {
-		Class<LoadScheduleCreator> creatorClass = (Class<LoadScheduleCreator>) Class
-				.forName(config.loadScheduleCreatorClass);
-		Constructor<LoadScheduleCreator> creatorCtor = creatorClass.getConstructor(new Class[] {});
-		return (LoadScheduleCreator) creatorCtor.newInstance((Object[]) null);
+	private Generator createGenerator() throws Exception {
+		Class<Generator> generatorClass = (Class<Generator>) Class.forName(classGenerator);
+		Constructor<Generator> generatorCtor = generatorClass.getConstructor();
+		Generator generator = (Generator) generatorCtor.newInstance();
+		return generator;
 	}
 
 	private void createLoadGeneratingUnits(ExecutorService executor) throws Exception {
@@ -171,8 +198,8 @@ public abstract class Track {
 			// Setup generator
 			Generator generator = createGenerator();
 			generator.setScoreboard(scoreboard);
-			generator.setMeanCycleTime((long) (config.meanCycleTime * 1000));
-			generator.setMeanThinkTime((long) (config.meanThinkTime * 1000));
+			generator.setMeanCycleTime((long) (meanCycleTime * 1000));
+			generator.setMeanThinkTime((long) (meanThinkTime * 1000));
 			generator.initialize();
 
 			// Allow the load generation strategy to be configurable
@@ -185,20 +212,15 @@ public abstract class Track {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	private Generator createGenerator() throws Exception {
-		Class<Generator> generatorClass = (Class<Generator>) Class.forName(config.generatorClassName);
-		Constructor<Generator> generatorCtor = generatorClass.getConstructor();
-		Generator generator = (Generator) generatorCtor.newInstance();
-		generator.configure(config);
-		return generator;
-	}
-
-	IScoreboard getScoreboard() {
+	public IScoreboard getScoreboard() {
 		return scoreboard;
 	}
 
-	TrackConfiguration getConfiguration() {
-		return config;
+	public void setMetricWriterType(MetricWriterFactory.Type metricWriterType) {
+		this.metricWriterType = metricWriterType;
+	}
+
+	public void setMetricWriterConf(JSONObject metricWriterConf) {
+		this.metricWriterConf = metricWriterConf;
 	}
 }
