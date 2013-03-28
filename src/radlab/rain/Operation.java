@@ -77,6 +77,7 @@ public abstract class Operation implements Runnable {
 	protected boolean failed = true;
 	protected Throwable failureReason;
 
+	// Counts number of actions (like http requests)
 	protected long numberOfActionsPerformed;
 
 	public Operation(IScoreboard scoreboard) {

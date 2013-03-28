@@ -381,7 +381,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 		// Update per-interval (profile) cards
 		// This code is still here and the data is logged but the data is NOT required for SPECj 
 		// and it is therefore not in the JSON reports!
-		LoadDefinition activeProfile = result._generatedDuring;
+		LoadDefinition activeProfile = result.generatedDuring;
 		if (activeProfile != null) {
 			// For SPECj the profile names are not set. Profiles are generated based 
 			// on Times TS data. (Second condition is always false)
@@ -419,12 +419,12 @@ public class Scoreboard implements Runnable, IScoreboard {
 		responseTimeStat._responseTime = responseTime;
 		responseTimeStat._totalResponseTime = finalCard.getTotalOpResponseTime();
 		responseTimeStat._numObservations = finalCard.getTotalOpsSuccessful();
-		responseTimeStat._operationName = result._operationName;
+		responseTimeStat._operationName = result.operationName;
 		responseTimeStat._trackName = trackName;
-		responseTimeStat._operationRequest = result._operationRequest;
+		responseTimeStat._operationRequest = result.operationRequest;
 
-		if (result._generatedDuring != null)
-			responseTimeStat._generatedDuring = result._generatedDuring._name;
+		if (result.generatedDuring != null)
+			responseTimeStat._generatedDuring = result.generatedDuring._name;
 
 		// Push this stat onto a Queue for the snapshot thread
 		this.snapshotThread.accept(responseTimeStat);

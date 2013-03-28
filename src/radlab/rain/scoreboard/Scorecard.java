@@ -85,7 +85,7 @@ public class Scorecard {
 
 	void processResult(OperationExecution result, double meanResponseTimeSamplingInterval) {
 		// Update global counters counters
-		String operationName = result._operationName;
+		String operationName = result.operationName;
 		totalOpsInitiated++;
 
 		// Do the accounting for the final score card
@@ -128,7 +128,7 @@ public class Scorecard {
 	}
 
 	void processProfileResult(OperationExecution result, double meanResponseTimeSamplingInterval) {
-		LoadDefinition activeProfile = result._generatedDuring;
+		LoadDefinition activeProfile = result.generatedDuring;
 		activeCount = activeProfile._activeCount;
 		processResult(result, meanResponseTimeSamplingInterval);
 	}
