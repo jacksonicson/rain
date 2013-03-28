@@ -118,7 +118,7 @@ public abstract class Target implements ITarget {
 	}
 
 	protected Agent createLoadGeneratingUnit(long id, Generator generator) {
-		POLAgent lgUnit = new POLAgent(id, loadManager, generator, timing);
+		AgentPOL lgUnit = new AgentPOL(id, loadManager, generator, timing);
 		return lgUnit;
 	}
 

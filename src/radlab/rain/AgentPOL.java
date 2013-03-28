@@ -39,8 +39,8 @@ import org.slf4j.LoggerFactory;
 /**
  * The PartlyOpenLoopLoadGeneration class is a thread that supports partly open loop load generation.
  */
-public class POLAgent extends Agent {
-	private static Logger logger = LoggerFactory.getLogger(POLAgent.class);
+public class AgentPOL extends Agent {
+	private static Logger logger = LoggerFactory.getLogger(AgentPOL.class);
 
 	// Minimum increments of intervals of inactivity in seconds
 	public static int INACTIVE_DURATION = 1000;
@@ -57,7 +57,7 @@ public class POLAgent extends Agent {
 	// Statistic: number of asynchronous operations run
 	protected long asynchOperations = 0;
 
-	public POLAgent(long id, LoadManager loadManager, Generator generator, Timing timing) {
+	public AgentPOL(long id, LoadManager loadManager, Generator generator, Timing timing) {
 		super(id, loadManager, generator, timing);
 		Thread.setDefaultUncaughtExceptionHandler(new UnexpectedDeathHandler());
 	}

@@ -31,9 +31,6 @@
 
 package radlab.rain;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import radlab.rain.scoreboard.IScoreboard;
 
 /**
