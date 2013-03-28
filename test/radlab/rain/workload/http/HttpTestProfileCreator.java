@@ -31,135 +31,119 @@
 
 package radlab.rain.workload.http;
 
-import radlab.rain.TracksConfigurationCreator;
-import radlab.rain.Track;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class HttpTestProfileCreator extends TracksConfigurationCreator
-{
-	public static String CFG_BASE_HOST_IP_KEY 		= "baseHostIp";
-	public static String CFG_NUM_HOST_TARGETS_KEY	= "numHostTargets";
-	
-	public JSONObject createProfile( JSONObject params ) throws JSONException
-	{
+import radlab.rain.TracksConfigurationCreator;
+import radlab.rain.configuration.TrackConfKeys;
+
+public class HttpTestProfileCreator extends TracksConfigurationCreator {
+	public static final String CFG_BASE_HOST_IP_KEY = "baseHostIp";
+	public static final String CFG_NUM_HOST_TARGETS_KEY = "numHostTargets";
+
+	public JSONObject createProfile(JSONObject params) throws JSONException {
 		String baseHostIP = "127.0.0.1";
 		int numHostTargets = 1;
-		
+
 		// See whether the input is non-null and has parameters for the base host ip prefix and/or
 		// the number of ip targets
-		if( params != null )
-		{
-			if( params.has( CFG_BASE_HOST_IP_KEY ) )
-				baseHostIP = params.getString( CFG_BASE_HOST_IP_KEY );
-			
-			if( params.has( CFG_NUM_HOST_TARGETS_KEY) )
-				numHostTargets = params.getInt( CFG_NUM_HOST_TARGETS_KEY );
+		if (params != null) {
+			if (params.has(CFG_BASE_HOST_IP_KEY))
+				baseHostIP = params.getString(CFG_BASE_HOST_IP_KEY);
+
+			if (params.has(CFG_NUM_HOST_TARGETS_KEY))
+				numHostTargets = params.getInt(CFG_NUM_HOST_TARGETS_KEY);
 		}
-		
+
 		// We may or may not use the input
 		JSONObject trackConfig = new JSONObject();
-		
+
 		// Create a track config with "numHostTargets" tracks
-		for( int i = 0; i < numHostTargets; i++ )
-		{
+		for (int i = 0; i < numHostTargets; i++) {
 			String trackName = "";
-			
-			if( i < 10 )
+
+			if (i < 10)
 				trackName = "track-000" + i;
-			else trackName = "track-00" + i;
-			
+			else
+				trackName = "track-00" + i;
+
 			JSONObject trackDetails = new JSONObject();
+
 			// Fill in details
-			trackDetails.put( Track.CFG_GENERATOR_KEY, "radlab.rain.workload.httptest.HttpTestGenerator" ); 
-			trackDetails.put( Track.CFG_TRACK_CLASS_KEY, "radlab.rain.DefaultScenarioTrack" );
-			trackDetails.put( Track.CFG_RESOURCE_PATH, "resources/" );
-			// Add in behavior and loadProfileCreatorClass
-			
-			/*"behavior": {
-			"default" : [
-					[0, 100,   0,   0,   0,   0,   0], 
-					[0,   0, 100,   0,   0,   0,   0],
-					[0,   0,   5,  60,  10,  15,  10],
-					[0,   0,  10,   5,  35,  40,  10],
-					[0,   0,  25,  45,   5,  20,   5],
-					[0,   0,  40,  30,   5,  20,   5],
-					[0,   0,  25,  20,  10,  40,   5]
-			]
-			},*/
-						
-			
+			trackDetails.put(TrackConfKeys.GENERATOR_KEY.toString(), "radlab.rain.workload.httptest.HttpTestGenerator");
+			trackDetails.put(TrackConfKeys.TRACK_CLASS_KEY.toString(), "radlab.rain.DefaultScenarioTrack");
+			trackDetails.put(TrackConfKeys.RESOURCE_PATH.toString(), "resources/");
+
 			JSONObject behaviorDetails = new JSONObject();
-						
+
 			// Create an array for each row
-			JSONArray row1 = new JSONArray( new int[] {0, 100,   0,   0,   0,   0,   0} );
-			JSONArray row2 = new JSONArray( new int[] {0,   0, 100,   0,   0,   0,   0} );
-			JSONArray row3 = new JSONArray( new int[] {0,   0,   5,  60,  10,  15,  10} );
-			JSONArray row4 = new JSONArray( new int[] {0,   0,  10,   5,  35,  40,  10} ); 
-			JSONArray row5 = new JSONArray( new int[] {0,   0,  25,  45,   5,  20,   5} );
-			JSONArray row6 = new JSONArray( new int[] {0,   0,  40,  30,   5,  20,   5} );
-			JSONArray row7 = new JSONArray( new int[] {0,   0,  25,  20,  10,  40,   5} );
-			
+			JSONArray row1 = new JSONArray(new int[] { 0, 100, 0, 0, 0, 0, 0 });
+			JSONArray row2 = new JSONArray(new int[] { 0, 0, 100, 0, 0, 0, 0 });
+			JSONArray row3 = new JSONArray(new int[] { 0, 0, 5, 60, 10, 15, 10 });
+			JSONArray row4 = new JSONArray(new int[] { 0, 0, 10, 5, 35, 40, 10 });
+			JSONArray row5 = new JSONArray(new int[] { 0, 0, 25, 45, 5, 20, 5 });
+			JSONArray row6 = new JSONArray(new int[] { 0, 0, 40, 30, 5, 20, 5 });
+			JSONArray row7 = new JSONArray(new int[] { 0, 0, 25, 20, 10, 40, 5 });
+
 			// Now create a JSONArray which stores each row
 			JSONArray mix1 = new JSONArray();
-			mix1.put( row1 );
-			mix1.put( row2 );
-			mix1.put( row3 );
-			mix1.put( row4 );
-			mix1.put( row5 );
-			mix1.put( row6 );
-			mix1.put( row7 );
-			
-			// Associate a mix matrix with a tag/name
-			behaviorDetails.put( "default", mix1 );
-			
-			// Store the behavior details in the track config
-			trackDetails.put( Track.CFG_BEHAVIOR_KEY, behaviorDetails );
-			
-			// Specifiy the load creator class
-			trackDetails.put( Track.CFG_LOAD_SCHEDULE_CREATOR_KEY, "radlab.rain.workload.httptest.HttpTestScheduleCreator" );
-						
-			JSONObject targetDetails = new JSONObject();
-			
-			// Get base IP, split on . get last octet convert to int then add i
-			String[] ipAddressParts = baseHostIP.split( "\\." );
-			if( ipAddressParts.length != 4 )
-				throw new JSONException( "Expected numerical IPv4 address format: N.N.N.N" );
-			
-			int lastOctet = Integer.parseInt( ipAddressParts[3] );
-			StringBuffer targetIPAddress = new StringBuffer();
-			targetIPAddress.append( ipAddressParts[0] );
-			targetIPAddress.append( "." );
-			targetIPAddress.append( ipAddressParts[1] );
-			targetIPAddress.append( "." );
-			targetIPAddress.append( ipAddressParts[2] );
-			targetIPAddress.append( "." );
-			targetIPAddress.append( (lastOctet+i) );
-			
-			System.out.println( "Target IP: " + targetIPAddress.toString() );
-			
-			targetDetails.put( Track.CFG_TARGET_HOSTNAME_KEY, targetIPAddress.toString() );
-			targetDetails.put( Track.CFG_TARGET_PORT_KEY, 8080 );
-			
-			trackDetails.put( Track.CFG_TARGET_KEY, targetDetails );
-			trackDetails.put( Track.CFG_LOG_SAMPLING_PROBABILITY_KEY, 0.0 ); // No log sampling
-			trackDetails.put( Track.CFG_OPEN_LOOP_PROBABILITY_KEY, 0.0 );
-			trackDetails.put( Track.CFG_MEAN_CYCLE_TIME_KEY, 0 );
-			trackDetails.put( Track.CFG_MEAN_THINK_TIME_KEY, 0 );
-			trackDetails.put( Track.CFG_INTERACTIVE_KEY, true );
+			mix1.put(row1);
+			mix1.put(row2);
+			mix1.put(row3);
+			mix1.put(row4);
+			mix1.put(row5);
+			mix1.put(row6);
+			mix1.put(row7);
 
-			// Set response time sampling interval - should be tuned based on the expected 
+			// Associate a mix matrix with a tag/name
+			behaviorDetails.put("default", mix1);
+
+			// Store the behavior details in the track config
+			trackDetails.put(TrackConfKeys.BEHAVIOR_KEY.toString(), behaviorDetails);
+
+			// Specifiy the load creator class
+			trackDetails.put(TrackConfKeys.LOAD_SCHEDULE_CREATOR_KEY.toString(),
+					"radlab.rain.workload.httptest.HttpTestScheduleCreator");
+
+			JSONObject targetDetails = new JSONObject();
+
+			// Get base IP, split on . get last octet convert to int then add i
+			String[] ipAddressParts = baseHostIP.split("\\.");
+			if (ipAddressParts.length != 4)
+				throw new JSONException("Expected numerical IPv4 address format: N.N.N.N");
+
+			int lastOctet = Integer.parseInt(ipAddressParts[3]);
+			StringBuffer targetIPAddress = new StringBuffer();
+			targetIPAddress.append(ipAddressParts[0]);
+			targetIPAddress.append(".");
+			targetIPAddress.append(ipAddressParts[1]);
+			targetIPAddress.append(".");
+			targetIPAddress.append(ipAddressParts[2]);
+			targetIPAddress.append(".");
+			targetIPAddress.append((lastOctet + i));
+
+			System.out.println("Target IP: " + targetIPAddress.toString());
+
+			targetDetails.put(TrackConfKeys.TARGET_HOSTNAME_KEY.toString(), targetIPAddress.toString());
+			targetDetails.put(TrackConfKeys.TARGET_PORT_KEY.toString(), 8080);
+
+			trackDetails.put(TrackConfKeys.TARGET_KEY.toString(), targetDetails);
+			trackDetails.put(TrackConfKeys.LOG_SAMPLING_PROBABILITY_KEY.toString(), 0.0); // No log sampling
+			trackDetails.put(TrackConfKeys.OPEN_LOOP_PROBABILITY_KEY.toString(), 0.0);
+			trackDetails.put(TrackConfKeys.MEAN_CYCLE_TIME_KEY.toString(), 0);
+			trackDetails.put(TrackConfKeys.MEAN_THINK_TIME_KEY.toString(), 0);
+
+			// Set response time sampling interval - should be tuned based on the expected
 			// order of the expected number of operations/requests that will be issued/served
 			// e.g. lower values if we're doing a short run with few operations and
 			// larger values if we're doing a long run with many operations so we reduce
 			// memory overhead of storing samples
-			trackDetails.put( Track.CFG_MEAN_RESPONSE_TIME_SAMPLE_INTERVAL, 50 );
-			
-			trackConfig.put( trackName, trackDetails );
+			trackDetails.put(TrackConfKeys.MEAN_RESPONSE_TIME_SAMPLE_INTERVAL.toString(), 50);
+
+			trackConfig.put(trackName, trackDetails);
 		}
-		
+
 		return trackConfig;
 	}
 }
