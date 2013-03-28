@@ -31,6 +31,8 @@
 
 package radlab.rain;
 
+import java.lang.reflect.Constructor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,14 +46,26 @@ public class DefaultTrack extends Track {
 	// Load manager runs through the load schedule
 	private LoadManager loadManager;
 
-	public DefaultTrack(ScenarioConfiguration scenarioConfig) throws Exception {
-		super(scenarioConfig);
-		
+	public DefaultTrack(Timing timing) throws Exception {
+		super(timing);
+
 		// Create a new load manager
-		loadManager = new LoadManager(scenarioConfiguration.getRampUp());
+		loadManager = new LoadManager(timing);
 	}
 
-	public boolean validateLoadProfile(LoadDefinition profile) {
+	@SuppressWarnings("unchecked")
+	@Override
+	protected LoadGeneratingUnit createLoadGenerationStrategy(long id, Generator generator) throws Exception {
+		Class<LoadGeneratingUnit> loadGenStrategyClass = (Class<LoadGeneratingUnit>) Class
+				.forName(config.loadGenerationStrategyClassName);
+		Constructor<LoadGeneratingUnit> loadGenStrategyCtor = loadGenStrategyClass.getConstructor(new Class[] {
+				long.class, LoadManager.class, Generator.class, TrackConfiguration.class, Timing.class });
+		LoadGeneratingUnit loadGenStrategy = (LoadGeneratingUnit) loadGenStrategyCtor.newInstance(new Object[] { id,
+				loadManager, generator, config, timing });
+		return loadGenStrategy;
+	}
+
+	public boolean validateLoadDefinition(LoadDefinition profile) {
 		// Check number of users
 		if (profile.numberOfUsers <= 0) {
 			logger.info("Invalid load profile. Number of users <= 0. Profile details: " + profile.toString());
@@ -73,12 +87,12 @@ public class DefaultTrack extends Track {
 
 		logger.debug("Starting load manager");
 		loadManager.start();
-		
-		super.start(); 
+
+		super.start();
 	}
 
 	public void end() {
-		super.end(); 
+		super.end();
 		if (!loadManager.isAlive())
 			return;
 

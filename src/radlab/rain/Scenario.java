@@ -77,7 +77,7 @@ public class Scenario {
 
 		// Join all running tracks
 		for (Track track : tracks)
-			track.join();
+			track.end();
 
 		// Shutdown thread pool
 		pool.shutdown();
@@ -95,14 +95,17 @@ public class Scenario {
 
 	@SuppressWarnings("unchecked")
 	private void buildTracks(Timing timing) throws Exception {
+		// For all configured tracks
 		for (JSONObject trackConfig : conf.getTrackConfigurations()) {
 			String trackClassName = trackConfig.getString(TrackConfKeys.TRACK_CLASS_KEY.toString());
-
 			Class<Track> trackClass = (Class<Track>) Class.forName(trackClassName);
-			Constructor<Track> trackCtor = trackClass.getConstructor(new Class[] { ScenarioConfiguration.class });
-			Track track = (Track) trackCtor.newInstance(conf);
-			track.initialize(timing, trackConfig);
 
+			// Create new track instance
+			Constructor<Track> trackCtor = trackClass.getConstructor(new Class[] { Timing.class });
+			Track track = (Track) trackCtor.newInstance(timing);
+			track.initialize(trackConfig);
+
+			// Add track instance to the results
 			tracks.add(track);
 		}
 	}

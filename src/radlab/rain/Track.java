@@ -35,6 +35,7 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -55,47 +56,61 @@ public abstract class Track {
 	private static Logger logger = LoggerFactory.getLogger(Track.class);
 
 	// Timings
-	private Timing timing;
+	protected Timing timing;
+
+	// Configuration
+	protected TrackConfiguration config;
 
 	// Scoreboard
 	protected IScoreboard scoreboard;
-	protected TrackConfiguration config;
-	protected ScenarioConfiguration scenarioConfiguration;
+
+	// List of all load generating units
+	protected List<LoadGeneratingUnit> loadGeneratingUnits = new ArrayList<LoadGeneratingUnit>();
 
 	// Load schedule used by the generator and strategy
 	protected LoadDefinition currentLoadUnit;
 	protected LoadScheduleCreator loadScheduleCreator;
 	protected LoadSchedule loadSchedule;
 
-	// Generates queries
-	protected Generator generator;
+	// Executer pool
+	protected ExecutorService executor;
 
-	// Triggers generator
-	protected List<LoadGeneratingUnit> generators = new ArrayList<LoadGeneratingUnit>();
+	// Abstract methods
+	protected abstract boolean validateLoadDefinition(LoadDefinition definition);
 
-	public Track(ScenarioConfiguration scenarioConfiguration) throws Exception {
-		this.scenarioConfiguration = scenarioConfiguration;
+	protected abstract LoadGeneratingUnit createLoadGenerationStrategy(long id, Generator generator) throws Exception;
+
+	public Track(Timing timing) {
+		this.timing = timing;
 	}
 
 	public void start() {
 		// Start the scoreboard
-		scoreboard.start(); 
-		
+		scoreboard.start();
+
 		// Start load generating unit threads
-		for (LoadGeneratingUnit generator : generators)
+		for (LoadGeneratingUnit generator : loadGeneratingUnits)
 			generator.start();
 	}
 
 	public void end() {
+		// Wait for all load generating units to exit
+		for (LoadGeneratingUnit generator : loadGeneratingUnits) {
+			try {
+				generator.join();
+				logger.info("Thread joined: " + generator.getName());
+			} catch (InterruptedException ie) {
+				logger.error("Main thread interrupted... exiting!");
+			} finally {
+				generator.dispose();
+			}
+		}
+
+		// Stop the scoreboard
 		scoreboard.stop();
 	}
 
-	public abstract boolean validateLoadProfile(LoadDefinition profile);
-
-	void initialize(Timing timing, JSONObject jsonConfig) throws Exception {
-		// Timings
-		this.timing = timing;
-
+	void initialize(JSONObject jsonConfig) throws Exception {
 		// Load configuration
 		config = new TrackConfiguration();
 		config.initialize(jsonConfig);
@@ -103,17 +118,18 @@ public abstract class Track {
 		// Create scoreboard
 		scoreboard = createScoreboard();
 
-		// Create load schedule creator
+		// Create load schedule creator and load schedule
 		loadScheduleCreator = createLoadScheduleCreator();
-
-		// Create load schedule
 		loadSchedule = loadScheduleCreator.createSchedule(config.loadSchedulerParams);
 
-		// Create load generator
-		generator = createGenerator();
+		// Create a new thread pool
+		executor = Executors.newCachedThreadPool();
+
+		// Create load generating units
+		createLoadGeneratingUnits(executor);
 	}
 
-	public IScoreboard createScoreboard() throws JSONException, Exception {
+	private IScoreboard createScoreboard() throws JSONException, Exception {
 		// Create a metric writer
 		MetricWriter metricWriter = MetricWriterFactory.createMetricWriter(config.metricWriterParams
 				.getString(MetricWriter.CFG_TYPE_KEY), config.metricWriterParams);
@@ -137,35 +153,18 @@ public abstract class Track {
 	}
 
 	@SuppressWarnings("unchecked")
-	public LoadScheduleCreator createLoadScheduleCreator() throws Exception {
+	private LoadScheduleCreator createLoadScheduleCreator() throws Exception {
 		Class<LoadScheduleCreator> creatorClass = (Class<LoadScheduleCreator>) Class
 				.forName(config.loadScheduleCreatorClass);
 		Constructor<LoadScheduleCreator> creatorCtor = creatorClass.getConstructor(new Class[] {});
 		return (LoadScheduleCreator) creatorCtor.newInstance((Object[]) null);
 	}
 
-	@SuppressWarnings("unchecked")
-	public Generator createGenerator() throws Exception {
-		Class<Generator> generatorClass = (Class<Generator>) Class.forName(config.generatorClassName);
-		Constructor<Generator> generatorCtor = generatorClass.getConstructor(new Class[] { Track.class });
-		Generator generator = (Generator) generatorCtor.newInstance(new Object[] { this });
-		generator.configure(config.generatorParams);
-		return generator;
-	}
-
-	@SuppressWarnings("unchecked")
-	public LoadGeneratingUnit createLoadGenerationStrategy(Generator generator) throws Exception {
-		Class<LoadGeneratingUnit> loadGenStrategyClass = (Class<LoadGeneratingUnit>) Class
-				.forName(config.loadGenerationStrategyClassName);
-		Constructor<LoadGeneratingUnit> loadGenStrategyCtor = loadGenStrategyClass.getConstructor(new Class[] {
-				Generator.class, long.class, JSONObject.class });
-		LoadGeneratingUnit loadGenStrategy = (LoadGeneratingUnit) loadGenStrategyCtor.newInstance(new Object[] {
-				generator, config.loadGenerationStrategyParams });
-		return loadGenStrategy;
-	}
-
-	public void createLoadGenerators(long start, ExecutorService pool, IScoreboard scoreboard) throws Exception {
+	private void createLoadGeneratingUnits(ExecutorService executor) throws Exception {
+		// Determine maximum number of required lg units that are required by the schedule
 		long maxGenerators = loadSchedule.getMaxGenerators();
+
+		// Create all lg units
 		for (int i = 0; i < maxGenerators; i++) {
 			// Setup generator
 			Generator generator = createGenerator();
@@ -175,32 +174,22 @@ public abstract class Track {
 			generator.initialize();
 
 			// Allow the load generation strategy to be configurable
-			LoadGeneratingUnit strategy = createLoadGenerationStrategy(generator);
-			strategy.setExecutorService(pool);
-			strategy.setTimeStarted(start);
+			LoadGeneratingUnit lgUnit = createLoadGenerationStrategy(i, generator);
+			lgUnit.setExecutorService(executor);
+			lgUnit.setTimeStarted(System.currentTimeMillis());
 
 			// Add thread to thread list and start the thread
-			generators.add(strategy);
+			loadGeneratingUnits.add(lgUnit);
 		}
 	}
 
-	public void startGenerators() {
-		for (LoadGeneratingUnit strategy : generators) {
-			strategy.start();
-		}
-	}
-
-	void join() {
-		for (LoadGeneratingUnit generator : generators) {
-			try {
-				generator.join();
-				logger.info("Thread joined: " + generator.getName());
-			} catch (InterruptedException ie) {
-				logger.error("Main thread interrupted... exiting!");
-			} finally {
-				generator.dispose();
-			}
-		}
+	@SuppressWarnings("unchecked")
+	private Generator createGenerator() throws Exception {
+		Class<Generator> generatorClass = (Class<Generator>) Class.forName(config.generatorClassName);
+		Constructor<Generator> generatorCtor = generatorClass.getConstructor();
+		Generator generator = (Generator) generatorCtor.newInstance();
+		generator.configure(config.generatorParams);
+		return generator;
 	}
 
 	IScoreboard getScoreboard() {

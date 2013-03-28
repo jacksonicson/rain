@@ -44,7 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import radlab.rain.DefaultTrack;
-import radlab.rain.ScenarioConfiguration;
+import radlab.rain.Timing;
 
 /**
  * (Abstract) ScenarioTrack-inheriting class that interacts with ZooKeeper and performs even-load spreading across a
@@ -136,8 +136,8 @@ public abstract class ZKGatingScenarioTrack extends DefaultTrack {
 	private String _zkConnString = "";
 	private String _zkPath = "";
 
-	public ZKGatingScenarioTrack(ScenarioConfiguration scenarioConfiguration) throws Exception {
-		super(scenarioConfiguration);
+	public ZKGatingScenarioTrack(Timing timing) throws Exception {
+		super(timing);
 	}
 
 	public boolean isConfigured() {

@@ -26,8 +26,8 @@ public class LoadManager extends Thread {
 	// Reference to the load schedule
 	private LoadSchedule loadSchedule;
 
-	public LoadManager(long rampUp) {
-		this.rampUp = rampUp;
+	public LoadManager(Timing timing) {
+		this.rampUp = timing.rampUp;
 	}
 
 	public boolean getDone() {

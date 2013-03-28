@@ -19,7 +19,15 @@ public final class Timing {
 	public final long endSteadyState; // end steady state phase
 	public final long endRun; // end ramp down phase
 
+	public final long rampUp;
+	public final long duration;
+	public final long rampDown;
+
 	public Timing(long rampUp, long duration, long rampDown) throws BenchmarkFailedException {
+		this.rampUp = rampUp;
+		this.duration = duration;
+		this.rampDown = rampDown;
+
 		// Calculate the run timings that will be used for all threads.
 		// | ramp up |------ duration ------| ramp down |
 		start = System.currentTimeMillis() + Timing.TIME_TO_START;

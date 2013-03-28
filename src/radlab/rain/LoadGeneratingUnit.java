@@ -65,8 +65,8 @@ public abstract class LoadGeneratingUnit extends Thread {
 	protected long id;
 
 	// Track configuration
+	protected Timing timing;
 	protected TrackConfiguration trackConfig;
-	protected ScenarioConfiguration scenarioConfig;
 
 	// Timings
 	protected long timeStarted = TIME_NOT_SET;
@@ -85,12 +85,12 @@ public abstract class LoadGeneratingUnit extends Thread {
 	protected ExecutorService executorService;
 
 	public LoadGeneratingUnit(long id, LoadManager loadManager, Generator generator, TrackConfiguration trackConfig,
-			ScenarioConfiguration scenarioConfig) {
+			Timing timing) {
 		this.id = id;
+		this.timing = timing; 
 		this.generator = generator;
 		this.loadManager = loadManager;
 		this.trackConfig = trackConfig;
-		this.scenarioConfig = scenarioConfig;
 	}
 
 	public abstract void run();

@@ -58,8 +58,8 @@ public class PartlyOpenLoopLoadGenerationUnit extends LoadGeneratingUnit {
 	protected long asynchOperations = 0;
 
 	public PartlyOpenLoopLoadGenerationUnit(long id, LoadManager loadManager, Generator generator,
-			TrackConfiguration trackConfig, ScenarioConfiguration scenarioConfig) {
-		super(id, loadManager, generator, trackConfig, scenarioConfig);
+			TrackConfiguration trackConfig, Timing timing) {
+		super(id, loadManager, generator, trackConfig, timing);
 		Thread.setDefaultUncaughtExceptionHandler(new UnexpectedDeathHandler());
 	}
 
@@ -222,9 +222,9 @@ public class PartlyOpenLoopLoadGenerationUnit extends LoadGeneratingUnit {
 		timeStarted = System.currentTimeMillis();
 
 		// Configuration is specified in seconds; convert to milliseconds.
-		long rampUp = scenarioConfig.getRampUp() * 1000;
-		long duration = scenarioConfig.getDuration() * 1000;
-		long rampDown = scenarioConfig.getRampDown() * 1000;
+		long rampUp = timing.rampUp * 1000;
+		long duration = timing.duration * 1000;
+		long rampDown = timing.rampDown * 1000;
 
 		// Calculate timings
 		startSteadyState = timeStarted + rampUp;
