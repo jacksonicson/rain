@@ -36,11 +36,10 @@ import org.slf4j.LoggerFactory;
 
 import radlab.rain.Generator;
 import radlab.rain.Operation;
-import radlab.rain.Scenario;
 import radlab.rain.util.HttpTransport;
 
-public class HttpTestGenerator extends Generator {
-	private static Logger logger = LoggerFactory.getLogger(HttpTestGenerator.class);
+public class TestGenerator extends Generator {
+	private static Logger logger = LoggerFactory.getLogger(TestGenerator.class);
 
 	// Operation indices used in the mix matrix.
 	public static final int PING_HOMEPAGE = 0;

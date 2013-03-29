@@ -12,7 +12,7 @@
     "metricWriterType" : "sonar",
     "metricWriterConf" : {},
     
-    "targetFactoryClass": "radlab.rain.workload.http.HttpBenchmark",    
+    "targetFactoryClass": "radlab.rain.workload.http.Benchmark",    
     "targetFactoryParams": {
     	"amount" : 1,
     	"baseUrl" : "http://dss.in.tum.de",

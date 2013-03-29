@@ -31,28 +31,29 @@
 
 package radlab.rain.workload.http;
 
-import java.util.ArrayList;
-import java.util.List;
+import radlab.rain.Operation;
+import radlab.rain.scoreboard.IScoreboard;
+import radlab.rain.util.HttpTransport;
 
-import org.json.JSONException;
+/**
+ * The HttpTestOperation class contains common static methods for use by the operations that inherit from this abstract
+ * class.
+ */
+public abstract class TestOperation extends Operation {
 
-import radlab.rain.LoadDefinition;
-import radlab.rain.LoadSchedule;
-import radlab.rain.LoadScheduleFactory;
+	protected HttpTransport http;
 
-public class HttpTestScheduleCreator implements LoadScheduleFactory {
+	public TestOperation(IScoreboard scoreboard) {
+		super(scoreboard);
+	}
 
 	@Override
-	public LoadSchedule createSchedule() throws JSONException {
-		List<LoadDefinition> loadSchedule = new ArrayList<LoadDefinition>();
+	public void prepare() {
+		TestGenerator httpTestGenerator = (TestGenerator) generatedByGenerator;
+		http = httpTestGenerator.httpTransport;
+	}
 
-		LoadDefinition i1 = new LoadDefinition(30, 1, "default", 0, "first");
-		LoadDefinition i2 = new LoadDefinition(40, 1, "default", 0, "second");
-
-		loadSchedule.add(i1);
-		loadSchedule.add(i2);
-
-		LoadSchedule schedule = new LoadSchedule(loadSchedule);
-		return schedule;
+	@Override
+	public void cleanup() {
 	}
 }

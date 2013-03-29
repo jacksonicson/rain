@@ -17,7 +17,7 @@ import radlab.rain.Target;
 import radlab.rain.TargetFactory;
 import radlab.rain.Timing;
 
-public class HttpBenchmark implements TargetFactory, GeneratorFactory, AgentFactory {
+public class Benchmark implements TargetFactory, GeneratorFactory, AgentFactory {
 
 	private long amount;
 	private JSONObject targetConfig;
@@ -47,7 +47,7 @@ public class HttpBenchmark implements TargetFactory, GeneratorFactory, AgentFact
 			e.printStackTrace();
 		}
 
-		target.setLoadScheduleFactory(new HttpTestScheduleCreator());
+		target.setLoadScheduleFactory(new TestScheduleCreator());
 		target.setGeneratorFactory(this);
 		target.setAgentFactory(this);
 		return target;
@@ -55,7 +55,7 @@ public class HttpBenchmark implements TargetFactory, GeneratorFactory, AgentFact
 
 	@Override
 	public Generator createGenerator() {
-		HttpTestGenerator generator = new HttpTestGenerator();
+		TestGenerator generator = new TestGenerator();
 		generator.baseUrl = baseUrl;
 		return generator;
 	}

@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 
 import radlab.rain.scoreboard.IScoreboard;
 
-public class PingHomePageOperation extends HttpTestOperation {
+public class PingHomePageOperation extends TestOperation {
 	private static final Logger logger = LoggerFactory.getLogger(PingHomePageOperation.class);
 	public static String NAME = "PingHome";
 
@@ -46,7 +46,7 @@ public class PingHomePageOperation extends HttpTestOperation {
 		super(scoreboard);
 
 		this.operationName = NAME;
-		this.operationIndex = HttpTestGenerator.PING_HOMEPAGE;
+		this.operationIndex = TestGenerator.PING_HOMEPAGE;
 		this.setAsync(true); 
 	}
 
@@ -55,7 +55,7 @@ public class PingHomePageOperation extends HttpTestOperation {
 		logger.debug("Executing ping homepage operation");
 
 		// Fetch the base url
-		StringBuilder response = this.http.fetchUrl(((HttpTestGenerator) generatedByGenerator).baseUrl);
+		StringBuilder response = this.http.fetchUrl(((TestGenerator) generatedByGenerator).baseUrl);
 		trace();
 
 		if (response.length() == 0) {
