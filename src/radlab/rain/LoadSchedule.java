@@ -18,7 +18,7 @@ public class LoadSchedule {
 		return loadUnits.size();
 	}
 	
-	public long getMaxGenerators() {
+	public long getMaxAgents() {
 		int i = 0;
 		for (LoadDefinition unit : loadUnits) {
 			i = Math.max(i, unit.getNumberOfUsers());

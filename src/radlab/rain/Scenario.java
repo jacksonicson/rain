@@ -65,25 +65,38 @@ public class Scenario {
 
 	Timing execute() throws Exception {
 		// Build tracks based on static configuration
-		targets = targetFactory.createTracks();
+		targets = targetFactory.createTargets();
+		logger.info("Number of targets: " + targets.size());
 
 		// Configure tracks
+		long id = 0;
 		for (ITarget target : targets) {
+			logger.debug("Initializing target " + target.getId());
+
 			// Create a metric writer
 			MetricWriter metricWriter = MetricWriterFactory.createMetricWriter(metricWriterType, metricWriterConf);
 
 			target.setTiming(timing);
 			target.setMetricWriter(metricWriter);
-			target.init();
+			target.init(id++);
 		}
 
 		// Start all tracks
-		for (ITarget target : targets)
+		for (ITarget target : targets) {
+			logger.debug("Starting target " + target.getId());
 			target.start();
+		}
 
-		// Join all running tracks
-		for (ITarget target : targets)
+		// Wait until end time is reached
+		logger.info("Sleeping during benchmark");
+		long sleep = timing.endRun - System.currentTimeMillis();
+		Thread.sleep(sleep);
+
+		// Stop running tracks
+		for (ITarget target : targets) {
+			logger.debug("Stopping target " + target.getId());
 			target.end();
+		}
 
 		return timing;
 	}
@@ -118,7 +131,7 @@ public class Scenario {
 			TargetFactory creator = (TargetFactory) creatorCtor.newInstance((Object[]) null);
 			return creator;
 		} catch (Exception e) {
-			throw new BenchmarkFailedException("Unable to instantiate track factory", e);
+			throw new BenchmarkFailedException("Unable to instantiate track factory from class " + name, e);
 		}
 	}
 

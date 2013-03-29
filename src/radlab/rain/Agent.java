@@ -36,10 +36,6 @@ import java.util.concurrent.ExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * The LoadGenerationStrategy abstract class is a basic thread that keeps track of its state (waiting to begin, active,
- * or inactive) and associates itself with a generator that creates operations.
- */
 public abstract class Agent extends Thread {
 	private static Logger logger = LoggerFactory.getLogger(Agent.class);
 

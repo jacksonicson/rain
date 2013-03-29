@@ -50,14 +50,11 @@ import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.scoreboard.Scoreboard;
 import radlab.rain.util.MetricWriter;
 
-/**
- * The ScenarioTrack abstract class represents a single workload among potentially many that are simultaneously run
- * under a single Scenario.<br />
- * <br />
- * The ScenarioTrack is responsible for reading in the configuration of a workload and generating the load profiles.
- */
-public abstract class Target implements ITarget {
+public class Target implements ITarget {
 	private static Logger logger = LoggerFactory.getLogger(Target.class);
+
+	// Target id
+	private long id;
 
 	// Timings
 	protected Timing timing;
@@ -103,7 +100,10 @@ public abstract class Target implements ITarget {
 	// Executer pool
 	protected ExecutorService executor;
 
-	public void init() throws Exception {
+	public void init(long id) throws Exception {
+		// Set identifier
+		this.id = id;
+
 		// Create scoreboard
 		scoreboard = createScoreboard();
 
@@ -119,26 +119,30 @@ public abstract class Target implements ITarget {
 
 	public void start() throws Exception {
 		// Starting load manager
+		logger.debug("Starting load manager");
 		loadManager.start();
+
+		// Start the scoreboard
+		logger.debug("Starting scoreboard");
+		scoreboard.start();
 
 		// Create load generating units
 		createAgents(executor);
-
-		// Start the scoreboard
-		scoreboard.start();
+		logger.debug("Agents created: " + agents.size());
 
 		// Start load generating unit threads
-		for (Agent generator : agents)
-			generator.start();
+		logger.debug("Starting agents");
+		for (Agent agent : agents)
+			agent.start();
 	}
 
 	private void createAgents(ExecutorService executor) throws Exception {
 		// Determine maximum number of required lg units that are required by the schedule
-		long maxGenerators = loadSchedule.getMaxGenerators();
+		long maxAgents = loadSchedule.getMaxAgents();
 
 		// Create all agents
-		for (int i = 0; i < maxGenerators; i++) {
-			// Setup generator
+		for (int i = 0; i < maxAgents; i++) {
+			// Setup generator for each agent
 			Generator generator = generatorFactory.createGenerator();
 			generator.setScoreboard(scoreboard);
 			generator.setMeanCycleTime((long) (meanCycleTime * 1000));
@@ -156,24 +160,24 @@ public abstract class Target implements ITarget {
 	}
 
 	public void end() {
+		// Wait for all load generating units to exit
+		for (Agent agent : agents) {
+			try {
+				agent.join();
+				logger.info("Agent ended: " + agent.getName());
+			} catch (InterruptedException ie) {
+				logger.error("Main thread interrupted... exiting!");
+			} finally {
+				agent.dispose();
+			}
+		}
+
 		// Shutdown load manager
 		try {
 			loadManager.setDone(true);
 			loadManager.join();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-		}
-
-		// Wait for all load generating units to exit
-		for (Agent generator : agents) {
-			try {
-				generator.join();
-				logger.info("Thread joined: " + generator.getName());
-			} catch (InterruptedException ie) {
-				logger.error("Main thread interrupted... exiting!");
-			} finally {
-				generator.dispose();
-			}
 		}
 
 		// Stop the scoreboard
@@ -264,5 +268,9 @@ public abstract class Target implements ITarget {
 
 	public void setGeneratorFactory(GeneratorFactory generatorFactory) {
 		this.generatorFactory = generatorFactory;
+	}
+
+	public long getId() {
+		return this.id;
 	}
 }

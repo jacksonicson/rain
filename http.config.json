@@ -12,7 +12,7 @@
     "metricWriterType" : "sonar",
     "metricWriterConf" : {},
     
-    "targetFactoryClass": "radlab.rain.workload.http.HttpTrackFactory",    
+    "targetFactoryClass": "radlab.rain.workload.http.HttpTargetFactory",    
     "targetFactoryParams": {
     	"amount" : 1,
     	"targetConfig" : {
