@@ -1,6 +1,7 @@
 package radlab.rain;
 
 import java.util.Random;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,9 +27,13 @@ public class LoadManager extends Thread {
 	// Reference to the load schedule
 	private LoadSchedule loadSchedule;
 
-	public LoadManager(Timing timing, LoadSchedule loadSchedule) {
+	// List of workload mix identifiers
+	private Set<String> mixes;
+
+	public LoadManager(Timing timing, LoadSchedule loadSchedule, Set<String> mixes) {
 		this.rampUp = timing.rampUp;
 		this.loadSchedule = loadSchedule;
+		this.mixes = mixes;
 	}
 
 	public boolean getDone() {
@@ -144,11 +149,22 @@ public class LoadManager extends Thread {
 		return loadSchedule.get(nextLoadScheduleIndex);
 	}
 
-	/**
-	 * Default way to advance the load schedule
-	 * 
-	 * @return true if schedule advanced or false if at the end of the schedule
-	 */
+	private boolean validateLoadDefinition(LoadDefinition profile) {
+		// Check number of users
+		if (profile.numberOfUsers <= 0) {
+			logger.info("Invalid load profile. Number of users <= 0. Profile details: " + profile.toString());
+			return false;
+		}
+
+		// Check references to the mix matrix
+		if (profile.mixName.length() > 0 && !mixes.contains(profile.mixName)) {
+			logger.info("Invalid load profile. mixname not in track's mixmap. Profile details: " + profile.toString());
+			return false;
+		}
+
+		return true;
+	}
+
 	public LoadDefinition advanceSchedule() {
 		// Update load schedule index
 		loadScheduleIndex = (loadScheduleIndex + 1) % loadSchedule.size();
@@ -162,6 +178,10 @@ public class LoadManager extends Thread {
 
 		// Get next load unit
 		LoadDefinition next = loadSchedule.get(loadScheduleIndex);
+
+		// Validate
+		if (!validateLoadDefinition(next))
+			logger.warn("invalid load definition found");
 
 		// Update profile stats
 		next.activate();

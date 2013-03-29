@@ -103,22 +103,6 @@ public abstract class Target implements ITarget {
 	// Executer pool
 	protected ExecutorService executor;
 
-	private boolean validateLoadDefinition(LoadDefinition profile) {
-		// Check number of users
-		if (profile.numberOfUsers <= 0) {
-			logger.info("Invalid load profile. Number of users <= 0. Profile details: " + profile.toString());
-			return false;
-		}
-
-		// Check references to the mix matrix
-		if (profile.mixName.length() > 0 && !mixMatrices.containsKey(profile.mixName)) {
-			logger.info("Invalid load profile. mixname not in track's mixmap. Profile details: " + profile.toString());
-			return false;
-		}
-
-		return true;
-	}
-
 	public void init() throws Exception {
 		// Create scoreboard
 		scoreboard = createScoreboard();
@@ -127,7 +111,7 @@ public abstract class Target implements ITarget {
 		loadSchedule = loadScheduleFactory.createSchedule();
 
 		// Create a new load manager
-		loadManager = new LoadManager(timing, loadSchedule);
+		loadManager = new LoadManager(timing, loadSchedule, mixMatrices.keySet());
 
 		// Create a new thread pool
 		executor = Executors.newCachedThreadPool();
