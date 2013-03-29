@@ -96,7 +96,7 @@ public class Scenario {
 		// Stop running tracks
 		for (ITarget target : targets) {
 			logger.debug("Stopping target " + target.getId());
-			target.end();
+			target.dispose();
 		}
 
 		logger.info("Scenario execution ended");

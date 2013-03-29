@@ -148,12 +148,13 @@ public class Target implements ITarget {
 			// Setup generator for each agent
 			Generator generator = generatorFactory.createGenerator();
 			generator.setScoreboard(scoreboard);
-			generator.setMeanCycleTime((long) (meanCycleTime * 1000));
-			generator.setMeanThinkTime((long) (meanThinkTime * 1000));
+			generator.setCycleTime((long) (meanCycleTime * 1000));
+			generator.setThinkTime((long) (meanThinkTime * 1000));
 			generator.initialize();
 
 			// Allow the load generation strategy to be configurable
 			IAgent agent = agentFactory.createAgent(i, loadManager, generator, timing);
+			agent.setScoreboard(scoreboard);
 
 			// Add thread to thread list and start the thread
 			agents.add(agent);
@@ -167,8 +168,9 @@ public class Target implements ITarget {
 		}
 	}
 
-	public void end() {
-		// Wait for all load generating units to exit
+	public void dispose() {
+		// Shutdown all agent threads
+		// This should not be necessary if target was joined
 		for (IAgent agent : agents) {
 			try {
 				// Interrupt agent thread
@@ -183,7 +185,7 @@ public class Target implements ITarget {
 			}
 		}
 
-		// Shutdown load manager
+		// Shutdown load manager thread
 		try {
 			logger.debug("Shutting down load manager");
 			loadManager.interrupt();

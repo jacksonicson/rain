@@ -20,7 +20,7 @@ public interface ITarget {
 	public void joinAgents() throws InterruptedException;
 
 	// Stops all agents and helper threads
-	public void end();
+	public void dispose();
 
 	// Statistics for this target
 	public IScoreboard getScoreboard();

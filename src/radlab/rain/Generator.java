@@ -51,26 +51,25 @@ public abstract class Generator {
 	// Latest load profile used
 	protected LoadDefinition latestLoadProfile = null;
 
+	// Initialize the generator
 	public abstract void initialize();
 
+	// Generate next operation instance
 	public abstract Operation nextRequest(int lastOperation);
 
+	// Dispose generator and all its resources
 	public abstract void dispose();
 
 	public void setScoreboard(IScoreboard scoreboard) {
 		this.scoreboard = scoreboard;
 	}
 
-	public void setMeanCycleTime(long cycleTime) {
+	public void setCycleTime(long cycleTime) {
 		this.cycleTime = cycleTime;
 	}
 
-	public void setMeanThinkTime(long thinkTime) {
+	public void setThinkTime(long thinkTime) {
 		this.thinkTime = thinkTime;
-	}
-
-	public IScoreboard getScoreboard() {
-		return scoreboard;
 	}
 
 	public long getCycleTime() {

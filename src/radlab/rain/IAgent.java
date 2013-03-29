@@ -1,7 +1,11 @@
 package radlab.rain;
 
+import radlab.rain.scoreboard.IScoreboard;
+
 public interface IAgent {
 
+	void setScoreboard(IScoreboard scoreboard);
+	
 	void run();
 
 	void dispose();

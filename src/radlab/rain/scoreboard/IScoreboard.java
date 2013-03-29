@@ -39,12 +39,6 @@ import radlab.rain.Target;
 import radlab.rain.Timing;
 import radlab.rain.util.MetricWriter;
 
-/**
- * The IScoreboard interface allows an implemented scoreboard to interface with the benchmark architecture.<br />
- * <br />
- * The interface requires that the scoreboard be able to start, stop, receive results, show statistics, and register log
- * handles, among other things.
- */
 public interface IScoreboard {
 
 	// Initialize the scoreboard

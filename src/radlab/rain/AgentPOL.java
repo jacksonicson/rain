@@ -36,9 +36,14 @@ import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import radlab.rain.scoreboard.IScoreboard;
+
 public class AgentPOL extends Agent {
 	private static Logger logger = LoggerFactory.getLogger(AgentPOL.class);
 
+	// Scoreboard reference
+	protected IScoreboard scoreboard; 
+	
 	// The probability of using open loop vs. closed loop
 	protected double openLoopProbability;
 
@@ -152,10 +157,8 @@ public class AgentPOL extends Agent {
 		// Trigger operation
 		doOperation(operation);
 
-		// Sleep for cycle time
-
 		// Save the cycle time - if we're in the steady state
-		generator.getScoreboard().dropOffWaitTime(now, operation.operationName, cycleTime);
+		scoreboard.dropOffWaitTime(now, operation.operationName, cycleTime);
 	}
 
 	/**
@@ -179,7 +182,7 @@ public class AgentPOL extends Agent {
 		thinkTime = waitUntil(now, thinkTime);
 
 		// Save the think time
-		generator.getScoreboard().dropOffWaitTime(now, operation.operationName, thinkTime);
+		scoreboard.dropOffWaitTime(now, operation.operationName, thinkTime);
 	}
 
 	private long waitUntil(long now, long deltaTime) throws InterruptedException {
@@ -207,5 +210,10 @@ public class AgentPOL extends Agent {
 
 	public void setOpenLoopProbability(double openLoopProbability) {
 		this.openLoopProbability = openLoopProbability;
+	}
+
+	@Override
+	public void setScoreboard(IScoreboard scoreboard) {
+		this.scoreboard = scoreboard;
 	}
 }
