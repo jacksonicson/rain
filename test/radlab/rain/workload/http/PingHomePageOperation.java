@@ -47,6 +47,7 @@ public class PingHomePageOperation extends HttpTestOperation {
 
 		this.operationName = NAME;
 		this.operationIndex = HttpTestGenerator.PING_HOMEPAGE;
+		this.setAsync(true); 
 	}
 
 	@Override

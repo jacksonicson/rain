@@ -102,6 +102,8 @@ public class AgentPOL extends Agent {
 
 					// Generate next operation
 					Operation nextOperation = generator.nextRequest(lastOperationIndex);
+
+					// Execute operation
 					if (nextOperation != null) {
 						// Initialize operation
 						nextOperation.setGeneratedDuringProfile(loadManager.getCurrentLoadProfile());
@@ -113,6 +115,7 @@ public class AgentPOL extends Agent {
 						// Store the thread name/ID so we can organize the traces.
 						nextOperation.setGeneratedBy(threadName);
 
+						// EXECUTE OPERATION
 						// Decide whether to do things open or closed (throw a coin)
 						double randomDouble = random.nextDouble();
 						if (randomDouble <= openLoopProbability)
@@ -122,9 +125,9 @@ public class AgentPOL extends Agent {
 					}
 				}
 			}
-			
-			logger.info("Agent ended as expected"); 
-			
+
+			logger.info("Agent ended as expected");
+
 		} catch (InterruptedException ie) {
 			logger.error("[" + threadName + "] load generation thread interrupted exiting!");
 		} catch (Exception e) {

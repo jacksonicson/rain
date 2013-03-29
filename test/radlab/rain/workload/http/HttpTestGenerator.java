@@ -58,11 +58,11 @@ public class HttpTestGenerator extends Generator {
 	}
 
 	public long getThinkTime() {
-		return 60;
+		return 5000;
 	}
 
 	public long getCycleTime() {
-		return 10;
+		return 5000;
 	}
 
 	public void dispose() {
