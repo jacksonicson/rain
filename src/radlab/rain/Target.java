@@ -74,6 +74,9 @@ public class Target implements ITarget {
 	// Load schedule used by the generator and strategy
 	protected LoadScheduleFactory loadScheduleFactory;
 
+	// Agent factory
+	protected AgentFactory agentFactory;
+
 	// Load schedule
 	protected LoadSchedule loadSchedule;
 
@@ -95,7 +98,7 @@ public class Target implements ITarget {
 	protected long meanResponseTimeSamplingInterval = 500;
 
 	// List of all load generating units
-	protected List<Agent> agents = new ArrayList<Agent>();
+	protected List<IAgent> agents = new ArrayList<IAgent>();
 
 	// Executer pool
 	protected ExecutorService executor;
@@ -132,7 +135,7 @@ public class Target implements ITarget {
 
 		// Start load generating unit threads
 		logger.debug("Starting agents");
-		for (Agent agent : agents)
+		for (IAgent agent : agents)
 			agent.start();
 	}
 
@@ -150,9 +153,7 @@ public class Target implements ITarget {
 			generator.initialize();
 
 			// Allow the load generation strategy to be configurable
-			AgentPOL agent = new AgentPOL(i, loadManager, generator, timing);
-			agent.setExecutorService(executor);
-			agent.setTimeStarted(System.currentTimeMillis());
+			IAgent agent = agentFactory.createAgent(i, loadManager, generator, timing);
 
 			// Add thread to thread list and start the thread
 			agents.add(agent);
@@ -161,7 +162,7 @@ public class Target implements ITarget {
 
 	public void end() {
 		// Wait for all load generating units to exit
-		for (Agent agent : agents) {
+		for (IAgent agent : agents) {
 			try {
 				agent.join();
 				logger.info("Agent ended: " + agent.getName());
@@ -264,6 +265,10 @@ public class Target implements ITarget {
 
 	public void setLoadScheduleFactory(LoadScheduleFactory loadScheduleFactory) {
 		this.loadScheduleFactory = loadScheduleFactory;
+	}
+
+	public void setAgentFactory(AgentFactory agentFactory) {
+		this.agentFactory = agentFactory;
 	}
 
 	public void setGeneratorFactory(GeneratorFactory generatorFactory) {

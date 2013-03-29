@@ -33,9 +33,13 @@ package radlab.rain.workload.http;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import radlab.rain.scoreboard.IScoreboard;
 
 public class PingHomePageOperation extends HttpTestOperation {
+	private static final Logger logger = LoggerFactory.getLogger(PingHomePageOperation.class);
 	public static String NAME = "PingHome";
 
 	public PingHomePageOperation(IScoreboard scoreboard) {
@@ -47,8 +51,10 @@ public class PingHomePageOperation extends HttpTestOperation {
 
 	@Override
 	public void execute() throws Throwable {
+		logger.debug("Executing ping homepage operation");
+
 		// Fetch the base url
-		StringBuilder response = this.http.fetchUrl(((HttpTestGenerator) generatedByGenerator)._baseUrl);
+		StringBuilder response = this.http.fetchUrl(((HttpTestGenerator) generatedByGenerator).baseUrl);
 		trace();
 
 		if (response.length() == 0) {

@@ -6,48 +6,64 @@ import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import radlab.rain.AgentFactory;
+import radlab.rain.AgentPOL;
 import radlab.rain.Generator;
 import radlab.rain.GeneratorFactory;
+import radlab.rain.IAgent;
 import radlab.rain.ITarget;
+import radlab.rain.LoadManager;
 import radlab.rain.Target;
 import radlab.rain.TargetFactory;
+import radlab.rain.Timing;
 
-public class HttpTargetFactory implements TargetFactory, GeneratorFactory {
+public class HttpBenchmark implements TargetFactory, GeneratorFactory, AgentFactory {
 
 	private long amount;
 	private JSONObject targetConfig;
+	private String baseUrl;
 
 	@Override
 	public void configure(JSONObject params) throws JSONException {
 		amount = params.getInt("amount");
 		targetConfig = params.getJSONObject("targetConfig");
+		baseUrl = params.getString("baseUrl");
 	}
 
 	@Override
 	public List<ITarget> createTargets() throws JSONException {
 		List<ITarget> tracks = new LinkedList<ITarget>();
 		for (int i = 0; i < amount; i++) {
-			tracks.add(createTrack());
+			tracks.add(createTarget());
 		}
 		return tracks;
 	}
 
-	protected ITarget createTrack() {
-		Target track = new Target();
+	protected ITarget createTarget() {
+		Target target = new Target();
 		try {
-			track.configure(targetConfig);
+			target.configure(targetConfig);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		
-		track.setLoadScheduleFactory(new HttpTestScheduleCreator());
-		track.setGeneratorFactory(this);
-		return track;
+
+		target.setLoadScheduleFactory(new HttpTestScheduleCreator());
+		target.setGeneratorFactory(this);
+		target.setAgentFactory(this);
+		return target;
 	}
 
 	@Override
 	public Generator createGenerator() {
 		HttpTestGenerator generator = new HttpTestGenerator();
+		generator.baseUrl = baseUrl;
 		return generator;
+	}
+
+	@Override
+	public IAgent createAgent(int i, LoadManager loadManager, Generator generator, Timing timing) {
+		AgentPOL agent = new AgentPOL(i, loadManager, generator, timing);
+		agent.setTimeToStart(System.currentTimeMillis());
+		return agent;
 	}
 }

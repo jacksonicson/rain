@@ -36,9 +36,6 @@ import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * The PartlyOpenLoopLoadGeneration class is a thread that supports partly open loop load generation.
- */
 public class AgentPOL extends Agent {
 	private static Logger logger = LoggerFactory.getLogger(AgentPOL.class);
 
@@ -66,17 +63,6 @@ public class AgentPOL extends Agent {
 		this.openLoopProbability = openLoopProbability;
 	}
 
-	// Resets the number of synchronous/asynchronous operations run
-	public void resetStatistics() {
-		this.synchOperations = 0;
-		this.asynchOperations = 0;
-	}
-
-	// Disposes of objects used by this thread
-	public void dispose() {
-		this.generator.dispose();
-	}
-
 	/**
 	 * Decides whether this thread is active or not. The number of threads is equal to the maximum number of generators.
 	 * The actual number of threads varies over time. This is achieved by blocking some threads. If a thread is blocked
@@ -91,20 +77,19 @@ public class AgentPOL extends Agent {
 	 * Load generator loop. Runs the generator for each cycle and executes the returned operation.
 	 */
 	public void run() {
-		String threadName = getName();
+		logger.info("New agent thread");
 
-		// Reset statistics
-		resetStatistics();
+		String threadName = getName();
 
 		// Track configuration
 		loadTrackConfiguration();
 
 		try {
 			// Sleep until its time to start
-			sleepUntil(timeStarted);
+			sleepUntil(timeToStart);
 
 			// Last executed operation (required to run markov chains)
-			int lastOperationIndex = NO_OPERATION_INDEX;
+			int lastOperationIndex = -1;
 
 			// Check if benchmark is still running
 			while (System.currentTimeMillis() <= timeToQuit) {
@@ -112,7 +97,7 @@ public class AgentPOL extends Agent {
 				if (!isActive()) {
 					threadState = ThreadStates.Inactive;
 					Thread.sleep(INACTIVE_DURATION);
-				} else {
+				} else { // Generator is active
 					threadState = ThreadStates.Active;
 
 					// Generate next operation
@@ -137,6 +122,9 @@ public class AgentPOL extends Agent {
 					}
 				}
 			}
+			
+			logger.info("Agent ended as expected"); 
+			
 		} catch (InterruptedException ie) {
 			logger.error("[" + threadName + "] load generation thread interrupted exiting!");
 		} catch (Exception e) {
@@ -224,7 +212,7 @@ public class AgentPOL extends Agent {
 	 */
 	protected void loadTrackConfiguration() {
 		// This value gets set by Benchmark
-		timeStarted = System.currentTimeMillis();
+		timeToStart = System.currentTimeMillis();
 
 		// Configuration is specified in seconds; convert to milliseconds.
 		long rampUp = timing.rampUp * 1000;
@@ -232,7 +220,7 @@ public class AgentPOL extends Agent {
 		long rampDown = timing.rampDown * 1000;
 
 		// Calculate timings
-		startSteadyState = timeStarted + rampUp;
+		startSteadyState = timeToStart + rampUp;
 		endSteadyState = startSteadyState + duration;
 		timeToQuit = endSteadyState + rampDown;
 	}

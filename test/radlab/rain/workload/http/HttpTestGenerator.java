@@ -31,67 +31,47 @@
 
 package radlab.rain.workload.http;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import radlab.rain.Generator;
 import radlab.rain.Operation;
+import radlab.rain.Scenario;
 import radlab.rain.util.HttpTransport;
 
 public class HttpTestGenerator extends Generator {
+	private static Logger logger = LoggerFactory.getLogger(HttpTestGenerator.class);
 
 	// Operation indices used in the mix matrix.
 	public static final int PING_HOMEPAGE = 0;
 
 	// private java.util.Random _randomNumberGenerator;
-	private HttpTransport _http;
-	String _baseUrl;
+	HttpTransport httpTransport;
+	String baseUrl;
 
 	public void initialize() {
-		this._http = new HttpTransport();
+		this.httpTransport = new HttpTransport();
 	}
 
-	/**
-	 * Returns the next <code>Operation</code> given the <code>lastOperation</code> according to the current mix matrix.
-	 * 
-	 * @param lastOperation
-	 *            The last <code>Operation</code> that was executed.
-	 */
 	public Operation nextRequest(int lastOperation) {
-		int nextOperation = -1;
-
-		if (lastOperation == -1) {
-			nextOperation = 0;
-		} else {
-
-			// For now do the same operation over and over again
-			nextOperation = PING_HOMEPAGE;
-		}
-
-		return getOperation(nextOperation);
+		return getOperation(PING_HOMEPAGE);
 	}
 
-	/**
-	 * Returns the current think time. The think time is duration between receiving the response of an operation and the
-	 * execution of its succeeding operation during synchronous execution (i.e. closed loop).
-	 */
 	public long getThinkTime() {
-		return 0;
+		return 60;
 	}
 
-	/**
-	 * Returns the current cycle time. The cycle time is duration between the execution of an operation and the
-	 * execution of its succeeding operation during asynchronous execution (i.e. open loop).
-	 */
 	public long getCycleTime() {
-		return 0;
+		return 10;
 	}
 
 	public void dispose() {
-	}
-
-	public HttpTransport getHttpTransport() {
-		return this._http;
+		// Do nothing
 	}
 
 	public Operation getOperation(int opIndex) {
+		logger.debug("Generating operation");
+
 		switch (opIndex) {
 		case PING_HOMEPAGE:
 			return new PingHomePageOperation(scoreboard);

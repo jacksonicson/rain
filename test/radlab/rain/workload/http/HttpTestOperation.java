@@ -50,7 +50,7 @@ public abstract class HttpTestOperation extends Operation {
 	@Override
 	public void prepare() {
 		HttpTestGenerator httpTestGenerator = (HttpTestGenerator) generatedByGenerator;
-		http = httpTestGenerator.getHttpTransport();
+		http = httpTestGenerator.httpTransport;
 	}
 
 	@Override
