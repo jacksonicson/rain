@@ -36,7 +36,7 @@ import java.util.LinkedList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.OperationExecution;
+import radlab.rain.operation.OperationExecution;
 import radlab.rain.util.ISamplingStrategy;
 
 public class OperationSummary {

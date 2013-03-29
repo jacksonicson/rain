@@ -29,56 +29,55 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package radlab.rain;
+package radlab.rain.operation;
 
-import radlab.rain.scoreboard.TraceLabels;
+import radlab.rain.load.LoadDefinition;
+import radlab.rain.scoreboard.IScoreboard;
 
 /**
- * The OperationExecution class is a wrapper for the results recorded from the execution of an operation. This wrapper
- * can be passed off to an IScoreboard to be recorded and presented at a later time.
+ * The Generator abstract class provides a default constructor, required properties, and specifies the methods that must
+ * be implemented in order to interface with the benchmark architecture.
+ * 
+ * The basic Generator has a name, associates itself with a scenario track, and keeps a reference to a scoreboard in
+ * which operation results are dropped off.
  */
-public class OperationExecution {
+public abstract class Generator {
+	// Think time and cycle time
+	protected long thinkTime;
+	protected long cycleTime;
 
-	final public String operationName;
-	final public String operationRequest;
+	// Scoreboard to drop results off at
+	protected IScoreboard scoreboard = null;
 
-	final public LoadDefinition generatedDuring;
+	// Latest load profile used
+	protected LoadDefinition latestLoadProfile = null;
 
-	final public boolean async;
-	final public boolean failed;
+	// Initialize the generator
+	public abstract void initialize();
 
-	final public long timeStarted;
-	final public long timeFinished;
-	final public long profileStartTime;
+	// Generate next operation instance
+	public abstract Operation nextRequest(int lastOperation);
 
-	final public long actionsPerformed;
+	// Dispose generator and all its resources
+	public abstract void dispose();
 
-	private TraceLabels traceLabel = TraceLabels.NO_TRACE_LABEL;
-
-	/**
-	 * Copy constructor
-	 */
-	public OperationExecution(Operation operation) {
-		this.timeStarted = operation.getTimeStarted();
-		this.timeFinished = operation.getTimeFinished();
-		this.operationName = operation.operationName;
-		this.operationRequest = operation.operationRequest;
-		this.async = operation.getAsync();
-		this.failed = operation.failed;
-		this.generatedDuring = operation.getGeneratedDuringProfile();
-		this.profileStartTime = operation.getProfileStartTime();
-		this.actionsPerformed = operation.getActionsPerformed();
+	public void setScoreboard(IScoreboard scoreboard) {
+		this.scoreboard = scoreboard;
 	}
 
-	public TraceLabels getTraceLabel() {
-		return this.traceLabel;
+	public void setCycleTime(long cycleTime) {
+		this.cycleTime = cycleTime;
 	}
 
-	public void setTraceLabel(TraceLabels label) {
-		this.traceLabel = label;
+	public void setThinkTime(long thinkTime) {
+		this.thinkTime = thinkTime;
 	}
 
-	public long getExecutionTime() {
-		return timeFinished - timeStarted;
+	public long getCycleTime() {
+		return cycleTime;
+	}
+
+	public long getThinkTime() {
+		return thinkTime;
 	}
 }

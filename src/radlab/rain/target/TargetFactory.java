@@ -1,4 +1,4 @@
-package radlab.rain;
+package radlab.rain.target;
 
 import java.util.List;
 

@@ -29,7 +29,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package radlab.rain;
+package radlab.rain.target;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,7 +45,17 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import radlab.rain.MixMatrix;
+import radlab.rain.Timing;
+import radlab.rain.agent.AgentFactory;
+import radlab.rain.agent.IAgent;
 import radlab.rain.configuration.TrackConfKeys;
+import radlab.rain.load.LoadDefinition;
+import radlab.rain.load.LoadManager;
+import radlab.rain.load.LoadSchedule;
+import radlab.rain.load.LoadScheduleFactory;
+import radlab.rain.operation.Generator;
+import radlab.rain.operation.GeneratorFactory;
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.scoreboard.Scoreboard;
 import radlab.rain.util.MetricWriter;

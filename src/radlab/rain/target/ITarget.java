@@ -1,5 +1,6 @@
-package radlab.rain;
+package radlab.rain.target;
 
+import radlab.rain.Timing;
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.util.MetricWriter;
 

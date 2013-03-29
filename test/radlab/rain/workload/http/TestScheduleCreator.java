@@ -36,9 +36,9 @@ import java.util.List;
 
 import org.json.JSONException;
 
-import radlab.rain.LoadDefinition;
-import radlab.rain.LoadSchedule;
-import radlab.rain.LoadScheduleFactory;
+import radlab.rain.load.LoadDefinition;
+import radlab.rain.load.LoadSchedule;
+import radlab.rain.load.LoadScheduleFactory;
 
 public class TestScheduleCreator implements LoadScheduleFactory {
 

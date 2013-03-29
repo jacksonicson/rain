@@ -1,10 +1,12 @@
-package radlab.rain;
+package radlab.rain.load;
 
 import java.util.Random;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import radlab.rain.Timing;
 
 public class LoadManager extends Thread {
 	private static Logger logger = LoggerFactory.getLogger(LoadManager.class);

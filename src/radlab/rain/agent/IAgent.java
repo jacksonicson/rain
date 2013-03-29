@@ -1,5 +1,6 @@
-package radlab.rain;
+package radlab.rain.agent;
 
+import radlab.rain.operation.Operation;
 import radlab.rain.scoreboard.IScoreboard;
 
 public interface IAgent {

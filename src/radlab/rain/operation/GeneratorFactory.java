@@ -1,4 +1,4 @@
-package radlab.rain;
+package radlab.rain.operation;
 
 public interface GeneratorFactory {
 

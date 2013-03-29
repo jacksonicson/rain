@@ -9,7 +9,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.LoadDefinition;
+import radlab.rain.load.LoadDefinition;
 
 public class StorageLoadProfile extends LoadDefinition 
 {

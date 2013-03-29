@@ -29,21 +29,27 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package radlab.rain;
+package radlab.rain.agent;
 
 import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import radlab.rain.Timing;
+import radlab.rain.UnexpectedDeathHandler;
+import radlab.rain.load.LoadDefinition;
+import radlab.rain.load.LoadManager;
+import radlab.rain.operation.Generator;
+import radlab.rain.operation.Operation;
 import radlab.rain.scoreboard.IScoreboard;
 
 public class AgentPOL extends Agent {
 	private static Logger logger = LoggerFactory.getLogger(AgentPOL.class);
 
 	// Scoreboard reference
-	protected IScoreboard scoreboard; 
-	
+	protected IScoreboard scoreboard;
+
 	// The probability of using open loop vs. closed loop
 	protected double openLoopProbability;
 
@@ -158,7 +164,7 @@ public class AgentPOL extends Agent {
 		doOperation(operation);
 
 		// Save the cycle time - if we're in the steady state
-		scoreboard.dropOffWaitTime(now, operation.operationName, cycleTime);
+		scoreboard.dropOffWaitTime(now, operation.getOperationName(), cycleTime);
 	}
 
 	/**
@@ -182,7 +188,7 @@ public class AgentPOL extends Agent {
 		thinkTime = waitUntil(now, thinkTime);
 
 		// Save the think time
-		scoreboard.dropOffWaitTime(now, operation.operationName, thinkTime);
+		scoreboard.dropOffWaitTime(now, operation.getOperationName(), thinkTime);
 	}
 
 	private long waitUntil(long now, long deltaTime) throws InterruptedException {

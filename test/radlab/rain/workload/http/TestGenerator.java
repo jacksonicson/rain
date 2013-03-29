@@ -34,8 +34,8 @@ package radlab.rain.workload.http;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import radlab.rain.Generator;
-import radlab.rain.Operation;
+import radlab.rain.operation.Generator;
+import radlab.rain.operation.Operation;
 import radlab.rain.util.HttpTransport;
 
 public class TestGenerator extends Generator {

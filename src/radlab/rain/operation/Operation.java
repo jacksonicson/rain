@@ -29,8 +29,9 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package radlab.rain;
+package radlab.rain.operation;
 
+import radlab.rain.load.LoadDefinition;
 import radlab.rain.scoreboard.IScoreboard;
 
 /**
@@ -256,4 +257,5 @@ public abstract class Operation implements Runnable {
 	public void setGeneratorThreadID(long val) {
 		this.generatorId = val;
 	}
+
 }

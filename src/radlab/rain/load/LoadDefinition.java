@@ -29,7 +29,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package radlab.rain;
+package radlab.rain.load;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -49,7 +49,7 @@ public class LoadDefinition {
 	public int numberOfUsers;
 	protected String mixName = "";
 	private long activeCount = 0; // How often has this interval become active, the load scheduler updates this
-	protected int openLoopMaxOpsPerSec = 0; // Rate limit on async operations. A value of 0 means no rate limiting.
+	public int openLoopMaxOpsPerSec = 0; // Rate limit on async operations. A value of 0 means no rate limiting.
 	protected JSONObject config = null; // Save the original configuration object if its passed
 
 	private long _timeStarted = -1; // LoadManagerThreads need to update this every time they advance the "clock"
@@ -168,7 +168,7 @@ public class LoadDefinition {
 		activeCount++;
 		setTimeStarted(System.currentTimeMillis());
 	}
-	
+
 	public long getActivations() {
 		return activeCount;
 	}

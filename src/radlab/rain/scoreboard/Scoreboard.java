@@ -42,10 +42,10 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import radlab.rain.LoadDefinition;
-import radlab.rain.OperationExecution;
-import radlab.rain.Target;
 import radlab.rain.Timing;
+import radlab.rain.load.LoadDefinition;
+import radlab.rain.operation.OperationExecution;
+import radlab.rain.target.Target;
 import radlab.rain.util.MetricWriter;
 import radlab.rain.util.PoissonSamplingStrategy;
 

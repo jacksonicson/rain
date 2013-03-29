@@ -29,13 +29,19 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package radlab.rain;
+package radlab.rain.agent;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import radlab.rain.Timing;
+import radlab.rain.load.LoadDefinition;
+import radlab.rain.load.LoadManager;
+import radlab.rain.operation.Generator;
+import radlab.rain.operation.Operation;
 
 public abstract class Agent extends Thread implements IAgent {
 	private static Logger logger = LoggerFactory.getLogger(Agent.class);

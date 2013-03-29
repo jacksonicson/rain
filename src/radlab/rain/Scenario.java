@@ -44,6 +44,8 @@ import org.slf4j.LoggerFactory;
 import radlab.rain.configuration.ScenarioConfKeys;
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.scoreboard.Scorecard;
+import radlab.rain.target.ITarget;
+import radlab.rain.target.TargetFactory;
 import radlab.rain.util.MetricWriter;
 import radlab.rain.util.MetricWriterFactory;
 

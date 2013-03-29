@@ -34,9 +34,9 @@ package radlab.rain.scoreboard;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.OperationExecution;
-import radlab.rain.Target;
 import radlab.rain.Timing;
+import radlab.rain.operation.OperationExecution;
+import radlab.rain.target.Target;
 import radlab.rain.util.MetricWriter;
 
 public interface IScoreboard {

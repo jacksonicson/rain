@@ -31,7 +31,7 @@
 
 package radlab.rain.workload.http;
 
-import radlab.rain.Operation;
+import radlab.rain.operation.Operation;
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.util.HttpTransport;
 

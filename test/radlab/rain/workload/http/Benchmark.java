@@ -6,16 +6,16 @@ import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.AgentFactory;
-import radlab.rain.AgentPOL;
-import radlab.rain.Generator;
-import radlab.rain.GeneratorFactory;
-import radlab.rain.IAgent;
-import radlab.rain.ITarget;
-import radlab.rain.LoadManager;
-import radlab.rain.Target;
-import radlab.rain.TargetFactory;
 import radlab.rain.Timing;
+import radlab.rain.agent.AgentFactory;
+import radlab.rain.agent.AgentPOL;
+import radlab.rain.agent.IAgent;
+import radlab.rain.load.LoadManager;
+import radlab.rain.operation.Generator;
+import radlab.rain.operation.GeneratorFactory;
+import radlab.rain.target.ITarget;
+import radlab.rain.target.Target;
+import radlab.rain.target.TargetFactory;
 
 public class Benchmark implements TargetFactory, GeneratorFactory, AgentFactory {
 
