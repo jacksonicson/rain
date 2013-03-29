@@ -44,8 +44,8 @@ import org.slf4j.LoggerFactory;
 
 import radlab.rain.LoadDefinition;
 import radlab.rain.OperationExecution;
-import radlab.rain.Timing;
 import radlab.rain.Target;
+import radlab.rain.Timing;
 import radlab.rain.util.MetricWriter;
 import radlab.rain.util.PoissonSamplingStrategy;
 
@@ -71,7 +71,6 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 	// Who owns this scoreboard
 	private String trackName;
-	private String trackTargetHost;
 	private Target scenarioTrack = null;
 
 	// If true, this scoreboard will refuse any new results.
@@ -151,7 +150,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 		finalCard = new Scorecard("final", trackName, runDuration, maxUsers);
 		reset();
 	}
-	
+
 	@Override
 	public void reset() {
 		// Reset final card
@@ -425,7 +424,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 		// Results
 		JSONObject result = new JSONObject();
 		result.put("track", trackName);
-		result.put("target_host", trackTargetHost);
+		result.put("target_host", "TODO"); // TODO: Track target host 
 		result.put("run_duration", runDuration);
 		result.put("start_time", startTime);
 		result.put("end_time", endTime);
@@ -495,17 +494,12 @@ public class Scoreboard implements Runnable, IScoreboard {
 	}
 
 	@Override
-	public void setTargetHost(String val) {
-		this.trackTargetHost = val;
-	}
-
-	@Override
 	public Scorecard getFinalScorecard() {
 		return this.finalCard;
 	}
 
 	@Override
-	public void setScenarioTrack(Target scenarioTrack) {
+	public void setTarget(Target scenarioTrack) {
 		this.scenarioTrack = scenarioTrack;
 	}
 
@@ -519,15 +513,8 @@ public class Scoreboard implements Runnable, IScoreboard {
 		return endTime;
 	}
 
-	@Override
-	public Target getScenarioTrack() {
-		return scenarioTrack;
-	}
-
 	public String toString() {
 		return "[SCOREBOARD TRACK: " + this.trackName + "]";
 	}
-
-	
 
 }

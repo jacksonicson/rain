@@ -47,21 +47,25 @@ import radlab.rain.util.MetricWriter;
  */
 public interface IScoreboard {
 
+	// Initialize the scoreboard
 	void initialize(Timing timing, long maxUsers);
 
-	void setScenarioTrack(Target val);
+	// Reference to the target that uses this scoreboard
+	void setTarget(Target val);
 
-	void setMetricWriter(MetricWriter val);
+	// Set reference to a metric writer
+	void setMetricWriter(MetricWriter metricWriter);
 
+	// Reset
 	void reset();
 
+	// Start recording data 
 	void start();
 
+	// Stop recording data
 	void stop();
 
-	/**
-	 * Receives the results of an operation execution.
-	 */
+	// Receives the results of an operation execution.
 	void dropOffOperation(OperationExecution result);
 
 	void dropOffWaitTime(long time, String opName, long waitTime);
@@ -77,18 +81,19 @@ public interface IScoreboard {
 
 	void setMeanResponseTimeSamplingInterval(long val);
 
-	void setTargetHost(String val);
-
 	/**
-	 * Getter methods
+	 * Result aggregation
 	 */
+	
+	// Returns a scorecard that contains aggregated stats
 	Scorecard getFinalScorecard();
 
+	// JSON serialized object that contains aggregated stats
 	JSONObject getStatistics() throws JSONException;
 
+	// Timestamp of start logging
 	long getStartTimestamp();
 
+	// Timestamp of end logging
 	long getEndTimestamp();
-
-	Target getScenarioTrack();
 }

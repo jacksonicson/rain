@@ -251,7 +251,7 @@ public class Target implements ITarget {
 
 		// Set the log sampling probability for the scoreboard
 		scoreboard.initialize(timing, loadSchedule.getMaxAgents());
-		scoreboard.setScenarioTrack(this);
+		scoreboard.setTarget(this);
 		scoreboard.setLogSamplingProbability(logSamplingProbability);
 		scoreboard.setUsingMetricSnapshots(useMetricSnapshots);
 		scoreboard.setMeanResponseTimeSamplingInterval(meanResponseTimeSamplingInterval);
