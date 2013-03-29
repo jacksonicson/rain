@@ -176,7 +176,6 @@ public class Target implements ITarget {
 
 				// Wait for agent thread to join
 				agent.join();
-				logger.info("Agent ended: " + agent.getName());
 			} catch (InterruptedException ie) {
 				logger.error("Main thread interrupted... exiting!");
 			} finally {
@@ -186,12 +185,13 @@ public class Target implements ITarget {
 
 		// Shutdown load manager
 		try {
-			loadManager.setDone(true);
+			logger.debug("Shutting down load manager"); 
+			loadManager.interrupt();
 			loadManager.join();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-
+		
 		// Stop the scoreboard
 		scoreboard.stop();
 	}

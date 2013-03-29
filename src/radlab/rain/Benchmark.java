@@ -62,9 +62,6 @@ public class Benchmark {
 
 		// Aggregate scorecards
 		scenario.aggregateScorecards(timing);
-
-		// Shutdown Sonar monitoring
-		SonarRecorder.getInstance().shutdown();
 	}
 
 	private static JSONObject loadConfiguration(String filename) {
@@ -173,16 +170,17 @@ public class Benchmark {
 			logger.info("Starting scenario (threads)");
 			benchmark.start(scenario);
 
-			// Shutdown thrift communication
+			// Trigger shutdown hooks
+			RainConfig.getInstance().triggerShutdown(); 
+			
 			if (service != null) {
-				logger.info("Starting thrift communication! Using port: " + service.getPort());
+				logger.info("Stopping thrift communication! Using port: " + service.getPort());
 				service.stop();
 			}
 
 		} catch (Exception e) {
 			logger.error("error in benchmark", e);
 		} finally {
-			logger.info("Rain stopped");
 			LogManager.shutdown();
 		}
 	}

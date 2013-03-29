@@ -16,7 +16,7 @@ public class LoadManager extends Thread {
 	private final long rampUp;
 
 	// Keeps running as long as this flag is false
-	private boolean done = false;
+	private boolean interrupted = false;
 
 	// The current load profile index
 	private int loadScheduleIndex = 0;
@@ -34,14 +34,12 @@ public class LoadManager extends Thread {
 		this.rampUp = timing.rampUp;
 		this.loadSchedule = loadSchedule;
 		this.mixes = mixes;
+		setName("LoadManager");
 	}
 
-	public boolean getDone() {
-		return done;
-	}
-
-	public void setDone(boolean done) {
-		this.done = done;
+	public void interrupt() {
+		this.interrupted = true;
+		super.interrupt();
 	}
 
 	/**
@@ -124,7 +122,7 @@ public class LoadManager extends Thread {
 		currentLoad.activate();
 
 		// Main loop that goes over all load units in the load schedule
-		while (!this.getDone()) {
+		while (!interrupted) {
 			try {
 				// Sleep until the next load/behavior change.
 				Thread.sleep(currentLoad.getInterval() + currentLoad.getTransitionTime());
@@ -132,11 +130,11 @@ public class LoadManager extends Thread {
 				// Advance the schedule and if that returns false, then we're done
 				currentLoad = advanceSchedule();
 			} catch (InterruptedException e) {
-				logger.error("Load manager interrupted...", e);
-				done = true;
+				// This is ok
+				interrupted = true;
 			} catch (Exception e) {
 				logger.error("Unknown error in load manager", e);
-				done = true;
+				interrupted = true;
 			}
 		}
 

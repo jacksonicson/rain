@@ -76,6 +76,7 @@ public abstract class Agent extends Thread implements IAgent {
 		this.timing = timing;
 		this.generator = generator;
 		this.loadManager = loadManager;
+		setName("Agent-" + id);
 	}
 
 	public void dispose() {

@@ -28,12 +28,10 @@ public final class Timing {
 		this.duration = duration;
 		this.rampDown = rampDown;
 
-		// Calculate the run timings that will be used for all threads.
-		// | ramp up |------ duration ------| ramp down |
 		start = System.currentTimeMillis() + Timing.TIME_TO_START;
-		startSteadyState = start + (rampUp * 1000);
-		endSteadyState = startSteadyState + (duration * 1000);
-		endRun = endSteadyState + (rampDown * 1000);
+		startSteadyState = start + rampUp;
+		endSteadyState = startSteadyState + duration;
+		endRun = endSteadyState + rampDown;
 
 		try {
 			log();

@@ -8,10 +8,12 @@ import org.apache.thrift.transport.TNonblockingServerSocket;
 import org.apache.thrift.transport.TNonblockingServerTransport;
 import org.apache.thrift.transport.TTransportException;
 
+import radlab.rain.IShutdown;
+import radlab.rain.RainConfig;
 import radlab.rain.Scenario;
 import de.tum.in.storm.rain.RainService;
 
-public class ThriftService {
+public class ThriftService implements IShutdown {
 
 	public static final int DEFAULT_PORT = 7852;
 
@@ -53,6 +55,10 @@ public class ThriftService {
 		this.scenario = scenario;
 	}
 
+	public void shutdown() {
+		stop();
+	}
+
 	public int getPort() {
 		return port;
 	}
@@ -66,6 +72,9 @@ public class ThriftService {
 			serviceThread = new RainNonblockingService();
 			serviceThread.start();
 		}
+
+		// Register for shutdown hook
+		RainConfig.getInstance().register(this);
 	}
 
 	public void stop() {

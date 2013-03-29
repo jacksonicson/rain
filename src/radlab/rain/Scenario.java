@@ -99,15 +99,17 @@ public class Scenario {
 			target.end();
 		}
 
+		logger.info("Scenario execution ended");
+
 		return timing;
 	}
 
 	private void configure(JSONObject jsonConfig) throws JSONException, BenchmarkFailedException {
 		// Read timing
 		JSONObject timing = jsonConfig.getJSONObject(ScenarioConfKeys.TIMING_KEY.toString());
-		long rampUp = timing.getLong(ScenarioConfKeys.RAMP_UP_KEY.toString());
-		long duration = timing.getLong(ScenarioConfKeys.DURATION_KEY.toString());
-		long rampDown = timing.getLong(ScenarioConfKeys.RAMP_DOWN_KEY.toString());
+		long rampUp = timing.getLong(ScenarioConfKeys.RAMP_UP_KEY.toString()) * 1000;
+		long duration = timing.getLong(ScenarioConfKeys.DURATION_KEY.toString()) * 1000;
+		long rampDown = timing.getLong(ScenarioConfKeys.RAMP_DOWN_KEY.toString()) * 1000;
 		this.timing = new Timing(rampUp, duration, rampDown);
 
 		// New track factory

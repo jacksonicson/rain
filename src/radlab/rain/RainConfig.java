@@ -31,6 +31,9 @@
 
 package radlab.rain;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import radlab.rain.communication.thrift.ThriftService;
 
 /**
@@ -53,12 +56,24 @@ public class RainConfig {
 	private static Object singletonLock = new Object();
 	private static RainConfig config = null;
 
+	private List<IShutdown> shutdownHooks = new ArrayList<IShutdown>();
+
 	public static RainConfig getInstance() {
 		synchronized (singletonLock) {
 			if (config == null)
 				config = new RainConfig();
 		}
 		return config;
+	}
+
+	public synchronized void register(IShutdown shutdown) {
+		this.shutdownHooks.add(shutdown);
+	}
+
+	public synchronized void triggerShutdown() {
+		for (IShutdown shutdown : shutdownHooks) {
+			shutdown.shutdown();
+		}
 	}
 
 	private RainConfig() {

@@ -14,13 +14,14 @@ import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import radlab.rain.IShutdown;
 import radlab.rain.RainConfig;
 import radlab.rain.scoreboard.Scorecard;
 import de.tum.in.sonar.collector.CollectService;
 import de.tum.in.sonar.collector.Identifier;
 import de.tum.in.sonar.collector.MetricReading;
 
-public class SonarRecorder extends Thread {
+public class SonarRecorder extends Thread implements IShutdown {
 	private static Logger logger = LoggerFactory.getLogger(Scorecard.class);
 
 	private static Object lock = new Object();
@@ -47,12 +48,20 @@ public class SonarRecorder extends Thread {
 			logger.error("Connection with sonar failed, could not determine INet address", e);
 		}
 
+		// Set thread name
+		setName("SonarRecorder");
+
 		// Launch thread
 		this.start();
+
+		// Register for shutdown
+		RainConfig.getInstance().register(this);
 	}
 
 	public void shutdown() {
+		logger.info("Shutting down SonarRecorder"); 
 		this.running = false;
+		this.interrupt();
 	}
 
 	public static SonarRecorder getInstance() {
@@ -94,7 +103,6 @@ public class SonarRecorder extends Thread {
 				job.id.setHostname(hostname);
 				client.logMetric(job.id, job.value);
 			} catch (InterruptedException e) {
-				logger.warn("Iterrupted sonar recorder");
 			} catch (TException e) {
 				logger.error("Sonar recorder could not log metric", e);
 			}
