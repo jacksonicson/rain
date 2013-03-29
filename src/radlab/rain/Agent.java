@@ -52,12 +52,6 @@ public abstract class Agent extends Thread implements IAgent {
 	// The generator used to create operations for this thread
 	protected Generator generator;
 
-	// Timings
-	protected long timeToStart;
-	protected long startSteadyState;
-	protected long endSteadyState;
-	protected long timeToQuit;
-
 	// Thread state is used to block some threads in order to adapt the
 	// active number of load generating units
 	public enum ThreadStates {
@@ -145,10 +139,5 @@ public abstract class Agent extends Thread implements IAgent {
 		} else { // Asynchronous mode
 			runAsyncOperation(operation);
 		}
-	}
-
-	@Override
-	public void setTimeToStart(long timeStarted) {
-		this.timeToStart = timeStarted;
 	}
 }

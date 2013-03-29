@@ -55,4 +55,8 @@ public final class Timing {
 		schedule.put("endRun", endRun);
 		logger.info("Schedule: " + schedule.toString());
 	}
+
+	public boolean inRampUp(long now) {
+		return now < startSteadyState;
+	}
 }

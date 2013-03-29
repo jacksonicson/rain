@@ -39,28 +39,19 @@ import org.slf4j.LoggerFactory;
 public class AgentPOL extends Agent {
 	private static Logger logger = LoggerFactory.getLogger(AgentPOL.class);
 
-	// Minimum increments of intervals of inactivity in seconds
-	public static int INACTIVE_DURATION = 1000;
-
 	// The probability of using open loop vs. closed loop
 	protected double openLoopProbability;
 
 	// The random number generator used to decide which loop to use
 	protected Random random = new Random();
 
-	// Statistic: number of synchronous operations run
-	protected long synchOperations = 0;
-
-	// Statistic: number of asynchronous operations run
-	protected long asynchOperations = 0;
+	// Statistic: number of synchronous and asynchronous operations run
+	protected long synchOperationsCount = 0;
+	protected long asynchOperationsCount = 0;
 
 	public AgentPOL(long id, LoadManager loadManager, Generator generator, Timing timing) {
 		super(id, loadManager, generator, timing);
 		Thread.setDefaultUncaughtExceptionHandler(new UnexpectedDeathHandler());
-	}
-
-	public void setOpenLoopProbability(double openLoopProbability) {
-		this.openLoopProbability = openLoopProbability;
 	}
 
 	/**
@@ -81,22 +72,20 @@ public class AgentPOL extends Agent {
 
 		String threadName = getName();
 
-		// Track configuration
-		loadTrackConfiguration();
-
 		try {
 			// Sleep until its time to start
-			sleepUntil(timeToStart);
+			sleepUntil(timing.start);
 
 			// Last executed operation (required to run markov chains)
 			int lastOperationIndex = -1;
 
 			// Check if benchmark is still running
-			while (System.currentTimeMillis() <= timeToQuit) {
+			while (System.currentTimeMillis() <= timing.endRun) {
 				// If generator is not active
 				if (!isActive()) {
 					threadState = ThreadStates.Inactive;
-					Thread.sleep(INACTIVE_DURATION);
+					// Sleep for 1 second and check active state again
+					Thread.sleep(1000);
 				} else { // Generator is active
 					threadState = ThreadStates.Active;
 
@@ -141,7 +130,7 @@ public class AgentPOL extends Agent {
 	 */
 	protected void doAsyncOperation(Operation operation) throws InterruptedException {
 		// Update operation counters
-		asynchOperations++;
+		asynchOperationsCount++;
 
 		// Calculate timings
 		long cycleTime = generator.getCycleTime();
@@ -155,14 +144,9 @@ public class AgentPOL extends Agent {
 		doOperation(operation);
 
 		// Sleep for cycle time
-		if (wakeUpTime > timeToQuit) {
-			if (now < startSteadyState) {
-				cycleTime = startSteadyState - now;
-				sleepUntil(startSteadyState);
-			} else {
-				cycleTime = timeToQuit - now;
-				sleepUntil(timeToQuit);
-			}
+		if (wakeUpTime > timing.endRun) {
+			cycleTime = timing.endRun - now;
+			sleepUntil(timing.endRun);
 		} else {
 			sleepUntil(wakeUpTime);
 		}
@@ -176,7 +160,7 @@ public class AgentPOL extends Agent {
 	 */
 	protected void doSyncOperation(Operation operation) throws InterruptedException {
 		// Update operation counters
-		synchOperations++;
+		synchOperationsCount++;
 
 		// Configure operation
 		operation.setAsync(false);
@@ -190,14 +174,9 @@ public class AgentPOL extends Agent {
 		long wakeUpTime = now + thinkTime;
 
 		// Sleep for think time
-		if (wakeUpTime > timeToQuit) {
-			if (now < startSteadyState) {
-				thinkTime = startSteadyState - now;
-				sleepUntil(startSteadyState);
-			} else {
-				thinkTime = timeToQuit - now;
-				sleepUntil(timeToQuit);
-			}
+		if (wakeUpTime > timing.endRun) {
+			thinkTime = timing.endRun - now;
+			sleepUntil(timing.endRun);
 		} else
 			sleepUntil(wakeUpTime);
 
@@ -205,32 +184,13 @@ public class AgentPOL extends Agent {
 		generator.getScoreboard().dropOffWaitTime(now, operation.operationName, thinkTime);
 	}
 
-	/**
-	 * Loads the configuration from the provided scenario track. This sets the open loop probability as well as time
-	 * markers for when this thread starts, when steady state should begin (i.e. when metrics start recording), and when
-	 * steady state ends.
-	 * 
-	 * @param track
-	 *            The track from which to load the configuration.
-	 */
-	protected void loadTrackConfiguration() {
-		// This value gets set by Benchmark
-		timeToStart = System.currentTimeMillis();
-
-		// Configuration is specified in seconds; convert to milliseconds.
-		long rampUp = timing.rampUp * 1000;
-		long duration = timing.duration * 1000;
-		long rampDown = timing.rampDown * 1000;
-
-		// Calculate timings
-		startSteadyState = timeToStart + rampUp;
-		endSteadyState = startSteadyState + duration;
-		timeToQuit = endSteadyState + rampDown;
-	}
-
 	protected void sleepUntil(long time) throws InterruptedException {
 		long preRunSleep = time - System.currentTimeMillis();
 		if (preRunSleep > 0)
 			Thread.sleep(preRunSleep);
+	}
+
+	public void setOpenLoopProbability(double openLoopProbability) {
+		this.openLoopProbability = openLoopProbability;
 	}
 }

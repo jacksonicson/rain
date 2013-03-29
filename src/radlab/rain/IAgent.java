@@ -8,8 +8,6 @@ public interface IAgent {
 
 	void doOperation(Operation operation);
 
-	void setTimeToStart(long timeStarted);
-
 	void start();
 
 	void join() throws InterruptedException;

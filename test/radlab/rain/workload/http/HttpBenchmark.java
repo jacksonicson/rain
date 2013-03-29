@@ -63,7 +63,6 @@ public class HttpBenchmark implements TargetFactory, GeneratorFactory, AgentFact
 	@Override
 	public IAgent createAgent(int i, LoadManager loadManager, Generator generator, Timing timing) {
 		AgentPOL agent = new AgentPOL(i, loadManager, generator, timing);
-		agent.setTimeToStart(System.currentTimeMillis());
 		return agent;
 	}
 }
