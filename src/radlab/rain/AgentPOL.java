@@ -135,7 +135,9 @@ public class AgentPOL extends Agent {
 		// Calculate timings
 		long cycleTime = generator.getCycleTime();
 		long now = System.currentTimeMillis();
-		long wakeUpTime = now + cycleTime;
+
+		// Wait after operation execution
+		cycleTime = waitUntil(now, cycleTime);
 
 		// Set async flag
 		operation.setAsync(true);
@@ -144,12 +146,6 @@ public class AgentPOL extends Agent {
 		doOperation(operation);
 
 		// Sleep for cycle time
-		if (wakeUpTime > timing.endRun) {
-			cycleTime = timing.endRun - now;
-			sleepUntil(timing.endRun);
-		} else {
-			sleepUntil(wakeUpTime);
-		}
 
 		// Save the cycle time - if we're in the steady state
 		generator.getScoreboard().dropOffWaitTime(now, operation.operationName, cycleTime);
@@ -171,17 +167,29 @@ public class AgentPOL extends Agent {
 		// Calculate timings
 		long thinkTime = generator.getThinkTime();
 		long now = System.currentTimeMillis();
-		long wakeUpTime = now + thinkTime;
 
-		// Sleep for think time
-		if (wakeUpTime > timing.endRun) {
-			thinkTime = timing.endRun - now;
-			sleepUntil(timing.endRun);
-		} else
-			sleepUntil(wakeUpTime);
+		// Wait after operation execution
+		thinkTime = waitUntil(now, thinkTime);
 
 		// Save the think time
 		generator.getScoreboard().dropOffWaitTime(now, operation.operationName, thinkTime);
+	}
+
+	private long waitUntil(long now, long deltaTime) throws InterruptedException {
+		long wakeUpTime = now + deltaTime;
+		if (wakeUpTime > timing.endRun) {
+			if (now < timing.start) {
+				deltaTime = timing.startSteadyState - now;
+				sleepUntil(timing.startSteadyState);
+			} else {
+				deltaTime = timing.endRun - now;
+				sleepUntil(timing.endRun);
+			}
+		} else {
+			sleepUntil(wakeUpTime);
+		}
+
+		return deltaTime;
 	}
 
 	protected void sleepUntil(long time) throws InterruptedException {
