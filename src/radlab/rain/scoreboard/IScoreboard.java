@@ -35,8 +35,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import radlab.rain.OperationExecution;
-import radlab.rain.Timing;
 import radlab.rain.Target;
+import radlab.rain.Timing;
 import radlab.rain.util.MetricWriter;
 
 /**
@@ -46,11 +46,6 @@ import radlab.rain.util.MetricWriter;
  * handles, among other things.
  */
 public interface IScoreboard {
-
-	/**
-	 * Bootstrapping and initialization
-	 */
-	void initialize(Timing timing);
 
 	void initialize(Timing timing, long maxUsers);
 

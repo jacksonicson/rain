@@ -141,11 +141,6 @@ public class Scoreboard implements Runnable, IScoreboard {
 	}
 
 	@Override
-	public void initialize(Timing timing) {
-		initialize(timing, 0);
-	}
-
-	@Override
 	public void initialize(Timing timing, long maxUsers) {
 		this.startTime = timing.start;
 		this.endTime = timing.endRun;

@@ -185,13 +185,13 @@ public class Target implements ITarget {
 
 		// Shutdown load manager
 		try {
-			logger.debug("Shutting down load manager"); 
+			logger.debug("Shutting down load manager");
 			loadManager.interrupt();
 			loadManager.join();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		
+
 		// Stop the scoreboard
 		scoreboard.stop();
 	}
@@ -247,10 +247,10 @@ public class Target implements ITarget {
 		logger.debug("Creating track scoreboard...");
 
 		// Create scoreboard
-		IScoreboard scoreboard = new Scoreboard("track");
+		IScoreboard scoreboard = new Scoreboard("target");
 
 		// Set the log sampling probability for the scoreboard
-		scoreboard.initialize(timing);
+		scoreboard.initialize(timing, loadSchedule.getMaxAgents());
 		scoreboard.setScenarioTrack(this);
 		scoreboard.setLogSamplingProbability(logSamplingProbability);
 		scoreboard.setUsingMetricSnapshots(useMetricSnapshots);
