@@ -160,10 +160,21 @@ public class Target implements ITarget {
 		}
 	}
 
+	public void joinAgents() throws InterruptedException {
+		// Wait for all agent threads to join
+		for (IAgent agent : agents) {
+			agent.join();
+		}
+	}
+
 	public void end() {
 		// Wait for all load generating units to exit
 		for (IAgent agent : agents) {
 			try {
+				// Interrupt agent thread
+				agent.interrupt();
+
+				// Wait for agent thread to join
 				agent.join();
 				logger.info("Agent ended: " + agent.getName());
 			} catch (InterruptedException ie) {

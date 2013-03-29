@@ -49,6 +49,9 @@ public class AgentPOL extends Agent {
 	protected long synchOperationsCount = 0;
 	protected long asynchOperationsCount = 0;
 
+	// Interrupted
+	private boolean interrupted = false;
+
 	public AgentPOL(long id, LoadManager loadManager, Generator generator, Timing timing) {
 		super(id, loadManager, generator, timing);
 		Thread.setDefaultUncaughtExceptionHandler(new UnexpectedDeathHandler());
@@ -62,6 +65,10 @@ public class AgentPOL extends Agent {
 	protected boolean isActive() {
 		LoadDefinition loadProfile = loadManager.getCurrentLoadProfile();
 		return (id < loadProfile.getNumberOfUsers());
+	}
+
+	public void interrupt() {
+		interrupted = true;
 	}
 
 	/**
@@ -80,7 +87,7 @@ public class AgentPOL extends Agent {
 			int lastOperationIndex = -1;
 
 			// Check if benchmark is still running
-			while (System.currentTimeMillis() <= timing.endRun) {
+			while (System.currentTimeMillis() <= timing.endRun && !interrupted) {
 				// If generator is not active
 				if (!isActive()) {
 					threadState = ThreadStates.Inactive;
@@ -115,7 +122,7 @@ public class AgentPOL extends Agent {
 				}
 			}
 
-			logger.info("Agent ended as expected");
+			logger.info("Agent ended - interrupted: " + interrupted);
 
 		} catch (InterruptedException ie) {
 			logger.error("[" + threadName + "] load generation thread interrupted exiting!");

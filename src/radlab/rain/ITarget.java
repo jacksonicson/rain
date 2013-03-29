@@ -16,7 +16,10 @@ public interface ITarget {
 	// Start is called after initialization
 	public void start() throws Exception;
 
-	// Stops target and all its agents
+	// Blocks until all agent threads have joined
+	public void joinAgents() throws InterruptedException;
+
+	// Stops all agents and helper threads
 	public void end();
 
 	// Statistics for this target

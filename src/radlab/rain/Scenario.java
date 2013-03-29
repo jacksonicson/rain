@@ -87,10 +87,11 @@ public class Scenario {
 			target.start();
 		}
 
-		// Wait until end time is reached
-		logger.info("Sleeping during benchmark");
-		long sleep = timing.endRun - System.currentTimeMillis();
-		Thread.sleep(sleep);
+		// Wait until all targets joined
+		for (ITarget target : targets) {
+			logger.debug("Waiting for target to join " + target.getId());
+			target.joinAgents();
+		}
 
 		// Stop running tracks
 		for (ITarget target : targets) {

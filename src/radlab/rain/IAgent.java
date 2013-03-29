@@ -10,6 +10,9 @@ public interface IAgent {
 
 	void start();
 
+	// Stop the agent thread
+	void interrupt();
+
 	void join() throws InterruptedException;
 
 	String getName();
