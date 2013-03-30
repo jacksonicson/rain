@@ -160,7 +160,7 @@ public class DefaultTarget implements ITarget {
 			generator.initialize();
 
 			// Allow the load generation strategy to be configurable
-			IAgent agent = agentFactory.createAgent(i);
+			IAgent agent = agentFactory.createAgent(this.id, i);
 			agent.setLoadManager(loadManager);
 			agent.setGenerator(generator);
 			agent.setTiming(timing);

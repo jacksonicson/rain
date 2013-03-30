@@ -2,5 +2,5 @@ package radlab.rain.agent;
 
 public interface IAgentFactory {
 
-	IAgent createAgent(int id);
+	IAgent createAgent(long targetId, long id);
 }

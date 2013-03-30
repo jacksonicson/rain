@@ -60,8 +60,8 @@ public class AgentPOL extends Agent {
 	// Interrupted
 	private boolean interrupted = false;
 
-	public AgentPOL(long id) {
-		super(id);
+	public AgentPOL(long targetId, long id) {
+		super(targetId, id);
 		Thread.setDefaultUncaughtExceptionHandler(new UnexpectedDeathHandler());
 	}
 

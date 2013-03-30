@@ -59,8 +59,8 @@ public class TestBenchmark implements ITargetFactory, IGeneratorFactory, IAgentF
 	}
 
 	@Override
-	public IAgent createAgent(int id) {
-		AgentPOL agent = new AgentPOL(id);
+	public IAgent createAgent(long targetId, long id) {
+		AgentPOL agent = new AgentPOL(targetId, id);
 		return agent;
 	}
 }

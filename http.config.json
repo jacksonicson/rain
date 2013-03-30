@@ -15,7 +15,7 @@
     "targetFactoryClass": "radlab.rain.workload.http.TestBenchmark",    
     "targetFactoryParams": {
     	"baseUrl" : "http://dss.in.tum.de",
-    	"targetCount" : 1,
+    	"targetCount" : 2,
     	"targetConfig" : {
     		"pOpenLoop" : 0,
     		"pLogSampling" : 0,

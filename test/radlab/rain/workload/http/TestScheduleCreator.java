@@ -46,11 +46,9 @@ public class TestScheduleCreator implements LoadScheduleFactory {
 	public LoadSchedule createSchedule() throws JSONException {
 		List<LoadDefinition> loadSchedule = new ArrayList<LoadDefinition>();
 
-		LoadDefinition i1 = new LoadDefinition(30, 1, "default", 0, "first");
-		LoadDefinition i2 = new LoadDefinition(40, 1, "default", 0, "second");
+		LoadDefinition i1 = new LoadDefinition(300, 5, "default", 0, "first");
 
 		loadSchedule.add(i1);
-		loadSchedule.add(i2);
 
 		LoadSchedule schedule = new LoadSchedule(loadSchedule);
 		return schedule;

@@ -47,6 +47,7 @@ public abstract class Agent extends Thread implements IAgent {
 	private static Logger logger = LoggerFactory.getLogger(Agent.class);
 
 	// Identifier (strategies are numbered ascending)
+	protected long targetId;
 	protected long id;
 
 	// Track configuration
@@ -77,9 +78,10 @@ public abstract class Agent extends Thread implements IAgent {
 	/**
 	 * Create new load generating unit
 	 */
-	public Agent(long id) {
+	public Agent(long targetId, long id) {
+		this.targetId = targetId;
 		this.id = id;
-		setName("Agent-" + id);
+		setName("Agent-" + targetId + "(" + id + ")");
 	}
 
 	public void dispose() {
