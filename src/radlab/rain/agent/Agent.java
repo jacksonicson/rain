@@ -117,7 +117,6 @@ public abstract class Agent extends Thread implements IAgent {
 			sendNextRequest = System.currentTimeMillis() + (long) waitIntervalMsecs;
 
 			// Submit operation
-			operation.preExecute(); 
 			executorService.submit(operation);
 		} else {
 			long sleepTime = sendNextRequest - now;
@@ -128,13 +127,11 @@ public abstract class Agent extends Thread implements IAgent {
 			}
 
 			// Submit operation
-			operation.preExecute();
 			executorService.submit(operation);
 		}
 	}
 
 	private void runSyncOperation(Operation operation) {
-		operation.preExecute();
 		operation.run();
 	}
 

@@ -118,12 +118,12 @@ public abstract class Operation implements Runnable {
 
 	public abstract void prepare();
 
-	public void preExecute() {
+	protected void preExecute() {
 	}
 
 	public abstract void execute() throws Throwable;
 
-	public void postExecute() {
+	protected void postExecute() {
 	}
 
 	public abstract void cleanup();
