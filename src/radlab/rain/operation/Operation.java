@@ -57,7 +57,8 @@ public abstract class Operation implements Runnable {
 	protected IScoreboard scoreboard;
 
 	// Statistics
-	private long timeQueued;
+	@SuppressWarnings("unused")
+	private long timeQueued; 
 	private long timeStarted;
 	private long timeFinished;
 	private long thinkTimeUsed;
