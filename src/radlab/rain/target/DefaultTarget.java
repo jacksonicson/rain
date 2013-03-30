@@ -256,7 +256,7 @@ public class DefaultTarget implements ITarget {
 	}
 
 	private IScoreboard createScoreboard() throws JSONException, Exception {
-		logger.debug("Creating track scoreboard...");
+		logger.debug("Creating scoreboard for target " + id);
 
 		// Create scoreboard
 		IScoreboard scoreboard = new Scoreboard("target");

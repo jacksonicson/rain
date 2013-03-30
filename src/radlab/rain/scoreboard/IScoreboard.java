@@ -36,7 +36,6 @@ import org.json.JSONObject;
 
 import radlab.rain.Timing;
 import radlab.rain.operation.OperationExecution;
-import radlab.rain.target.DefaultTarget;
 import radlab.rain.util.MetricWriter;
 
 public interface IScoreboard {
@@ -50,7 +49,7 @@ public interface IScoreboard {
 	// Reset
 	void reset();
 
-	// Start recording data 
+	// Start recording data
 	void start();
 
 	// Stop recording data
@@ -75,7 +74,7 @@ public interface IScoreboard {
 	/**
 	 * Result aggregation
 	 */
-	
+
 	// Returns a scorecard that contains aggregated stats
 	Scorecard getFinalScorecard();
 

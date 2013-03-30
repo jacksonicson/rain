@@ -213,8 +213,6 @@ public class Scoreboard implements Runnable, IScoreboard {
 			// Put this result into the dropoff queue
 			this.dropOffQ.add(result);
 		}
-
-		// TODO: If operation failed - log error reason
 	}
 
 	private final boolean isDone() {
@@ -418,7 +416,6 @@ public class Scoreboard implements Runnable, IScoreboard {
 		// Results
 		JSONObject result = new JSONObject();
 		result.put("track", trackName);
-		result.put("target_host", "TODO"); // TODO: Track target host
 		result.put("run_duration", runDuration);
 		result.put("start_time", startTime);
 		result.put("end_time", endTime);

@@ -663,7 +663,7 @@ public class HttpTransport
 					if ( locationHeaders.length > 0 )
 					{
 						start = System.currentTimeMillis();
-						// TODO: Is it safe to assume all redirects are GET requests?
+						
 						httpRequest = new HttpGet( locationHeaders[0].getValue() );
 						end = System.currentTimeMillis();
 						if( this._debug )
