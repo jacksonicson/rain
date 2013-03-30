@@ -54,7 +54,7 @@ public class Benchmark {
 
 	public void start(Scenario scenario) throws Exception {
 		// Set current thread name
-		Thread.currentThread().setName("benchmark");
+		Thread.currentThread().setName("Benchmark");
 
 		// Execute scenario
 		Timing timing = scenario.execute();

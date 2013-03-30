@@ -29,7 +29,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package radlab.rain;
+package radlab.rain.target;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

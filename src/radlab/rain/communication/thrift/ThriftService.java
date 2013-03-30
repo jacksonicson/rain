@@ -28,6 +28,8 @@ public class ThriftService implements IShutdown {
 		private TServer server;
 
 		public void run() {
+			setName("Thrift Service");
+
 			try {
 				TNonblockingServerTransport serverTransport = new TNonblockingServerSocket(port);
 

@@ -45,7 +45,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import radlab.rain.MixMatrix;
 import radlab.rain.Timing;
 import radlab.rain.agent.AgentFactory;
 import radlab.rain.agent.IAgent;
@@ -117,11 +116,11 @@ public class Target implements ITarget {
 		// Set identifier
 		this.id = id;
 
-		// Create scoreboard
-		scoreboard = createScoreboard();
-
 		// Create load schedule creator and load schedule
 		loadSchedule = loadScheduleFactory.createSchedule();
+
+		// Create scoreboard
+		scoreboard = createScoreboard();
 
 		// Create a new load manager
 		loadManager = new LoadManager(timing, loadSchedule, mixMatrices.keySet());
