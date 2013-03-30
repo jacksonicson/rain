@@ -15,14 +15,13 @@ import radlab.rain.load.LoadDefinition;
 import radlab.rain.operation.OperationExecution;
 import radlab.rain.util.NullSamplingStrategy;
 import radlab.rain.util.PoissonSamplingStrategy;
-import radlab.rain.util.SonarRecorder;
 
 /**
- * Eventually all stats reporting will be done using Scorecards. There will be per-interval Scorecards as well as a final
- * Scorecard for the entire run. The Scoreboard will maintain/manage a hashtable of Scorecards.
+ * Eventually all stats reporting will be done using Scorecards. There will be per-interval Scorecards as well as a
+ * final Scorecard for the entire run. The Scoreboard will maintain/manage a hashtable of Scorecards.
  * 
  */
-public class Scorecard {
+class Scorecard {
 	private static Logger logger = LoggerFactory.getLogger(Scorecard.class);
 
 	// All scorecards are named with the interval they are generated in
@@ -92,8 +91,8 @@ public class Scorecard {
 		OperationSummary operationSummary = operationMap.get(operationName);
 		// Create operation summary if needed
 		if (operationSummary == null) {
-			operationSummary = new OperationSummary(new PoissonSamplingStrategy(name + "." + trackName + "." + operationName,
-					meanResponseTimeSamplingInterval));
+			operationSummary = new OperationSummary(new PoissonSamplingStrategy(name + "." + trackName + "."
+					+ operationName, meanResponseTimeSamplingInterval));
 			operationMap.put(operationName, operationSummary);
 		}
 
@@ -216,7 +215,8 @@ public class Scorecard {
 				totalSuccesses += operationSummary.getOpsSuccessful();
 
 				// Calculations
-				double proportion = (double) (operationSummary.getOpsSuccessful() + operationSummary.getOpsFailed()) / (double) totalOperations;
+				double proportion = (double) (operationSummary.getOpsSuccessful() + operationSummary.getOpsFailed())
+						/ (double) totalOperations;
 
 				// Print out the operation summary.
 				JSONObject operation = operationSummary.getStatistics();

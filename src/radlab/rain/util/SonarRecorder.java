@@ -16,13 +16,12 @@ import org.slf4j.LoggerFactory;
 
 import radlab.rain.IShutdown;
 import radlab.rain.RainConfig;
-import radlab.rain.scoreboard.Scorecard;
 import de.tum.in.sonar.collector.CollectService;
 import de.tum.in.sonar.collector.Identifier;
 import de.tum.in.sonar.collector.MetricReading;
 
 public class SonarRecorder extends Thread implements IShutdown {
-	private static Logger logger = LoggerFactory.getLogger(Scorecard.class);
+	private static Logger logger = LoggerFactory.getLogger(SonarRecorder.class);
 
 	private static Object lock = new Object();
 	private static SonarRecorder singleton;
@@ -59,7 +58,7 @@ public class SonarRecorder extends Thread implements IShutdown {
 	}
 
 	public void shutdown() {
-		logger.info("Shutting down SonarRecorder"); 
+		logger.info("Shutting down SonarRecorder");
 		this.running = false;
 		this.interrupt();
 	}

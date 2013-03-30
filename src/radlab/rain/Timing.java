@@ -41,7 +41,7 @@ public final class Timing {
 		}
 	}
 
-	final long steadyStateDuration() {
+	public final long steadyStateDuration() {
 		return endSteadyState - startSteadyState;
 	}
 

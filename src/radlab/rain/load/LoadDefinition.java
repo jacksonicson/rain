@@ -96,13 +96,12 @@ public class LoadDefinition {
 		this._name = name;
 	}
 
-	// Converts to milliseconds
 	public long getInterval() {
-		return (this.interval * 1000);
+		return interval * 1000;
 	}
 
-	public void setInterval(long val) {
-		this.interval = val;
+	public void setInterval(long interval) {
+		this.interval = interval;
 	}
 
 	public int getNumberOfUsers() {

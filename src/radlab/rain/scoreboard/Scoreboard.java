@@ -503,6 +503,6 @@ public class Scoreboard implements Runnable, IScoreboard {
 	}
 
 	public String toString() {
-		return "[SCOREBOARD TRACK: " + this.trackName + "]";
+		return this.trackName + " - ";
 	}
 }

@@ -59,7 +59,7 @@ public class Benchmark {
 		Timing timing = scenario.execute();
 
 		// Aggregate scorecards
-		scenario.aggregateScorecards(timing);
+		scenario.statAggregation(timing);
 	}
 
 	private static JSONObject loadConfiguration(String filename) {
