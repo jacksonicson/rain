@@ -1,12 +1,21 @@
 package radlab.rain.agent;
 
+import radlab.rain.Timing;
+import radlab.rain.load.LoadManager;
+import radlab.rain.operation.Generator;
 import radlab.rain.operation.Operation;
 import radlab.rain.scoreboard.IScoreboard;
 
 public interface IAgent {
 
 	void setScoreboard(IScoreboard scoreboard);
+
+	void setTiming(Timing timing);
+
+	void setLoadManager(LoadManager loadManager);
 	
+	void setGenerator(Generator generator); 
+
 	void run();
 
 	void dispose();

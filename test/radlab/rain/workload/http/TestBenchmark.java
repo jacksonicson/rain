@@ -6,18 +6,16 @@ import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.Timing;
 import radlab.rain.agent.AgentPOL;
 import radlab.rain.agent.IAgent;
 import radlab.rain.agent.IAgentFactory;
-import radlab.rain.load.LoadManager;
 import radlab.rain.operation.Generator;
 import radlab.rain.operation.IGeneratorFactory;
+import radlab.rain.target.DefaultTarget;
 import radlab.rain.target.ITarget;
 import radlab.rain.target.ITargetFactory;
-import radlab.rain.target.DefaultTarget;
 
-public class Benchmark implements ITargetFactory, IGeneratorFactory, IAgentFactory {
+public class TestBenchmark implements ITargetFactory, IGeneratorFactory, IAgentFactory {
 
 	private long targetCount;
 	private JSONObject targetConfig;
@@ -61,8 +59,8 @@ public class Benchmark implements ITargetFactory, IGeneratorFactory, IAgentFacto
 	}
 
 	@Override
-	public IAgent createAgent(int i, LoadManager loadManager, Generator generator, Timing timing) {
-		AgentPOL agent = new AgentPOL(i, loadManager, generator, timing);
+	public IAgent createAgent(int id) {
+		AgentPOL agent = new AgentPOL(id);
 		return agent;
 	}
 }

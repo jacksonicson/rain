@@ -36,11 +36,8 @@ import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import radlab.rain.Timing;
 import radlab.rain.UnexpectedDeathHandler;
 import radlab.rain.load.LoadDefinition;
-import radlab.rain.load.LoadManager;
-import radlab.rain.operation.Generator;
 import radlab.rain.operation.Operation;
 import radlab.rain.scoreboard.IScoreboard;
 
@@ -63,8 +60,8 @@ public class AgentPOL extends Agent {
 	// Interrupted
 	private boolean interrupted = false;
 
-	public AgentPOL(long id, LoadManager loadManager, Generator generator, Timing timing) {
-		super(id, loadManager, generator, timing);
+	public AgentPOL(long id) {
+		super(id);
 		Thread.setDefaultUncaughtExceptionHandler(new UnexpectedDeathHandler());
 	}
 

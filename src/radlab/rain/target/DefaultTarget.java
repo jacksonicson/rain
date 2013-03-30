@@ -46,8 +46,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import radlab.rain.Timing;
-import radlab.rain.agent.IAgentFactory;
 import radlab.rain.agent.IAgent;
+import radlab.rain.agent.IAgentFactory;
 import radlab.rain.load.LoadDefinition;
 import radlab.rain.load.LoadManager;
 import radlab.rain.load.LoadSchedule;
@@ -160,7 +160,10 @@ public class DefaultTarget implements ITarget {
 			generator.initialize();
 
 			// Allow the load generation strategy to be configurable
-			IAgent agent = agentFactory.createAgent(i, loadManager, generator, timing);
+			IAgent agent = agentFactory.createAgent(i);
+			agent.setLoadManager(loadManager);
+			agent.setGenerator(generator);
+			agent.setTiming(timing);
 			agent.setScoreboard(scoreboard);
 
 			// Add thread to thread list and start the thread

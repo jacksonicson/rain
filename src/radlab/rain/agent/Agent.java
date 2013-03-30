@@ -77,11 +77,8 @@ public abstract class Agent extends Thread implements IAgent {
 	/**
 	 * Create new load generating unit
 	 */
-	public Agent(long id, LoadManager loadManager, Generator generator, Timing timing) {
+	public Agent(long id) {
 		this.id = id;
-		this.timing = timing;
-		this.generator = generator;
-		this.loadManager = loadManager;
 		setName("Agent-" + id);
 	}
 
@@ -146,5 +143,20 @@ public abstract class Agent extends Thread implements IAgent {
 		} else { // Asynchronous mode
 			runAsyncOperation(operation);
 		}
+	}
+
+	@Override
+	public void setTiming(Timing timing) {
+		this.timing = timing;
+	}
+
+	@Override
+	public void setLoadManager(LoadManager loadManager) {
+		this.loadManager = loadManager;
+	}
+
+	@Override
+	public void setGenerator(Generator generator) {
+		this.generator = generator;
 	}
 }
