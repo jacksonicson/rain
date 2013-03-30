@@ -41,7 +41,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import radlab.rain.configuration.ScenarioConfKeys;
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.scoreboard.Scorecard;
 import radlab.rain.target.ITarget;

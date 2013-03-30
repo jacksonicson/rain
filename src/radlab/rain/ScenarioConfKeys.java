@@ -1,4 +1,4 @@
-package radlab.rain.configuration;
+package radlab.rain;
 
 public enum ScenarioConfKeys {
 
