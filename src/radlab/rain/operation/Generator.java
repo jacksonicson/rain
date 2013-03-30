@@ -65,18 +65,32 @@ public abstract class Generator {
 		this.scoreboard = scoreboard;
 	}
 
-	public void setCycleTime(long cycleTime) {
+	/**
+	 * Sets the mean cycle time. Used to calculate a concrete cycle time.
+	 */
+	public final void setMeanCycleTime(long cycleTime) {
 		this.cycleTime = cycleTime;
 	}
 
-	public void setThinkTime(long thinkTime) {
+	/**
+	 * Sets the mean think time. Used to calculate a concrete think time.
+	 */
+	public final void setMeanThinkTime(long thinkTime) {
 		this.thinkTime = thinkTime;
 	}
 
+	/**
+	 * For each operation the agent asks for the current cycle or think time. It is expected that the time for the
+	 * current operation is calculated based on the MEAN cycle and think time values
+	 */
 	public long getCycleTime() {
 		return cycleTime;
 	}
 
+	/**
+	 * For each operation the agent asks for the current cycle or think time. It is expected that the time for the
+	 * current operation is calculated based on the MEAN cycle and think time values
+	 */
 	public long getThinkTime() {
 		return thinkTime;
 	}

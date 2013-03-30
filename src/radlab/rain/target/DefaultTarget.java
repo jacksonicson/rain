@@ -155,8 +155,8 @@ public class DefaultTarget implements ITarget {
 			// Setup generator for each agent
 			Generator generator = generatorFactory.createGenerator();
 			generator.setScoreboard(scoreboard);
-			generator.setCycleTime((long) (meanCycleTime * 1000));
-			generator.setThinkTime((long) (meanThinkTime * 1000));
+			generator.setMeanCycleTime((long) (meanCycleTime * 1000));
+			generator.setMeanThinkTime((long) (meanThinkTime * 1000));
 			generator.initialize();
 
 			// Allow the load generation strategy to be configurable
