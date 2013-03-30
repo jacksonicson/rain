@@ -208,8 +208,8 @@ public abstract class Operation implements Runnable {
 		return this.generatedDuringLoadDefinition;
 	}
 
-	public void setGeneratedByGenerator(Generator gen) {
-		this.generatedByGenerator = gen;
+	public void setGeneratedByGenerator(Generator generator) {
+		this.generatedByGenerator = generator;
 	}
 
 	public void setGeneratedDuringProfile(LoadDefinition val) {
@@ -230,8 +230,8 @@ public abstract class Operation implements Runnable {
 		return this.failed;
 	}
 
-	public void setFailed(boolean val) {
-		this.failed = val;
+	public void setFailed(boolean failed) {
+		this.failed = failed;
 	}
 
 	public Throwable getFailureReason() {

@@ -33,7 +33,6 @@ package radlab.rain.scoreboard;
 
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Random;
 import java.util.TreeMap;
 
 import org.json.JSONArray;
@@ -45,7 +44,6 @@ import org.slf4j.LoggerFactory;
 import radlab.rain.Timing;
 import radlab.rain.load.LoadDefinition;
 import radlab.rain.operation.OperationExecution;
-import radlab.rain.target.DefaultTarget;
 import radlab.rain.util.MetricWriter;
 import radlab.rain.util.PoissonSamplingStrategy;
 
@@ -71,20 +69,16 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 	// Who owns this scoreboard
 	private String trackName;
-	private DefaultTarget scenarioTrack = null;
 
 	// If true, this scoreboard will refuse any new results.
 	// Indicates the thread status (started or stopped)
 	private boolean done = false;
 
-	// Random number generator
-	private Random _random = new Random();
-
 	// Response time sampling interval (wait time and operation summary)
 	private long meanResponseTimeSamplingInterval = 500;
 
 	// Log (trace) sampling probability
-	private double _logSamplingProbability = 1.0;
+	private double logSamplingProbability = 1.0;
 
 	// Time markers are set in the initialization method
 	private long startTime;
@@ -424,7 +418,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 		// Results
 		JSONObject result = new JSONObject();
 		result.put("track", trackName);
-		result.put("target_host", "TODO"); // TODO: Track target host 
+		result.put("target_host", "TODO"); // TODO: Track target host
 		result.put("run_duration", runDuration);
 		result.put("start_time", startTime);
 		result.put("end_time", endTime);
@@ -475,7 +469,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 	@Override
 	public void setLogSamplingProbability(double val) {
-		this._logSamplingProbability = val;
+		this.logSamplingProbability = val;
 	}
 
 	@Override
@@ -499,11 +493,6 @@ public class Scoreboard implements Runnable, IScoreboard {
 	}
 
 	@Override
-	public void setTarget(DefaultTarget scenarioTrack) {
-		this.scenarioTrack = scenarioTrack;
-	}
-
-	@Override
 	public long getStartTimestamp() {
 		return startTime;
 	}
@@ -516,5 +505,4 @@ public class Scoreboard implements Runnable, IScoreboard {
 	public String toString() {
 		return "[SCOREBOARD TRACK: " + this.trackName + "]";
 	}
-
 }

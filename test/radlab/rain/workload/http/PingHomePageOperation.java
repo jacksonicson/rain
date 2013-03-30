@@ -47,7 +47,7 @@ public class PingHomePageOperation extends TestOperation {
 
 		this.operationName = NAME;
 		this.operationIndex = TestGenerator.PING_HOMEPAGE;
-		this.setAsync(true); 
+		this.setAsync(true);
 	}
 
 	@Override
@@ -55,12 +55,17 @@ public class PingHomePageOperation extends TestOperation {
 		logger.debug("Executing ping homepage operation");
 
 		// Fetch the base url
-		StringBuilder response = this.http.fetchUrl(((TestGenerator) generatedByGenerator).baseUrl);
-		trace();
+		try {
+			StringBuilder response = this.http.fetchUrl("http://" + ((TestGenerator) generatedByGenerator).baseUrl);
+			trace();
 
-		if (response.length() == 0) {
-			String errorMessage = "Home page GET ERROR - Received an empty response";
-			throw new IOException(errorMessage);
+			if (response.length() == 0) {
+				String errorMessage = "Home page GET ERROR - Received an empty response";
+				throw new IOException(errorMessage);
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
 		// Once we get here mark the operation as successful

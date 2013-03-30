@@ -48,6 +48,10 @@ public class TestGenerator extends Generator {
 	HttpTransport httpTransport;
 	String baseUrl;
 
+	public TestGenerator(String baseUrl) {
+		this.baseUrl = baseUrl; 
+	}
+	
 	public void initialize() {
 		this.httpTransport = new HttpTransport();
 	}

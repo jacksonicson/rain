@@ -53,8 +53,7 @@ public class TestBenchmark implements ITargetFactory, IGeneratorFactory, IAgentF
 
 	@Override
 	public Generator createGenerator() {
-		TestGenerator generator = new TestGenerator();
-		generator.baseUrl = baseUrl;
+		TestGenerator generator = new TestGenerator(baseUrl);
 		return generator;
 	}
 

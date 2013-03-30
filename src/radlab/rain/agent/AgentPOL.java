@@ -109,9 +109,12 @@ public class AgentPOL extends Agent {
 
 					// Execute operation
 					if (nextOperation != null) {
-						// Initialize operation
+						// Set references
 						nextOperation.setGeneratedDuringProfile(loadManager.getCurrentLoadProfile());
 						nextOperation.setGeneratedByGenerator(generator);
+
+						// Init
+						nextOperation.prepare();
 
 						// Update last operation index.
 						lastOperationIndex = nextOperation.getOperationIndex();

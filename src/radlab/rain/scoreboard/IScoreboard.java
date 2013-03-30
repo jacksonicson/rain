@@ -44,9 +44,6 @@ public interface IScoreboard {
 	// Initialize the scoreboard
 	void initialize(Timing timing, long maxUsers);
 
-	// Reference to the target that uses this scoreboard
-	void setTarget(DefaultTarget val);
-
 	// Set reference to a metric writer
 	void setMetricWriter(MetricWriter metricWriter);
 
