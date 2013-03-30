@@ -38,24 +38,31 @@ import org.slf4j.LoggerFactory;
 
 import radlab.rain.UnexpectedDeathHandler;
 import radlab.rain.load.LoadDefinition;
-import radlab.rain.operation.Operation;
+import radlab.rain.operation.Generator;
+import radlab.rain.operation.IOperation;
 import radlab.rain.scoreboard.IScoreboard;
 
+/**
+ * Provides the main loop of the agent thread.
+ */
 public class AgentPOL extends Agent {
 	private static Logger logger = LoggerFactory.getLogger(AgentPOL.class);
 
 	// Scoreboard reference
 	protected IScoreboard scoreboard;
 
+	// The generator used to create operations for this thread
+	private Generator generator;
+
 	// The probability of using open loop vs. closed loop
-	protected double openLoopProbability;
+	private double openLoopProbability;
 
 	// The random number generator used to decide which loop to use
-	protected Random random = new Random();
+	private Random random = new Random();
 
 	// Statistic: number of synchronous and asynchronous operations run
-	protected long synchOperationsCount = 0;
-	protected long asynchOperationsCount = 0;
+	private long synchOperationsCount = 0;
+	private long asynchOperationsCount = 0;
 
 	// Interrupted
 	private boolean interrupted = false;
@@ -70,13 +77,47 @@ public class AgentPOL extends Agent {
 	 * The actual number of threads varies over time. This is achieved by blocking some threads. If a thread is blocked
 	 * is decided by this function.
 	 */
-	protected boolean isActive() {
+	private boolean isActive() {
 		LoadDefinition loadProfile = loadManager.getCurrentLoadProfile();
 		return (id < loadProfile.getNumberOfUsers());
 	}
 
+	@Override
 	public void interrupt() {
 		interrupted = true;
+	}
+
+	@Override
+	public void dispose() {
+		this.generator.dispose();
+	}
+
+	private void triggerNextOperation(int lastOperationIndex) throws InterruptedException {
+		threadState = ThreadStates.Active;
+
+		// Generate next operation using the attached generator
+		IOperation nextOperation = generator.nextRequest(lastOperationIndex);
+
+		// Execute operation
+		if (nextOperation != null) {
+			// Set operation references
+			nextOperation.setLoadDefinition(loadManager.getCurrentLoadProfile());
+			nextOperation.setGeneratedByGenerator(generator);
+
+			// Init
+			nextOperation.prepare();
+
+			// Update last operation index.
+			lastOperationIndex = nextOperation.getOperationIndex();
+
+			// EXECUTE OPERATION
+			// Decide whether to do things open or closed (throw a coin)
+			double randomDouble = random.nextDouble();
+			if (randomDouble <= openLoopProbability)
+				doAsyncOperation(nextOperation);
+			else
+				doSyncOperation(nextOperation);
+		}
 	}
 
 	/**
@@ -84,8 +125,6 @@ public class AgentPOL extends Agent {
 	 */
 	public void run() {
 		logger.info("New agent thread " + super.id);
-
-		String threadName = getName();
 
 		try {
 			// Sleep until its time to start
@@ -102,40 +141,16 @@ public class AgentPOL extends Agent {
 					// Sleep for 1 second and check active state again
 					Thread.sleep(1000);
 				} else { // Generator is active
-					threadState = ThreadStates.Active;
-
-					// Generate next operation
-					Operation nextOperation = generator.nextRequest(lastOperationIndex);
-
-					// Execute operation
-					if (nextOperation != null) {
-						// Set references
-						nextOperation.setLoadDefinition(loadManager.getCurrentLoadProfile());
-						nextOperation.setGeneratedByGenerator(generator);
-
-						// Init
-						nextOperation.prepare();
-
-						// Update last operation index.
-						lastOperationIndex = nextOperation.getOperationIndex();
-
-						// EXECUTE OPERATION
-						// Decide whether to do things open or closed (throw a coin)
-						double randomDouble = random.nextDouble();
-						if (randomDouble <= openLoopProbability)
-							doAsyncOperation(nextOperation);
-						else
-							doSyncOperation(nextOperation);
-					}
+					triggerNextOperation(lastOperationIndex);
 				}
 			}
 
 			logger.info("Agent ended - interrupted: " + interrupted);
 
 		} catch (InterruptedException ie) {
-			logger.error("[" + threadName + "] load generation thread interrupted exiting!");
+			logger.error("Load generation thread interrupted exiting!");
 		} catch (Exception e) {
-			logger.error("[" + threadName + "] load generation thread died by exception! Reason: " + e.toString());
+			logger.error("Load generation thread died by exception! Reason: " + e.toString());
 			e.printStackTrace();
 		}
 	}
@@ -143,7 +158,7 @@ public class AgentPOL extends Agent {
 	/**
 	 * Runs the provided operation asynchronously and sleeps this thread on the cycle time.
 	 */
-	protected void doAsyncOperation(Operation operation) throws InterruptedException {
+	private void doAsyncOperation(IOperation operation) throws InterruptedException {
 		// Update operation counters
 		asynchOperationsCount++;
 
@@ -167,7 +182,7 @@ public class AgentPOL extends Agent {
 	/**
 	 * Runs the provided operation synchronously and sleeps this thread on the think time.
 	 */
-	protected void doSyncOperation(Operation operation) throws InterruptedException {
+	private void doSyncOperation(IOperation operation) throws InterruptedException {
 		// Update operation counters
 		synchOperationsCount++;
 
@@ -205,7 +220,7 @@ public class AgentPOL extends Agent {
 		return deltaTime;
 	}
 
-	protected void sleepUntil(long time) throws InterruptedException {
+	private void sleepUntil(long time) throws InterruptedException {
 		long preRunSleep = time - System.currentTimeMillis();
 		if (preRunSleep > 0)
 			Thread.sleep(preRunSleep);
@@ -218,5 +233,10 @@ public class AgentPOL extends Agent {
 	@Override
 	public void setScoreboard(IScoreboard scoreboard) {
 		this.scoreboard = scoreboard;
+	}
+
+	@Override
+	public void setGenerator(Generator generator) {
+		this.generator = generator;
 	}
 }

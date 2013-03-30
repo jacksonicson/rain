@@ -3,7 +3,7 @@ package radlab.rain.agent;
 import radlab.rain.Timing;
 import radlab.rain.load.LoadManager;
 import radlab.rain.operation.Generator;
-import radlab.rain.operation.Operation;
+import radlab.rain.operation.IOperation;
 import radlab.rain.scoreboard.IScoreboard;
 
 public interface IAgent {
@@ -13,14 +13,14 @@ public interface IAgent {
 	void setTiming(Timing timing);
 
 	void setLoadManager(LoadManager loadManager);
-	
-	void setGenerator(Generator generator); 
+
+	void setGenerator(Generator generator);
 
 	void run();
 
 	void dispose();
 
-	void doOperation(Operation operation);
+	void doOperation(IOperation operation);
 
 	void start();
 

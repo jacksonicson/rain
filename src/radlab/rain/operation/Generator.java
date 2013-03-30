@@ -56,7 +56,7 @@ public abstract class Generator {
 	public abstract void initialize();
 
 	// Generate next operation instance
-	public abstract Operation nextRequest(int lastOperation);
+	public abstract IOperation nextRequest(int lastOperation);
 
 	// Dispose generator and all its resources
 	public abstract void dispose();

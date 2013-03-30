@@ -40,9 +40,12 @@ import org.slf4j.LoggerFactory;
 import radlab.rain.Timing;
 import radlab.rain.load.LoadDefinition;
 import radlab.rain.load.LoadManager;
-import radlab.rain.operation.Generator;
-import radlab.rain.operation.Operation;
+import radlab.rain.operation.IOperation;
 
+/**
+ * Base class for all load generating agent. Provides two methods to execute an operation in synchronous and aynchronous
+ * mode.
+ */
 public abstract class Agent extends Thread implements IAgent {
 	private static Logger logger = LoggerFactory.getLogger(Agent.class);
 
@@ -55,9 +58,6 @@ public abstract class Agent extends Thread implements IAgent {
 
 	// Reference to the load manager
 	protected LoadManager loadManager;
-
-	// The generator used to create operations for this thread
-	protected Generator generator;
 
 	// Thread state is used to block some threads in order to adapt the
 	// active number of load generating units
@@ -84,11 +84,7 @@ public abstract class Agent extends Thread implements IAgent {
 		setName("Agent-" + targetId + "(" + id + ")");
 	}
 
-	public void dispose() {
-		this.generator.dispose();
-	}
-
-	private void runAsyncOperation(Operation operation) {
+	private void runAsyncOperation(IOperation operation) {
 		LoadDefinition loadUnit = operation.getLoadDefinition();
 
 		// Load unit unspecified - execute operation immediately
@@ -131,12 +127,12 @@ public abstract class Agent extends Thread implements IAgent {
 		}
 	}
 
-	private void runSyncOperation(Operation operation) {
+	private void runSyncOperation(IOperation operation) {
 		operation.run();
 	}
 
 	@Override
-	public void doOperation(Operation operation) {
+	public void doOperation(IOperation operation) {
 		if (!operation.isAsync()) { // Synchronous mode
 			runSyncOperation(operation);
 		} else { // Asynchronous mode
@@ -152,10 +148,5 @@ public abstract class Agent extends Thread implements IAgent {
 	@Override
 	public void setLoadManager(LoadManager loadManager) {
 		this.loadManager = loadManager;
-	}
-
-	@Override
-	public void setGenerator(Generator generator) {
-		this.generator = generator;
 	}
 }

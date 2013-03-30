@@ -39,7 +39,7 @@ import radlab.rain.scoreboard.IScoreboard;
  * necessary to execute at an arbitrary point in time (i.e. immediately or in the future). It follows the Command
  * pattern (GoF). It implements <code>Runnable</code> in case another thread has to execute it.
  */
-public abstract class Operation implements Runnable {
+public abstract class Operation implements IOperation {
 
 	// Describes the operation
 	protected int operationIndex = -1;
@@ -99,7 +99,7 @@ public abstract class Operation implements Runnable {
 		}
 	}
 
-	public abstract void execute() throws Throwable;
+	protected abstract void execute() throws Throwable;
 
 	public void prepare() {
 	}
@@ -114,11 +114,11 @@ public abstract class Operation implements Runnable {
 
 	}
 
-	public void trace() {
+	protected void trace() {
 		numberOfActionsPerformed++;
 	}
 
-	public void trace(String msg) {
+	protected void trace(String msg) {
 		numberOfActionsPerformed++;
 	}
 
@@ -175,6 +175,4 @@ public abstract class Operation implements Runnable {
 	public int getOperationIndex() {
 		return operationIndex;
 	}
-
-	public abstract void setAsync(boolean async);
 }
