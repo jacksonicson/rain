@@ -137,9 +137,6 @@ public abstract class Agent extends Thread implements IAgent {
 
 	@Override
 	public void doOperation(Operation operation) {
-		// Set the time the operation was queued (not how long it takes).
-		operation.setTimeQueued(System.currentTimeMillis());
-
 		if (!operation.isAsync()) { // Synchronous mode
 			runSyncOperation(operation);
 		} else { // Asynchronous mode

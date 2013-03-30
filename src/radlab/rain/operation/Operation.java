@@ -57,8 +57,6 @@ public abstract class Operation implements Runnable {
 	protected IScoreboard scoreboard;
 
 	// Statistics
-	@SuppressWarnings("unused")
-	private long timeQueued; 
 	private long timeStarted;
 	private long timeFinished;
 	private long thinkTimeUsed;
@@ -174,10 +172,6 @@ public abstract class Operation implements Runnable {
 
 	public long getNumberOfActionsPerformed() {
 		return numberOfActionsPerformed;
-	}
-
-	public void setTimeQueued(long timeQueued) {
-		this.timeQueued = timeQueued;
 	}
 
 	public int getOperationIndex() {
