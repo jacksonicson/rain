@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
 import radlab.rain.Timing;
 import radlab.rain.load.LoadDefinition;
 import radlab.rain.operation.OperationExecution;
-import radlab.rain.target.Target;
+import radlab.rain.target.DefaultTarget;
 import radlab.rain.util.MetricWriter;
 import radlab.rain.util.PoissonSamplingStrategy;
 
@@ -71,7 +71,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 	// Who owns this scoreboard
 	private String trackName;
-	private Target scenarioTrack = null;
+	private DefaultTarget scenarioTrack = null;
 
 	// If true, this scoreboard will refuse any new results.
 	// Indicates the thread status (started or stopped)
@@ -499,7 +499,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 	}
 
 	@Override
-	public void setTarget(Target scenarioTrack) {
+	public void setTarget(DefaultTarget scenarioTrack) {
 		this.scenarioTrack = scenarioTrack;
 	}
 

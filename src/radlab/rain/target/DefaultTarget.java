@@ -46,20 +46,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import radlab.rain.Timing;
-import radlab.rain.agent.AgentFactory;
+import radlab.rain.agent.IAgentFactory;
 import radlab.rain.agent.IAgent;
 import radlab.rain.load.LoadDefinition;
 import radlab.rain.load.LoadManager;
 import radlab.rain.load.LoadSchedule;
 import radlab.rain.load.LoadScheduleFactory;
 import radlab.rain.operation.Generator;
-import radlab.rain.operation.GeneratorFactory;
+import radlab.rain.operation.IGeneratorFactory;
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.scoreboard.Scoreboard;
 import radlab.rain.util.MetricWriter;
 
-public class Target implements ITarget {
-	private static Logger logger = LoggerFactory.getLogger(Target.class);
+public class DefaultTarget implements ITarget {
+	private static Logger logger = LoggerFactory.getLogger(DefaultTarget.class);
 
 	// Target id
 	private long id;
@@ -77,13 +77,13 @@ public class Target implements ITarget {
 	protected IScoreboard scoreboard;
 
 	// Generator factory
-	protected GeneratorFactory generatorFactory;
+	protected IGeneratorFactory generatorFactory;
 
 	// Load schedule used by the generator and strategy
 	protected LoadScheduleFactory loadScheduleFactory;
 
 	// Agent factory
-	protected AgentFactory agentFactory;
+	protected IAgentFactory agentFactory;
 
 	// Load schedule
 	protected LoadSchedule loadSchedule;
@@ -287,11 +287,11 @@ public class Target implements ITarget {
 		this.loadScheduleFactory = loadScheduleFactory;
 	}
 
-	public void setAgentFactory(AgentFactory agentFactory) {
+	public void setAgentFactory(IAgentFactory agentFactory) {
 		this.agentFactory = agentFactory;
 	}
 
-	public void setGeneratorFactory(GeneratorFactory generatorFactory) {
+	public void setGeneratorFactory(IGeneratorFactory generatorFactory) {
 		this.generatorFactory = generatorFactory;
 	}
 

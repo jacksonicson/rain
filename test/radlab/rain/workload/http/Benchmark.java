@@ -7,17 +7,17 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import radlab.rain.Timing;
-import radlab.rain.agent.AgentFactory;
 import radlab.rain.agent.AgentPOL;
 import radlab.rain.agent.IAgent;
+import radlab.rain.agent.IAgentFactory;
 import radlab.rain.load.LoadManager;
 import radlab.rain.operation.Generator;
-import radlab.rain.operation.GeneratorFactory;
+import radlab.rain.operation.IGeneratorFactory;
 import radlab.rain.target.ITarget;
-import radlab.rain.target.Target;
 import radlab.rain.target.ITargetFactory;
+import radlab.rain.target.DefaultTarget;
 
-public class Benchmark implements ITargetFactory, GeneratorFactory, AgentFactory {
+public class Benchmark implements ITargetFactory, IGeneratorFactory, IAgentFactory {
 
 	private long targetCount;
 	private JSONObject targetConfig;
@@ -40,7 +40,7 @@ public class Benchmark implements ITargetFactory, GeneratorFactory, AgentFactory
 	}
 
 	protected ITarget createTarget() {
-		Target target = new Target();
+		DefaultTarget target = new DefaultTarget();
 		try {
 			target.configure(targetConfig);
 		} catch (JSONException e) {

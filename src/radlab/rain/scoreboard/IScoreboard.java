@@ -36,7 +36,7 @@ import org.json.JSONObject;
 
 import radlab.rain.Timing;
 import radlab.rain.operation.OperationExecution;
-import radlab.rain.target.Target;
+import radlab.rain.target.DefaultTarget;
 import radlab.rain.util.MetricWriter;
 
 public interface IScoreboard {
@@ -45,7 +45,7 @@ public interface IScoreboard {
 	void initialize(Timing timing, long maxUsers);
 
 	// Reference to the target that uses this scoreboard
-	void setTarget(Target val);
+	void setTarget(DefaultTarget val);
 
 	// Set reference to a metric writer
 	void setMetricWriter(MetricWriter metricWriter);

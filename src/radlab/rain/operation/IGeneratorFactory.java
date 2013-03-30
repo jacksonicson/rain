@@ -1,6 +1,6 @@
 package radlab.rain.operation;
 
-public interface GeneratorFactory {
+public interface IGeneratorFactory {
 
 	public Generator createGenerator();
 
