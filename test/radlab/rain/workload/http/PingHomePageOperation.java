@@ -40,14 +40,12 @@ import radlab.rain.scoreboard.IScoreboard;
 
 public class PingHomePageOperation extends TestOperation {
 	private static final Logger logger = LoggerFactory.getLogger(PingHomePageOperation.class);
-	public static String NAME = "PingHome";
 
 	public PingHomePageOperation(IScoreboard scoreboard) {
 		super(scoreboard);
 
-		this.operationName = NAME;
+		this.operationName = "PingHome";
 		this.operationIndex = TestGenerator.PING_HOMEPAGE;
-		this.setAsync(true);
 	}
 
 	@Override
@@ -66,9 +64,8 @@ public class PingHomePageOperation extends TestOperation {
 
 		} catch (Exception e) {
 			e.printStackTrace();
+			throw e;
 		}
-
-		// Once we get here mark the operation as successful
-		this.setFailed(false);
 	}
+
 }

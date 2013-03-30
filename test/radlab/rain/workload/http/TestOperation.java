@@ -42,6 +42,7 @@ import radlab.rain.util.HttpTransport;
 public abstract class TestOperation extends Operation {
 
 	protected HttpTransport http;
+	private boolean async = false;
 
 	public TestOperation(IScoreboard scoreboard) {
 		super(scoreboard);
@@ -55,5 +56,15 @@ public abstract class TestOperation extends Operation {
 
 	@Override
 	public void cleanup() {
+	}
+
+	@Override
+	public boolean isAsync() {
+		return async;
+	}
+
+	@Override
+	public void setAsync(boolean async) {
+		this.async = async; 
 	}
 }
