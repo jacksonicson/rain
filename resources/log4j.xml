@@ -31,7 +31,7 @@
 		<level value="debug" />
 	</logger>
 	
-	<logger name="radlab.rain.operation">
+	<logger name="radlab.rain">
 		<level value="debug" />
 	</logger>
 
