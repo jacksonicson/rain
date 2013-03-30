@@ -49,9 +49,9 @@ public class TestGenerator extends Generator {
 	String baseUrl;
 
 	public TestGenerator(String baseUrl) {
-		this.baseUrl = baseUrl; 
+		this.baseUrl = baseUrl;
 	}
-	
+
 	public void initialize() {
 		this.httpTransport = new HttpTransport();
 	}
@@ -77,7 +77,7 @@ public class TestGenerator extends Generator {
 
 		switch (opIndex) {
 		case PING_HOMEPAGE:
-			return new PingHomePageOperation(scoreboard);
+			return new PingHomePageOperation(scoreboard, this);
 		default:
 			return null;
 		}

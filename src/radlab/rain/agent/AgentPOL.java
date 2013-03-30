@@ -102,7 +102,6 @@ public class AgentPOL extends Agent {
 		if (nextOperation != null) {
 			// Set operation references
 			nextOperation.setLoadDefinition(loadManager.getCurrentLoadProfile());
-			nextOperation.setGeneratedByGenerator(generator);
 
 			// Init
 			nextOperation.prepare();

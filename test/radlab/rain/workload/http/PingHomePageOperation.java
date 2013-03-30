@@ -41,8 +41,8 @@ import radlab.rain.scoreboard.IScoreboard;
 public class PingHomePageOperation extends TestOperation {
 	private static final Logger logger = LoggerFactory.getLogger(PingHomePageOperation.class);
 
-	public PingHomePageOperation(IScoreboard scoreboard) {
-		super(scoreboard);
+	public PingHomePageOperation(IScoreboard scoreboard, TestGenerator generator) {
+		super(scoreboard, generator);
 
 		this.operationName = "PingHome";
 		this.operationIndex = TestGenerator.PING_HOMEPAGE;
@@ -54,16 +54,15 @@ public class PingHomePageOperation extends TestOperation {
 
 		// Fetch the base url
 		try {
-			StringBuilder response = this.http.fetchUrl("http://" + ((TestGenerator) generator).baseUrl);
+			StringBuilder response = this.http.fetchUrl("http://" + generator.baseUrl);
 			trace();
 
 			if (response.length() == 0) {
 				String errorMessage = "Home page GET ERROR - Received an empty response";
 				throw new IOException(errorMessage);
 			}
-			
+
 			failed = false;
-			
 
 		} catch (Exception e) {
 			e.printStackTrace();

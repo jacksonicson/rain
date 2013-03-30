@@ -50,9 +50,6 @@ public abstract class Operation implements IOperation {
 	private LoadDefinition loadDefinition;
 	private long loadDefinitionStartTime;
 
-	// Reference to the generator that created this operation
-	protected Generator generator;
-
 	// Used to collect execution metrics
 	protected IScoreboard scoreboard;
 
@@ -125,10 +122,6 @@ public abstract class Operation implements IOperation {
 	/**
 	 * Getter & Setters
 	 */
-	public void setGeneratedByGenerator(Generator generator) {
-		this.generator = generator;
-	}
-
 	public void setLoadDefinition(LoadDefinition loadDefinition) {
 		this.loadDefinition = loadDefinition;
 		this.loadDefinitionStartTime = loadDefinition.getTimeStarted();

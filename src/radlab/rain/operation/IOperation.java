@@ -4,8 +4,6 @@ import radlab.rain.load.LoadDefinition;
 
 public interface IOperation extends Runnable {
 
-	void setGeneratedByGenerator(Generator generator);
-
 	void setLoadDefinition(LoadDefinition loadDefinition);
 
 	LoadDefinition getLoadDefinition();

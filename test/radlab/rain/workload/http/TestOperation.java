@@ -44,8 +44,11 @@ public abstract class TestOperation extends Operation {
 	protected HttpTransport http;
 	private boolean async = false;
 
-	public TestOperation(IScoreboard scoreboard) {
+	protected TestGenerator generator;
+
+	public TestOperation(IScoreboard scoreboard, TestGenerator generator) {
 		super(scoreboard);
+		this.generator = generator;
 	}
 
 	@Override
@@ -65,6 +68,6 @@ public abstract class TestOperation extends Operation {
 
 	@Override
 	public void setAsync(boolean async) {
-		this.async = async; 
+		this.async = async;
 	}
 }
