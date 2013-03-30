@@ -49,7 +49,7 @@ public abstract class TestOperation extends Operation {
 
 	@Override
 	public void prepare() {
-		TestGenerator httpTestGenerator = (TestGenerator) generatedByGenerator;
+		TestGenerator httpTestGenerator = (TestGenerator) generator;
 		http = httpTestGenerator.httpTransport;
 	}
 

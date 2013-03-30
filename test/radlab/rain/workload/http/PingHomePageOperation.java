@@ -56,7 +56,7 @@ public class PingHomePageOperation extends TestOperation {
 
 		// Fetch the base url
 		try {
-			StringBuilder response = this.http.fetchUrl("http://" + ((TestGenerator) generatedByGenerator).baseUrl);
+			StringBuilder response = this.http.fetchUrl("http://" + ((TestGenerator) generator).baseUrl);
 			trace();
 
 			if (response.length() == 0) {

@@ -110,7 +110,7 @@ public class AgentPOL extends Agent {
 					// Execute operation
 					if (nextOperation != null) {
 						// Set references
-						nextOperation.setGeneratedDuringProfile(loadManager.getCurrentLoadProfile());
+						nextOperation.setLoadDefinition(loadManager.getCurrentLoadProfile());
 						nextOperation.setGeneratedByGenerator(generator);
 
 						// Init
@@ -118,9 +118,6 @@ public class AgentPOL extends Agent {
 
 						// Update last operation index.
 						lastOperationIndex = nextOperation.getOperationIndex();
-
-						// Store the thread name/ID so we can organize the traces.
-						nextOperation.setGeneratedBy(threadName);
 
 						// EXECUTE OPERATION
 						// Decide whether to do things open or closed (throw a coin)

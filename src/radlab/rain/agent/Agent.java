@@ -89,7 +89,7 @@ public abstract class Agent extends Thread implements IAgent {
 	}
 
 	private void runAsyncOperation(Operation operation) {
-		LoadDefinition loadUnit = operation.getGeneratedDuringProfile();
+		LoadDefinition loadUnit = operation.getLoadDefinition();
 
 		// Load unit unspecified - execute operation immediately
 		if (loadUnit == null) {
@@ -140,7 +140,7 @@ public abstract class Agent extends Thread implements IAgent {
 		// Set the time the operation was queued (not how long it takes).
 		operation.setTimeQueued(System.currentTimeMillis());
 
-		if (!operation.getAsync()) { // Synchronous mode
+		if (!operation.isAsync()) { // Synchronous mode
 			runSyncOperation(operation);
 		} else { // Asynchronous mode
 			runAsyncOperation(operation);

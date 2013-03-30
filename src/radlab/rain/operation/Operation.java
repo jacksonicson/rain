@@ -46,62 +46,48 @@ public abstract class Operation implements Runnable {
 	protected String operationName;
 	protected String operationRequest;
 
-	// Describes who generated the operation and when (during what interval)
-	protected String generatedBy;
-
-	// Load definition in effect when this operation was generated/initialized
-	private LoadDefinition generatedDuringLoadDefinition;
-	protected long profileStartTime = -1;
+	// Load definition in effect when this operation was generated
+	private LoadDefinition loadDefinition;
+	private long loadDefinitionStartTime;
 
 	// Reference to the generator that created this operation
-	protected Generator generatedByGenerator;
+	protected Generator generator;
 
 	// Used to collect execution metrics
 	protected IScoreboard scoreboard;
-
-	// Identifies the generator within the track
-	private long generatorId = -1;
 
 	// Statistics
 	private long timeQueued;
 	private long timeStarted;
 	private long timeFinished;
-
-	private long thinkTimeUsed; // Track how much think time we used
-	private long cycleTimeUsed; // Track how much cycle delays we took advantage of
-
-	// Synchron or asynchron execution mode
-	private boolean async = false;
-	protected boolean enforceSync = false; // if order of operation execution is important
+	private long thinkTimeUsed;
+	private long cycleTimeUsed;
 
 	// Outcome of executing the operation
 	protected boolean failed = true;
-	protected Throwable failureReason;
+	protected Throwable failure;
 
 	// Counts number of actions (like http requests)
 	protected long numberOfActionsPerformed;
 
+	/**
+	 * Constructor
+	 */
 	public Operation(IScoreboard scoreboard) {
 		this.scoreboard = scoreboard;
 	}
 
-	/**
-	 * This method is used to run this operation. By default, it records any metrics when executing. This can be
-	 * overridden to make a single call to <code>execute()</code> for more fine-grained control. This method must catch
-	 * any <code>Throwable</code>s.
-	 */
-	public void run() {
+	public final void run() {
 		// Invoke the pre-execute hook here before we start the clock to time the operation's execution
 		preExecute();
-		setTimeStarted(System.currentTimeMillis());
-
+		timeStarted = System.currentTimeMillis();
 		try {
 			execute();
 		} catch (Throwable e) {
-			setFailed(true);
-			setFailureReason(e);
+			failed = true;
+			failure = e;
 		} finally {
-			setTimeFinished(System.currentTimeMillis());
+			timeFinished = System.currentTimeMillis();
 
 			// Invoke the post-execute hook here after we stop the clock to time the
 			// operation's execution
@@ -116,17 +102,20 @@ public abstract class Operation implements Runnable {
 		}
 	}
 
-	public abstract void prepare();
+	public abstract void execute() throws Throwable;
+
+	public void prepare() {
+	}
 
 	protected void preExecute() {
 	}
 
-	public abstract void execute() throws Throwable;
-
 	protected void postExecute() {
 	}
 
-	public abstract void cleanup();
+	public void cleanup() {
+
+	}
 
 	public void trace() {
 		numberOfActionsPerformed++;
@@ -139,123 +128,60 @@ public abstract class Operation implements Runnable {
 	/**
 	 * Getter & Setters
 	 */
-
-	public int getOperationIndex() {
-		return this.operationIndex;
+	public void setGeneratedByGenerator(Generator generator) {
+		this.generator = generator;
 	}
 
-	public String getOperationName() {
-		return this.operationName;
-	}
-
-	public long getTimeQueued() {
-		return this.timeQueued;
-	}
-
-	public void setTimeQueued(long val) {
-		this.timeQueued = val;
+	public void setLoadDefinition(LoadDefinition loadDefinition) {
+		this.loadDefinition = loadDefinition;
+		this.loadDefinitionStartTime = loadDefinition.getTimeStarted();
 	}
 
 	public long getTimeStarted() {
-		return this.timeStarted;
-	}
-
-	public void setTimeStarted(long val) {
-		this.timeStarted = val;
+		return timeStarted;
 	}
 
 	public long getTimeFinished() {
-		return this.timeFinished;
+		return timeFinished;
 	}
 
-	public void setTimeFinished(long val) {
-		this.timeFinished = val;
+	public String getOperationName() {
+		return operationName;
 	}
 
-	public long getThinkTimeUsed() {
-		return this.thinkTimeUsed;
+	public String getOperationRequest() {
+		return operationRequest;
 	}
 
-	public void setThinkTimeUsed(long val) {
-		this.thinkTimeUsed = val;
-	}
+	public abstract boolean isAsync();
 
-	public long getCycleTimeUsed() {
-		return this.cycleTimeUsed;
-	}
-
-	public void setCycleTimeUsed(long val) {
-		this.cycleTimeUsed = val;
-	}
-
-	public boolean getAsync() {
-		return this.async;
-	}
-
-	public void setAsync(boolean val) {
-		this.async = val;
-	}
-
-	public String getGeneratedBy() {
-		return this.generatedBy;
-	}
-
-	public void setGeneratedBy(String val) {
-		this.generatedBy = val;
-	}
-
-	public LoadDefinition getGeneratedDuringProfile() {
-		return this.generatedDuringLoadDefinition;
-	}
-
-	public void setGeneratedByGenerator(Generator generator) {
-		this.generatedByGenerator = generator;
-	}
-
-	public void setGeneratedDuringProfile(LoadDefinition val) {
-		// Save the load profile
-		this.generatedDuringLoadDefinition = val;
-
-		// Save the time started now since the load manager thread updates this
-		// field - we can then use timestarted+intervalduration
-		// to see whether the operation finished during the interval
-		this.profileStartTime = val.getTimeStarted();
-	}
-
-	public long getProfileStartTime() {
-		return this.profileStartTime;
+	public boolean isForceSync() {
+		return false;
 	}
 
 	public boolean isFailed() {
-		return this.failed;
+		return failed;
 	}
 
-	public void setFailed(boolean failed) {
-		this.failed = failed;
+	public LoadDefinition getLoadDefinition() {
+		return loadDefinition;
 	}
 
-	public Throwable getFailureReason() {
-		return this.failureReason;
+	public long getLoadDefinitionStartTime() {
+		return loadDefinitionStartTime;
 	}
 
-	public void setFailureReason(Throwable t) {
-		this.failureReason = t;
-	}
-
-	public long getActionsPerformed() {
+	public long getNumberOfActionsPerformed() {
 		return numberOfActionsPerformed;
 	}
 
-	public void setActionsPerformed(long val) {
-		this.numberOfActionsPerformed = val;
+	public void setTimeQueued(long timeQueued) {
+		this.timeQueued = timeQueued;
 	}
 
-	public long getGeneratorThreadID() {
-		return this.generatorId;
+	public int getOperationIndex() {
+		return operationIndex;
 	}
 
-	public void setGeneratorThreadID(long val) {
-		this.generatorId = val;
-	}
-
+	public abstract void setAsync(boolean async);
 }

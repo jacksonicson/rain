@@ -62,13 +62,13 @@ public class OperationExecution {
 	public OperationExecution(Operation operation) {
 		this.timeStarted = operation.getTimeStarted();
 		this.timeFinished = operation.getTimeFinished();
-		this.operationName = operation.operationName;
-		this.operationRequest = operation.operationRequest;
-		this.async = operation.getAsync();
-		this.failed = operation.failed;
-		this.generatedDuring = operation.getGeneratedDuringProfile();
-		this.profileStartTime = operation.getProfileStartTime();
-		this.actionsPerformed = operation.getActionsPerformed();
+		this.operationName = operation.getOperationName();
+		this.operationRequest = operation.getOperationRequest();
+		this.async = operation.isAsync();
+		this.failed = operation.isFailed();
+		this.generatedDuring = operation.getLoadDefinition();
+		this.profileStartTime = operation.getLoadDefinitionStartTime();
+		this.actionsPerformed = operation.getNumberOfActionsPerformed();
 	}
 
 	public TraceLabels getTraceLabel() {
