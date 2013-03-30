@@ -61,6 +61,9 @@ public class PingHomePageOperation extends TestOperation {
 				String errorMessage = "Home page GET ERROR - Received an empty response";
 				throw new IOException(errorMessage);
 			}
+			
+			failed = false;
+			
 
 		} catch (Exception e) {
 			e.printStackTrace();

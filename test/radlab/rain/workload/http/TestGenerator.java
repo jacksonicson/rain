@@ -61,11 +61,11 @@ public class TestGenerator extends Generator {
 	}
 
 	public long getThinkTime() {
-		return 5000;
+		return 0;
 	}
 
 	public long getCycleTime() {
-		return 5000;
+		return 0;
 	}
 
 	public void dispose() {

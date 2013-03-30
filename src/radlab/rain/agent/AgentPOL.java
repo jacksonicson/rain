@@ -83,7 +83,7 @@ public class AgentPOL extends Agent {
 	 * Load generator loop. Runs the generator for each cycle and executes the returned operation.
 	 */
 	public void run() {
-		logger.info("New agent thread");
+		logger.info("New agent thread " + super.id);
 
 		String threadName = getName();
 
