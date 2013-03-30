@@ -5,7 +5,7 @@ import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public interface TargetFactory {
+public interface ITargetFactory {
 	// Is called after creating the factory
 	public abstract void configure(JSONObject params) throws JSONException;
 

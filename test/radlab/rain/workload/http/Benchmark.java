@@ -15,17 +15,17 @@ import radlab.rain.operation.Generator;
 import radlab.rain.operation.GeneratorFactory;
 import radlab.rain.target.ITarget;
 import radlab.rain.target.Target;
-import radlab.rain.target.TargetFactory;
+import radlab.rain.target.ITargetFactory;
 
-public class Benchmark implements TargetFactory, GeneratorFactory, AgentFactory {
+public class Benchmark implements ITargetFactory, GeneratorFactory, AgentFactory {
 
-	private long amount;
+	private long targetCount;
 	private JSONObject targetConfig;
 	private String baseUrl;
 
 	@Override
 	public void configure(JSONObject params) throws JSONException {
-		amount = params.getInt("amount");
+		targetCount = params.getInt("targetCount");
 		targetConfig = params.getJSONObject("targetConfig");
 		baseUrl = params.getString("baseUrl");
 	}
@@ -33,7 +33,7 @@ public class Benchmark implements TargetFactory, GeneratorFactory, AgentFactory 
 	@Override
 	public List<ITarget> createTargets() throws JSONException {
 		List<ITarget> tracks = new LinkedList<ITarget>();
-		for (int i = 0; i < amount; i++) {
+		for (int i = 0; i < targetCount; i++) {
 			tracks.add(createTarget());
 		}
 		return tracks;

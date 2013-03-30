@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.scoreboard.Scorecard;
 import radlab.rain.target.ITarget;
-import radlab.rain.target.TargetFactory;
+import radlab.rain.target.ITargetFactory;
 import radlab.rain.util.MetricWriter;
 import radlab.rain.util.MetricWriterFactory;
 
@@ -53,7 +53,7 @@ public class Scenario {
 
 	private Timing timing;
 
-	private TargetFactory targetFactory;
+	private ITargetFactory targetFactory;
 
 	private MetricWriterFactory.Type metricWriterType;
 	private JSONObject metricWriterConf;
@@ -128,11 +128,11 @@ public class Scenario {
 	}
 
 	@SuppressWarnings("unchecked")
-	private TargetFactory createTargetFactory(String name) throws BenchmarkFailedException {
+	private ITargetFactory createTargetFactory(String name) throws BenchmarkFailedException {
 		try {
-			Class<TargetFactory> creatorClass = (Class<TargetFactory>) Class.forName(name);
-			Constructor<TargetFactory> creatorCtor = creatorClass.getConstructor(new Class[] {});
-			TargetFactory creator = (TargetFactory) creatorCtor.newInstance((Object[]) null);
+			Class<ITargetFactory> creatorClass = (Class<ITargetFactory>) Class.forName(name);
+			Constructor<ITargetFactory> creatorCtor = creatorClass.getConstructor(new Class[] {});
+			ITargetFactory creator = (ITargetFactory) creatorCtor.newInstance((Object[]) null);
 			return creator;
 		} catch (Exception e) {
 			throw new BenchmarkFailedException("Unable to instantiate track factory from class " + name, e);

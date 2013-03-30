@@ -95,14 +95,13 @@ public class Target implements ITarget {
 	protected Map<String, MixMatrix> mixMatrices = new HashMap<String, MixMatrix>();
 
 	// Execution times
-	protected double openLoopProbability;
-	protected double meanCycleTime;
-	protected double meanThinkTime;
+	protected double openLoopProbability = 0d;
+	protected double meanCycleTime = 0;
+	protected double meanThinkTime = 0;
 
 	// Sampling
 	protected double logSamplingProbability = 1.0;
 	protected double metricSnapshotInterval = 60.0;
-	protected boolean useMetricSnapshots = false;
 	protected long meanResponseTimeSamplingInterval = 500;
 
 	// List of all load generating units
@@ -263,7 +262,7 @@ public class Target implements ITarget {
 		scoreboard.initialize(timing, loadSchedule.getMaxAgents());
 		scoreboard.setTarget(this);
 		scoreboard.setLogSamplingProbability(logSamplingProbability);
-		scoreboard.setUsingMetricSnapshots(useMetricSnapshots);
+		scoreboard.setUsingMetricSnapshots(metricSnapshotInterval > 0);
 		scoreboard.setMeanResponseTimeSamplingInterval(meanResponseTimeSamplingInterval);
 		scoreboard.setMetricSnapshotInterval((long) (metricSnapshotInterval * 1000));
 		scoreboard.setMetricWriter(metricWriter);
