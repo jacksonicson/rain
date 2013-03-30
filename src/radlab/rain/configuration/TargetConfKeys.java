@@ -1,6 +1,6 @@
 package radlab.rain.configuration;
 
-public enum TrackConfKeys {
+public enum TargetConfKeys {
 
 	GENERATOR_KEY("generatorClass"),
 	TRACK_CLASS_KEY("trackClass"),
@@ -39,7 +39,7 @@ public enum TrackConfKeys {
 
 	private String configuration;
 
-	TrackConfKeys(String config) {
+	TargetConfKeys(String config) {
 		this.configuration = config;
 	}
 

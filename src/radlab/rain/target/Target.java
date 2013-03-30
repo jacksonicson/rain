@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
 import radlab.rain.Timing;
 import radlab.rain.agent.AgentFactory;
 import radlab.rain.agent.IAgent;
-import radlab.rain.configuration.TrackConfKeys;
+import radlab.rain.configuration.TargetConfKeys;
 import radlab.rain.load.LoadDefinition;
 import radlab.rain.load.LoadManager;
 import radlab.rain.load.LoadSchedule;
@@ -209,19 +209,19 @@ public class Target implements ITarget {
 
 	public void configure(JSONObject config) throws JSONException {
 		// Open-Loop Probability
-		openLoopProbability = config.getDouble(TrackConfKeys.OPEN_LOOP_PROBABILITY_KEY.toString());
+		openLoopProbability = config.getDouble(TargetConfKeys.OPEN_LOOP_PROBABILITY_KEY.toString());
 
 		// Log Sampling Probability
-		logSamplingProbability = config.getDouble(TrackConfKeys.LOG_SAMPLING_PROBABILITY_KEY.toString());
+		logSamplingProbability = config.getDouble(TargetConfKeys.LOG_SAMPLING_PROBABILITY_KEY.toString());
 
 		// Mean Cycle Time
-		meanCycleTime = config.getDouble(TrackConfKeys.MEAN_CYCLE_TIME_KEY.toString());
+		meanCycleTime = config.getDouble(TargetConfKeys.MEAN_CYCLE_TIME_KEY.toString());
 
 		// Mean Think Time
-		meanThinkTime = config.getDouble(TrackConfKeys.MEAN_THINK_TIME_KEY.toString());
+		meanThinkTime = config.getDouble(TargetConfKeys.MEAN_THINK_TIME_KEY.toString());
 
 		// Load Mix Matrices/Behavior Directives
-		JSONObject behavior = config.getJSONObject(TrackConfKeys.BEHAVIOR_KEY.toString());
+		JSONObject behavior = config.getJSONObject(TargetConfKeys.BEHAVIOR_KEY.toString());
 		Iterator<String> keyIt = behavior.keys();
 
 		// Each of the keys in the behavior section should be for some mix matrix
@@ -245,12 +245,12 @@ public class Target implements ITarget {
 		}
 
 		// Snapshot interval
-		if (config.has(TrackConfKeys.METRIC_SNAPSHOT_INTERVAL.toString()))
-			metricSnapshotInterval = config.getDouble(TrackConfKeys.METRIC_SNAPSHOT_INTERVAL.toString());
+		if (config.has(TargetConfKeys.METRIC_SNAPSHOT_INTERVAL.toString()))
+			metricSnapshotInterval = config.getDouble(TargetConfKeys.METRIC_SNAPSHOT_INTERVAL.toString());
 
 		// Configure the response time sampler
-		if (config.has(TrackConfKeys.MEAN_RESPONSE_TIME_SAMPLE_INTERVAL.toString()))
-			meanResponseTimeSamplingInterval = config.getLong(TrackConfKeys.MEAN_RESPONSE_TIME_SAMPLE_INTERVAL
+		if (config.has(TargetConfKeys.MEAN_RESPONSE_TIME_SAMPLE_INTERVAL.toString()))
+			meanResponseTimeSamplingInterval = config.getLong(TargetConfKeys.MEAN_RESPONSE_TIME_SAMPLE_INTERVAL
 					.toString());
 	}
 
