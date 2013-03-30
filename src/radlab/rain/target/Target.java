@@ -48,7 +48,6 @@ import org.slf4j.LoggerFactory;
 import radlab.rain.Timing;
 import radlab.rain.agent.AgentFactory;
 import radlab.rain.agent.IAgent;
-import radlab.rain.configuration.TargetConfKeys;
 import radlab.rain.load.LoadDefinition;
 import radlab.rain.load.LoadManager;
 import radlab.rain.load.LoadSchedule;
