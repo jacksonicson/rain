@@ -80,8 +80,9 @@ public abstract class Generator {
 	}
 
 	/**
-	 * For each operation the agent asks for the current cycle or think time. It is expected that the time for the
-	 * current operation is calculated based on the MEAN cycle and think time values
+	 * For each operation the agent asks for the current cycle or cycle time. It is expected that the time for the
+	 * current operation is calculated based on the MEAN cycle time values. For example the generator can use a standard
+	 * deviation to calculate a cycle time.
 	 */
 	public long getCycleTime() {
 		return cycleTime;
@@ -89,7 +90,8 @@ public abstract class Generator {
 
 	/**
 	 * For each operation the agent asks for the current cycle or think time. It is expected that the time for the
-	 * current operation is calculated based on the MEAN cycle and think time values
+	 * current operation is calculated based on the MEAN think time values. For example the generator can use a standard
+	 * deviation to calculate a think time.
 	 */
 	public long getThinkTime() {
 		return thinkTime;
