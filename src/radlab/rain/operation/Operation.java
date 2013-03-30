@@ -59,8 +59,6 @@ public abstract class Operation implements Runnable {
 	// Statistics
 	private long timeStarted;
 	private long timeFinished;
-	private long thinkTimeUsed;
-	private long cycleTimeUsed;
 
 	// Outcome of executing the operation
 	protected boolean failed = true;
