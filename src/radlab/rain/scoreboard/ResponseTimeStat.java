@@ -1,28 +1,24 @@
 package radlab.rain.scoreboard;
 
-import java.io.Serializable;
+public final class ResponseTimeStat {
+	public final long timestamp;
+	public final long responseTime;
+	public final long totalResponseTime;
+	public final long numObservations;
+	public final String operationName;
+	public final String operationRequest;
+	public final String generatedDuring;
+	public final String trackName;
 
-public class ResponseTimeStat implements Serializable {
-	private static final long serialVersionUID = -9080553943704545836L;
-
-	public long timestamp = -1;
-	public long responseTime = -1;
-	public long totalResponseTime = -1;
-	public long numObservations = -1;
-	public String operationName = "";
-	public String operationRequest = "";
-	public String generatedDuring = "";
-	public String trackName = "";
-
-	public ResponseTimeStat() {
-	}
-
-	@Override
-	public String toString() {
-		StringBuffer buf = new StringBuffer();
-		buf.append("[").append(this.generatedDuring).append("] ").append(this.timestamp).append(" ").append(
-				this.responseTime).append(" [").append(this.operationRequest).append("] ").append(
-				this.totalResponseTime).append(" ").append(this.numObservations);
-		return buf.toString();
+	public ResponseTimeStat(long timestamp, long responseTime, long totalResponseTime, long numObservations,
+			String operationName, String operationRequest, String generatedDuring, String trackName) {
+		this.timestamp = timestamp;
+		this.responseTime = responseTime;
+		this.totalResponseTime = totalResponseTime;
+		this.numObservations = numObservations;
+		this.operationName = operationName;
+		this.operationRequest = operationRequest;
+		this.generatedDuring = generatedDuring;
+		this.trackName = trackName;
 	}
 }

@@ -246,7 +246,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 				if (this.metricWriter == null) {
 					log.warn(this + " Metric snapshots disabled - No metric writer instance provided");
 				} else {
-					this.snapshotThread = new SnapshotWriterThread(this.trackName);
+					this.snapshotThread = new SnapshotWriterThread();
 					this.snapshotThread.setMetricWriter(this.metricWriter);
 					this.snapshotThread.setName("Scoreboard-Snapshot-Writer");
 					this.snapshotThread.start();
@@ -280,10 +280,10 @@ public class Scoreboard implements Runnable, IScoreboard {
 				// Stop snapshot thread
 				if (snapshotThread != null) {
 					// Set stop flag
-					snapshotThread.set_done(true);
+					snapshotThread.interrupt();
 
 					// Wait to join
-					log.debug(this + " waiting " + WORKER_EXIT_TIMEOUT + " seconds for snapshot thread to exit!");
+					log.debug(this + " waiting metric snapshot writer thread to join");
 					snapshotThread.join(WORKER_EXIT_TIMEOUT * 1000);
 
 					// If its still alive try to interrupt again
@@ -386,22 +386,17 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 	private void issueMetricSnapshot(OperationExecution result) {
 		long responseTime = result.getExecutionTime();
-		ResponseTimeStat responseTimeStat = new ResponseTimeStat();
 
-		// Fill response time stat
-		responseTimeStat.timestamp = result.timeFinished;
-		responseTimeStat.responseTime = responseTime;
-		responseTimeStat.totalResponseTime = finalCard.getTotalOpResponseTime();
-		responseTimeStat.numObservations = finalCard.getTotalOpsSuccessful();
-		responseTimeStat.operationName = result.operationName;
-		responseTimeStat.trackName = trackName;
-		responseTimeStat.operationRequest = result.operationRequest;
-
+		String generatedDuring = "";
 		if (result.generatedDuring != null)
-			responseTimeStat.generatedDuring = result.generatedDuring._name;
+			generatedDuring = result.generatedDuring._name;
+
+		ResponseTimeStat responseTimeStat = new ResponseTimeStat(result.timeFinished, responseTime, finalCard
+				.getTotalOpResponseTime(), finalCard.getTotalOpsSuccessful(), result.operationName,
+				result.operationRequest, generatedDuring, trackName);
 
 		// Push this stat onto a Queue for the snapshot thread
-		this.snapshotThread.accept(responseTimeStat);
+		snapshotThread.accept(responseTimeStat);
 	}
 
 	@Override
