@@ -154,7 +154,6 @@ public class DefaultTarget implements ITarget {
 		for (int i = 0; i < maxAgents; i++) {
 			// Setup generator for each agent
 			Generator generator = generatorFactory.createGenerator();
-			generator.setScoreboard(scoreboard);
 			generator.setMeanCycleTime((long) (meanCycleTime * 1000));
 			generator.setMeanThinkTime((long) (meanThinkTime * 1000));
 			generator.initialize();
@@ -210,39 +209,45 @@ public class DefaultTarget implements ITarget {
 
 	public void configure(JSONObject config) throws JSONException {
 		// Open-Loop Probability
-		openLoopProbability = config.getDouble(TargetConfKeys.OPEN_LOOP_PROBABILITY_KEY.toString());
+		if (config.has(TargetConfKeys.OPEN_LOOP_PROBABILITY_KEY.toString()))
+			openLoopProbability = config.getDouble(TargetConfKeys.OPEN_LOOP_PROBABILITY_KEY.toString());
 
 		// Log Sampling Probability
-		logSamplingProbability = config.getDouble(TargetConfKeys.LOG_SAMPLING_PROBABILITY_KEY.toString());
+		if (config.has(TargetConfKeys.LOG_SAMPLING_PROBABILITY_KEY.toString()))
+			logSamplingProbability = config.getDouble(TargetConfKeys.LOG_SAMPLING_PROBABILITY_KEY.toString());
 
 		// Mean Cycle Time
-		meanCycleTime = config.getDouble(TargetConfKeys.MEAN_CYCLE_TIME_KEY.toString());
+		if (config.has(TargetConfKeys.MEAN_CYCLE_TIME_KEY.toString()))
+			meanCycleTime = config.getDouble(TargetConfKeys.MEAN_CYCLE_TIME_KEY.toString());
 
 		// Mean Think Time
-		meanThinkTime = config.getDouble(TargetConfKeys.MEAN_THINK_TIME_KEY.toString());
+		if (config.has(TargetConfKeys.MEAN_THINK_TIME_KEY.toString()))
+			meanThinkTime = config.getDouble(TargetConfKeys.MEAN_THINK_TIME_KEY.toString());
 
 		// Load Mix Matrices/Behavior Directives
-		JSONObject behavior = config.getJSONObject(TargetConfKeys.BEHAVIOR_KEY.toString());
-		Iterator<String> keyIt = behavior.keys();
+		if (config.has(TargetConfKeys.BEHAVIOR_KEY.toString())) {
+			JSONObject behavior = config.getJSONObject(TargetConfKeys.BEHAVIOR_KEY.toString());
+			Iterator<String> keyIt = behavior.keys();
 
-		// Each of the keys in the behavior section should be for some mix matrix
-		while (keyIt.hasNext()) {
-			String mixName = keyIt.next();
+			// Each of the keys in the behavior section should be for some mix matrix
+			while (keyIt.hasNext()) {
+				String mixName = keyIt.next();
 
-			// Now we need to get this object and parse it
-			JSONArray mix = behavior.getJSONArray(mixName);
-			double[][] data = null;
-			for (int i = 0; i < mix.length(); i++) {
-				if (i == 0) {
-					data = new double[mix.length()][mix.length()];
+				// Now we need to get this object and parse it
+				JSONArray mix = behavior.getJSONArray(mixName);
+				double[][] data = null;
+				for (int i = 0; i < mix.length(); i++) {
+					if (i == 0) {
+						data = new double[mix.length()][mix.length()];
+					}
+					// Each row is itself an array of doubles
+					JSONArray row = mix.getJSONArray(i);
+					for (int j = 0; j < row.length(); j++) {
+						data[i][j] = row.getDouble(j);
+					}
 				}
-				// Each row is itself an array of doubles
-				JSONArray row = mix.getJSONArray(i);
-				for (int j = 0; j < row.length(); j++) {
-					data[i][j] = row.getDouble(j);
-				}
+				mixMatrices.put(mixName, new MixMatrix(data));
 			}
-			mixMatrices.put(mixName, new MixMatrix(data));
 		}
 
 		// Configure the response time sampler

@@ -41,8 +41,8 @@ import radlab.rain.scoreboard.IScoreboard;
 public class PingHomePageOperation extends TestOperation {
 	private static final Logger logger = LoggerFactory.getLogger(PingHomePageOperation.class);
 
-	public PingHomePageOperation(IScoreboard scoreboard, TestGenerator generator) {
-		super(scoreboard, generator);
+	public PingHomePageOperation(TestGenerator generator) {
+		super(generator);
 
 		this.operationName = "PingHome";
 		this.operationIndex = TestGenerator.PING_HOMEPAGE;

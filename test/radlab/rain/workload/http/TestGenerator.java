@@ -77,7 +77,7 @@ public class TestGenerator extends Generator {
 
 		switch (opIndex) {
 		case PING_HOMEPAGE:
-			return new PingHomePageOperation(scoreboard, this);
+			return new PingHomePageOperation(this);
 		default:
 			return null;
 		}

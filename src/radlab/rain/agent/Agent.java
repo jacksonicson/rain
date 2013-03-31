@@ -89,14 +89,14 @@ public abstract class Agent extends Thread implements IAgent {
 
 		// Load unit unspecified - execute operation immediately
 		if (loadUnit == null) {
-			executorService.submit(operation);
+			submitAsyncOperation(operation);
 			return;
 		}
 
 		// No rate limiting - execute operation immediately
 		long aggRatePerSec = loadUnit.getOpenLoopMaxOpsPerSec();
 		if (aggRatePerSec == 0) {
-			executorService.submit(operation);
+			submitAsyncOperation(operation);
 			return;
 		}
 
@@ -113,7 +113,7 @@ public abstract class Agent extends Thread implements IAgent {
 			sendNextRequest = System.currentTimeMillis() + (long) waitIntervalMsecs;
 
 			// Submit operation
-			executorService.submit(operation);
+			submitAsyncOperation(operation);
 		} else {
 			long sleepTime = sendNextRequest - now;
 			try {
@@ -123,13 +123,13 @@ public abstract class Agent extends Thread implements IAgent {
 			}
 
 			// Submit operation
-			executorService.submit(operation);
+			submitAsyncOperation(operation);
 		}
 	}
 
-	private void runSyncOperation(IOperation operation) {
-		operation.run();
-	}
+	protected abstract void submitAsyncOperation(IOperation operation);
+
+	protected abstract void runSyncOperation(IOperation operation);
 
 	@Override
 	public void doOperation(IOperation operation) {

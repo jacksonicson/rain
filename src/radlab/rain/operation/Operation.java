@@ -50,9 +50,6 @@ public abstract class Operation implements IOperation {
 	private LoadDefinition loadDefinition;
 	private long loadDefinitionStartTime;
 
-	// Used to collect execution metrics
-	protected IScoreboard scoreboard;
-
 	// Statistics
 	private long timeStarted;
 	private long timeFinished;
@@ -64,17 +61,11 @@ public abstract class Operation implements IOperation {
 	// Counts number of actions (like http requests)
 	protected long numberOfActionsPerformed;
 
-	/**
-	 * Constructor
-	 */
-	public Operation(IScoreboard scoreboard) {
-		this.scoreboard = scoreboard;
-	}
-
-	public final void run() {
+	public OperationExecution run() {
 		// Invoke the pre-execute hook here before we start the clock to time the operation's execution
 		preExecute();
 		timeStarted = System.currentTimeMillis();
+		OperationExecution result = null; 
 		try {
 			execute();
 		} catch (Throwable e) {
@@ -88,12 +79,13 @@ public abstract class Operation implements IOperation {
 			postExecute();
 
 			// Dump operation results into the scoreboard
-			OperationExecution result = new OperationExecution(this);
-			scoreboard.dropOffOperation(result);
+			result = new OperationExecution(this);
 
 			// Run cleanup
 			cleanup();
 		}
+		
+		return result;
 	}
 
 	protected abstract void execute() throws Throwable;

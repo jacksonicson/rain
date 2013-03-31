@@ -2,7 +2,7 @@ package radlab.rain.operation;
 
 import radlab.rain.load.LoadDefinition;
 
-public interface IOperation extends Runnable {
+public interface IOperation {
 
 	// Reference to the load definition during which the operation was created
 	void setLoadDefinition(LoadDefinition loadDefinition);
@@ -30,4 +30,7 @@ public interface IOperation extends Runnable {
 
 	// Cleanup after execution
 	void cleanup();
+	
+	// Run this operation
+	public OperationExecution run();
 }

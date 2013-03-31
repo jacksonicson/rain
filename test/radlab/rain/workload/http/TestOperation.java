@@ -32,7 +32,6 @@
 package radlab.rain.workload.http;
 
 import radlab.rain.operation.Operation;
-import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.util.HttpTransport;
 
 /**
@@ -46,8 +45,7 @@ public abstract class TestOperation extends Operation {
 
 	protected TestGenerator generator;
 
-	public TestOperation(IScoreboard scoreboard, TestGenerator generator) {
-		super(scoreboard);
+	public TestOperation(TestGenerator generator) {
 		this.generator = generator;
 	}
 

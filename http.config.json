@@ -17,18 +17,6 @@
     	"baseUrl" : "dss.in.tum.de",
     	"targetCount" : 1,
     	"targetConfig" : {
-    		"pOpenLoop" : 0,
-    		"pLogSampling" : 0,
-    		"meanCycleTime" : 0,
-    		"meanThinkTime" : 0,
-    		"metricSnapshotInterval" : 0,
-    		"meanResponseTimeSamplingInterval" : 0,
-    		"behavior" : {
-				"default" : [
-		    		[0.0,  0.0],
-		    		[0.0,  0.0],
-		    	],
-			},
     		
     	},
     },

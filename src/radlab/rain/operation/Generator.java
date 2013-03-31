@@ -31,7 +31,6 @@
 
 package radlab.rain.operation;
 
-import radlab.rain.load.LoadDefinition;
 import radlab.rain.scoreboard.IScoreboard;
 
 /**
@@ -46,12 +45,6 @@ public abstract class Generator {
 	protected long thinkTime;
 	protected long cycleTime;
 
-	// Scoreboard to drop results off at
-	protected IScoreboard scoreboard = null;
-
-	// Latest load profile used
-	protected LoadDefinition latestLoadProfile = null;
-
 	// Initialize the generator
 	public abstract void initialize();
 
@@ -60,10 +53,6 @@ public abstract class Generator {
 
 	// Dispose generator and all its resources
 	public abstract void dispose();
-
-	public void setScoreboard(IScoreboard scoreboard) {
-		this.scoreboard = scoreboard;
-	}
 
 	/**
 	 * Sets the mean cycle time. Used to calculate a concrete cycle time.

@@ -20,7 +20,7 @@ import radlab.rain.util.PoissonSamplingStrategy;
  * final Scorecard for the entire run. The Scoreboard will maintain/manage a hashtable of Scorecards.
  * 
  */
-class Scorecard {
+public class Scorecard {
 	private static Logger logger = LoggerFactory.getLogger(Scorecard.class);
 
 	enum Type {
@@ -263,19 +263,19 @@ class Scorecard {
 		return Collections.unmodifiableMap(operationSummaryMap);
 	}
 
-	long getTotalOpResponseTime() {
+	public long getTotalOpResponseTime() {
 		return totalOpResponseTime;
 	}
 
-	long getTotalOpsSuccessful() {
+	public long getTotalOpsSuccessful() {
 		return totalOpsSuccessful;
 	}
 
-	Type getType() {
+	public Type getType() {
 		return type;
 	}
 
-	long getTimeActive() {
+	public long getTimeActive() {
 		return intervalDuration;
 	}
 }

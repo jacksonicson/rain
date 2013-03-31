@@ -40,6 +40,7 @@ import radlab.rain.UnexpectedDeathHandler;
 import radlab.rain.load.LoadDefinition;
 import radlab.rain.operation.Generator;
 import radlab.rain.operation.IOperation;
+import radlab.rain.operation.OperationExecution;
 import radlab.rain.scoreboard.IScoreboard;
 
 /**
@@ -176,6 +177,33 @@ public class AgentPOL extends Agent {
 
 		// Save the cycle time - if we're in the steady state
 		scoreboard.dropOffWaitTime(now, operation.getOperationName(), cycleTime);
+	}
+
+	private final class DropoffHandler implements Runnable {
+
+		private final IOperation wrapped;
+
+		DropoffHandler(IOperation wrapped) {
+			this.wrapped = wrapped;
+		}
+
+		@Override
+		public void run() {
+			OperationExecution result = wrapped.run();
+			scoreboard.dropOffOperation(result);
+		}
+	}
+
+	@Override
+	protected void submitAsyncOperation(IOperation operation) {
+		DropoffHandler handler = new DropoffHandler(operation);
+		executorService.submit(handler);
+	}
+
+	@Override
+	protected void runSyncOperation(IOperation operation) {
+		OperationExecution result = operation.run();
+		scoreboard.dropOffOperation(result);
 	}
 
 	/**
