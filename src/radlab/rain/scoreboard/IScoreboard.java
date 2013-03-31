@@ -46,9 +46,6 @@ public interface IScoreboard {
 	// Set reference to a metric writer
 	void setMetricWriter(MetricWriter metricWriter);
 
-	// Reset
-	void reset();
-
 	// Start recording data
 	void start();
 
@@ -65,10 +62,6 @@ public interface IScoreboard {
 	 */
 	void setLogSamplingProbability(double val);
 
-	void setMetricSnapshotInterval(long val);
-
-	void setUsingMetricSnapshots(boolean val);
-
 	void setMeanResponseTimeSamplingInterval(long val);
 
 	/**
@@ -80,10 +73,4 @@ public interface IScoreboard {
 
 	// JSON serialized object that contains aggregated stats
 	JSONObject getStatistics() throws JSONException;
-
-	// Timestamp of start logging
-	long getStartTimestamp();
-
-	// Timestamp of end logging
-	long getEndTimestamp();
 }

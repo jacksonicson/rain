@@ -55,6 +55,8 @@ class WaitTimeSummary {
 		totalWaitTime += waitTime;
 		minWaitTime = Math.min(minWaitTime, waitTime);
 		maxWaitTime = Math.max(maxWaitTime, waitTime);
+
+		// Feed wait time into the sampler
 		waitTimeSampler.accept(waitTime);
 	}
 

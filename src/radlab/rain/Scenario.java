@@ -41,7 +41,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import radlab.rain.scoreboard.Aggregation;
-import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.target.ITarget;
 import radlab.rain.target.ITargetFactory;
 import radlab.rain.util.MetricWriter;
@@ -139,12 +138,8 @@ public class Scenario {
 	}
 
 	public void statAggregation(Timing timing) throws JSONException {
-		List<IScoreboard> scoreboards = new ArrayList<IScoreboard>();
-		for (ITarget target : targets) {
-			scoreboards.add(target.getScoreboard());
-		}
 		Aggregation aggregation = new Aggregation();
-		aggregation.aggregateScoreboards(timing, scoreboards);
+		aggregation.aggregateScoreboards(timing, targets);
 	}
 
 	public List<String> getTargetNames() {

@@ -57,4 +57,12 @@ public final class Timing {
 	public boolean inRampUp(long now) {
 		return now < startSteadyState;
 	}
+
+	public boolean inSteadyState(long time) {
+		return (time >= startSteadyState && time <= endSteadyState);
+	}
+
+	public boolean inRampDown(long time) {
+		return (time > endSteadyState);
+	}
 }

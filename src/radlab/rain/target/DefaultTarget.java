@@ -245,10 +245,6 @@ public class DefaultTarget implements ITarget {
 			mixMatrices.put(mixName, new MixMatrix(data));
 		}
 
-		// Snapshot interval
-		if (config.has(TargetConfKeys.METRIC_SNAPSHOT_INTERVAL.toString()))
-			metricSnapshotInterval = config.getDouble(TargetConfKeys.METRIC_SNAPSHOT_INTERVAL.toString());
-
 		// Configure the response time sampler
 		if (config.has(TargetConfKeys.MEAN_RESPONSE_TIME_SAMPLE_INTERVAL.toString()))
 			meanResponseTimeSamplingInterval = config.getLong(TargetConfKeys.MEAN_RESPONSE_TIME_SAMPLE_INTERVAL
@@ -259,14 +255,12 @@ public class DefaultTarget implements ITarget {
 		logger.debug("Creating scoreboard for target " + id);
 
 		// Create scoreboard
-		IScoreboard scoreboard = new Scoreboard("target");
+		IScoreboard scoreboard = new Scoreboard(id);
 
 		// Set the log sampling probability for the scoreboard
 		scoreboard.initialize(timing, loadSchedule.getMaxAgents());
 		scoreboard.setLogSamplingProbability(logSamplingProbability);
-		scoreboard.setUsingMetricSnapshots(metricSnapshotInterval > 0);
 		scoreboard.setMeanResponseTimeSamplingInterval(meanResponseTimeSamplingInterval);
-		scoreboard.setMetricSnapshotInterval((long) (metricSnapshotInterval * 1000));
 		scoreboard.setMetricWriter(metricWriter);
 		scoreboard.start();
 
@@ -299,5 +293,11 @@ public class DefaultTarget implements ITarget {
 
 	public long getId() {
 		return this.id;
+	}
+
+	@Override
+	public String getAggregationIdentifier() {
+		// TODO: Needs some improvement
+		return generatorFactory.createGenerator().getClass().getName();
 	}
 }

@@ -10,37 +10,43 @@ import org.slf4j.LoggerFactory;
 
 import radlab.rain.Scenario;
 import radlab.rain.Timing;
+import radlab.rain.target.ITarget;
 
 public class Aggregation {
 	private static Logger logger = LoggerFactory.getLogger(Scenario.class);
 
-	public void aggregateScoreboards(Timing timing, List<IScoreboard> scoreboards) throws JSONException {
+	public void aggregateScoreboards(Timing timing, List<ITarget> targets) throws JSONException {
 		TreeMap<String, Scorecard> aggStats = new TreeMap<String, Scorecard>();
-		Scorecard globalCard = new Scorecard("global", "global", timing.steadyStateDuration());
+		Scorecard globalCard = new Scorecard(Scorecard.Type.GLOBAL, timing.steadyStateDuration());
 
-		// Shutdown the scoreboards and tally up the results.
-		for (IScoreboard scoreboard : scoreboards) {
+		// Aggregate all targets
+		for (ITarget target : targets) {
+			// Get scoreboard for the target
+			IScoreboard scoreboard = target.getScoreboard();
+
+			// Get generator class
+			String aggregationIdentifier = target.getAggregationIdentifier();
+
 			// Write detailed statistics to sonar
 			JSONObject stats = scoreboard.getStatistics();
+
+			// Log summary of the target
 			String strStats = stats.toString();
 			logger.info("Target metrics: " + strStats);
 
-			// Get the name of the generator active for this track
-			String generatorClassName = "TODO";
-
 			// Get the final scorecard for this track
 			Scorecard finalScorecard = scoreboard.getFinalScorecard();
-			if (!aggStats.containsKey(generatorClassName)) {
-				Scorecard aggCard = new Scorecard("aggregated", generatorClassName, finalScorecard
-						.getIntervalDuration());
-				aggStats.put(generatorClassName, aggCard);
+			if (!aggStats.containsKey(aggregationIdentifier)) {
+				Scorecard aggCard = new Scorecard(Scorecard.Type.AGGREGATED, finalScorecard.getTimeActive(),
+						aggregationIdentifier, 0);
+				aggStats.put(aggregationIdentifier, aggCard);
 			}
 			// Get the current aggregated scorecard for this generator
-			Scorecard aggCard = aggStats.get(generatorClassName);
+			Scorecard aggCard = aggStats.get(aggregationIdentifier);
 			// Merge the final card for this track with the current per-driver
 			// aggregated scorecard
 			aggCard.merge(finalScorecard);
-			aggStats.put(generatorClassName, aggCard);
+			aggStats.put(aggregationIdentifier, aggCard);
 			// Collect scoreboard results
 			// Collect object pool results
 
@@ -64,5 +70,4 @@ public class Aggregation {
 		// Dump global card
 		logger.info("Global metrics: " + globalCard.getIntervalStatistics().toString());
 	}
-
 }

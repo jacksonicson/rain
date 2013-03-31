@@ -11,7 +11,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import radlab.rain.load.LoadDefinition;
 import radlab.rain.operation.OperationExecution;
 import radlab.rain.util.NullSamplingStrategy;
 import radlab.rain.util.PoissonSamplingStrategy;
@@ -24,11 +23,15 @@ import radlab.rain.util.PoissonSamplingStrategy;
 class Scorecard {
 	private static Logger logger = LoggerFactory.getLogger(Scorecard.class);
 
-	// Name of the scorecard
-	private final String name;
+	enum Type {
+		GLOBAL, AGGREGATED, FINAL, LOAD_DEFINITION
+	}
 
-	// What track does this scorecard belong to
-	private final long targetId;
+	// Scorecard type
+	private Type type = Type.FINAL;
+
+	// Aggregation identifier
+	private String aggregationIdentifier;
 
 	// What goes on the scorecard?
 	private long totalOpsSuccessful = 0;
@@ -45,34 +48,21 @@ class Scorecard {
 	private long maxResponseTime = 0;
 
 	// A mapping of each operation with its summary
-	private TreeMap<String, OperationSummary> operationMap = new TreeMap<String, OperationSummary>();
+	private TreeMap<String, OperationSummary> operationSummaryMap = new TreeMap<String, OperationSummary>();
 
-	public Scorecard(String name, long trackId, long intervalDuration) {
-		this(name, trackId, intervalDuration, 0);
+	Scorecard(Type type, long timeActive) {
+		this.type = type;
+		this.intervalDuration = timeActive;
 	}
 
-	public Scorecard(String name, long trackId, long intervalDuration, long numberOfUsers) {
-		this.name = name;
-		this.targetId = trackId;
-		this.intervalDuration = intervalDuration;
+	Scorecard(Type type, long timeActive, long numberOfUsers) {
+		this(type, timeActive);
 		this.numberOfUsers = numberOfUsers;
 	}
 
-	public void reset() {
-		// Clear the operation map
-		this.operationMap.clear();
-
-		// Reset aggregate counters
-		this.totalActionsSuccessful = 0;
-		this.totalOpsAsync = 0;
-		this.totalOpsFailed = 0;
-		this.totalOpsInitiated = 0;
-		this.totalOpsSuccessful = 0;
-		this.totalOpsSync = 0;
-		this.totalOpsLate = 0;
-		this.totalOpResponseTime = 0;
-		this.maxResponseTime = 0;
-		this.minResponseTime = Long.MAX_VALUE;
+	Scorecard(Type type, long timeActive, String aggregationIdentifier, long numberOfUsers) {
+		this(type, timeActive, numberOfUsers);
+		this.aggregationIdentifier = aggregationIdentifier;
 	}
 
 	void processLateOperation(OperationExecution result) {
@@ -86,12 +76,13 @@ class Scorecard {
 		totalOpsInitiated++;
 
 		// Do the accounting for the final score card
-		OperationSummary operationSummary = operationMap.get(operationName);
+		OperationSummary operationSummary = operationSummaryMap.get(operationName);
+
 		// Create operation summary if needed
 		if (operationSummary == null) {
-			operationSummary = new OperationSummary(new PoissonSamplingStrategy(name + "." + targetId + "."
-					+ operationName, meanResponseTimeSamplingInterval));
-			operationMap.put(operationName, operationSummary);
+			operationSummary = new OperationSummary(new PoissonSamplingStrategy(operationName,
+					meanResponseTimeSamplingInterval));
+			operationSummaryMap.put(operationName, operationSummary);
 		}
 
 		// Process result for the operation
@@ -122,10 +113,6 @@ class Scorecard {
 		}
 	}
 
-	void processProfileResult(OperationExecution result, double meanResponseTimeSamplingInterval) {
-		processResult(result, meanResponseTimeSamplingInterval);
-	}
-
 	JSONObject getStatistics(double runDuration) throws JSONException {
 		// Total operations executed
 		long totalOperations = totalOpsSuccessful + totalOpsFailed;
@@ -152,8 +139,7 @@ class Scorecard {
 
 		// Create result object
 		JSONObject result = new JSONObject();
-		result.put("track", targetId);
-		result.put("interval_name", name);
+		result.put("interval_name", aggregationIdentifier);
 		result.put("run_duration", runDuration);
 		result.put("interval_duration", intervalDuration);
 		result.put("total_ops_successful", totalOpsSuccessful);
@@ -193,16 +179,16 @@ class Scorecard {
 		JSONArray operations = new JSONArray();
 		result.put("operations", operations);
 
-		synchronized (operationMap) {
+		synchronized (operationSummaryMap) {
 
 			long totalOperations = getTotalSteadyOperations();
 			double totalAvgResponseTime = 0.0;
 			double totalResponseTime = 0.0;
 			long totalSuccesses = 0;
 
-			for (Iterator<String> keys = operationMap.keySet().iterator(); keys.hasNext();) {
+			for (Iterator<String> keys = operationSummaryMap.keySet().iterator(); keys.hasNext();) {
 				String operationName = keys.next();
-				OperationSummary operationSummary = operationMap.get(operationName);
+				OperationSummary operationSummary = operationSummaryMap.get(operationName);
 
 				// Update global counters
 				totalAvgResponseTime += operationSummary.getAverageResponseTime();
@@ -234,7 +220,7 @@ class Scorecard {
 	}
 
 	public void merge(Scorecard from) {
-		// Merge another scorecard with "me"
+		// Merge another scorecard with this
 		this.totalOpsSuccessful += from.totalOpsSuccessful;
 		this.totalOpsFailed += from.totalOpsFailed;
 		this.totalActionsSuccessful += from.totalActionsSuccessful;
@@ -248,20 +234,20 @@ class Scorecard {
 		this.minResponseTime = Math.min(minResponseTime, from.minResponseTime);
 
 		// Merge operation maps
-		for (String operationName : from.operationMap.keySet()) {
+		for (String operationName : from.operationSummaryMap.keySet()) {
 			OperationSummary mySummary = null;
-			OperationSummary fromSummary = from.operationMap.get(operationName);
+			OperationSummary fromSummary = from.operationSummaryMap.get(operationName);
 
 			// Do we have an operationSummary for this operation yet?
 			// If we don't have one, initialize an OperationSummary with a Null/dummy sampler that will
 			// simply accept all of the samples from the rhs' sampler
-			if (this.operationMap.containsKey(operationName))
-				mySummary = this.operationMap.get(operationName);
+			if (this.operationSummaryMap.containsKey(operationName))
+				mySummary = this.operationSummaryMap.get(operationName);
 			else
 				mySummary = new OperationSummary(new NullSamplingStrategy());
 
 			mySummary.merge(fromSummary);
-			this.operationMap.put(operationName, mySummary);
+			this.operationSummaryMap.put(operationName, mySummary);
 		}
 	}
 
@@ -269,59 +255,27 @@ class Scorecard {
 		return totalOpsSuccessful + totalOpsFailed;
 	}
 
-	public long getIntervalDuration() {
-		return intervalDuration;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public long getTargetId() {
-		return targetId;
-	}
-
-	public long getTotalOpsSuccessful() {
-		return totalOpsSuccessful;
-	}
-
-	public long getTotalOpsFailed() {
-		return totalOpsFailed;
-	}
-
-	public long getTotalActionsSuccessful() {
-		return totalActionsSuccessful;
-	}
-
-	public long getTotalOpsAsync() {
-		return totalOpsAsync;
-	}
-
-	public long getTotalOpsSync() {
-		return totalOpsSync;
-	}
-
-	public long getTotalOpsInitiated() {
-		return totalOpsInitiated;
-	}
-
-	public long getTotalOpsLate() {
-		return totalOpsLate;
-	}
-
-	public long getTotalOpResponseTime() {
-		return totalOpResponseTime;
-	}
-
-	public long getNumberOfUsers() {
-		return numberOfUsers;
+	String getAggregationIdentifier() {
+		return aggregationIdentifier;
 	}
 
 	public Map<String, OperationSummary> getOperationMap() {
-		return Collections.unmodifiableMap(operationMap);
+		return Collections.unmodifiableMap(operationSummaryMap);
 	}
 
-	public String toString() {
-		return "target-" + targetId + " ";
+	long getTotalOpResponseTime() {
+		return totalOpResponseTime;
+	}
+
+	long getTotalOpsSuccessful() {
+		return totalOpsSuccessful;
+	}
+
+	Type getType() {
+		return type;
+	}
+
+	long getTimeActive() {
+		return intervalDuration;
 	}
 }
