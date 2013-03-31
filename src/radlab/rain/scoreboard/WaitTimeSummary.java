@@ -34,9 +34,9 @@ package radlab.rain.scoreboard;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.util.ISamplingStrategy;
+import radlab.rain.util.IMetricSampler;
 
-public class WaitTimeSummary {
+class WaitTimeSummary {
 	private long count = 0;
 	private long totalWaitTime = 0;
 	private long minWaitTime = Long.MAX_VALUE;
@@ -44,9 +44,9 @@ public class WaitTimeSummary {
 
 	// Sample the response times so that we can give a "reasonable"
 	// estimate of the 90th and 99th percentiles.
-	private ISamplingStrategy waitTimeSampler;
+	private IMetricSampler waitTimeSampler;
 
-	public WaitTimeSummary(ISamplingStrategy strategy) {
+	WaitTimeSummary(IMetricSampler strategy) {
 		this.waitTimeSampler = strategy;
 	}
 
@@ -59,13 +59,13 @@ public class WaitTimeSummary {
 	}
 
 	void resetSamples() {
-		this.waitTimeSampler.reset();
+		waitTimeSampler.reset();
 	}
-	
+
 	private long getNthPercentileResponseTime(int pct) {
-		return this.waitTimeSampler.getNthPercentile(pct);
+		return waitTimeSampler.getNthPercentile(pct);
 	}
-	
+
 	public JSONObject getStatistics() throws JSONException {
 		// Calculations
 		long minWaitTime = this.minWaitTime;
@@ -76,13 +76,13 @@ public class WaitTimeSummary {
 		if (maxWaitTime == Long.MIN_VALUE)
 			maxWaitTime = 0;
 
-		double avgWaitTime = 0; 
-		if(count > 0)
+		double avgWaitTime = 0;
+		if (count > 0)
 			avgWaitTime = (double) this.totalWaitTime / (double) this.count;
-		
+
 		double tvalue = waitTimeSampler.getTvalue(avgWaitTime);
 		double sampleStdDev = waitTimeSampler.getSampleStandardDeviation();
-		
+
 		// Results
 		JSONObject wait = new JSONObject();
 		wait.put("average_wait_time", avgWaitTime);

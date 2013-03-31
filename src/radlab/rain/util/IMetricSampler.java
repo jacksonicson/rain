@@ -33,7 +33,7 @@ package radlab.rain.util;
 
 import java.util.LinkedList;
 
-public interface ISamplingStrategy 
+public interface IMetricSampler 
 {
 	double getMeanSamplingInterval();
 	void setMeanSamplingInterval( double val );

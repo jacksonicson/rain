@@ -37,7 +37,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import radlab.rain.operation.OperationExecution;
-import radlab.rain.util.ISamplingStrategy;
+import radlab.rain.util.IMetricSampler;
 
 public class OperationSummary {
 	// Information recorded about one operation type
@@ -52,9 +52,9 @@ public class OperationSummary {
 
 	// Sample the response times so that we can give a "reasonable"
 	// estimate of the 90th and 99th percentiles.
-	private ISamplingStrategy responseTimeSampler;
+	private IMetricSampler responseTimeSampler;
 
-	public OperationSummary(ISamplingStrategy strategy) {
+	public OperationSummary(IMetricSampler strategy) {
 		responseTimeSampler = strategy;
 	}
 
@@ -126,7 +126,7 @@ public class OperationSummary {
 
 	}
 
-	private ISamplingStrategy getResponseTimeSampler() {
+	private IMetricSampler getResponseTimeSampler() {
 		return responseTimeSampler;
 	}
 
