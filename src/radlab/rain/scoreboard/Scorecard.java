@@ -24,11 +24,11 @@ import radlab.rain.util.PoissonSamplingStrategy;
 class Scorecard {
 	private static Logger logger = LoggerFactory.getLogger(Scorecard.class);
 
-	// All scorecards are named with the interval they are generated in
-	private String name = "";
+	// Name of the scorecard
+	private final String name;
 
 	// What track does this scorecard belong to
-	private String trackName = "";
+	private final long targetId;
 
 	// What goes on the scorecard?
 	private long totalOpsSuccessful = 0;
@@ -41,20 +41,19 @@ class Scorecard {
 	private long totalOpResponseTime = 0;
 	private long intervalDuration = 0;
 	private long numberOfUsers = 0;
-	private double activeCount = 0.0;
 	private long minResponseTime = Long.MAX_VALUE;
 	private long maxResponseTime = 0;
 
 	// A mapping of each operation with its summary
 	private TreeMap<String, OperationSummary> operationMap = new TreeMap<String, OperationSummary>();
 
-	public Scorecard(String name, String trackName, long intervalDuration) {
-		this(name, trackName, intervalDuration, 0);
+	public Scorecard(String name, long trackId, long intervalDuration) {
+		this(name, trackId, intervalDuration, 0);
 	}
 
-	public Scorecard(String name, String trackName, long intervalDuration, long numberOfUsers) {
+	public Scorecard(String name, long trackId, long intervalDuration, long numberOfUsers) {
 		this.name = name;
-		this.trackName = trackName;
+		this.targetId = trackId;
 		this.intervalDuration = intervalDuration;
 		this.numberOfUsers = numberOfUsers;
 	}
@@ -74,7 +73,6 @@ class Scorecard {
 		this.totalOpResponseTime = 0;
 		this.maxResponseTime = 0;
 		this.minResponseTime = Long.MAX_VALUE;
-		this.activeCount = 0;
 	}
 
 	void processLateOperation(OperationExecution result) {
@@ -91,7 +89,7 @@ class Scorecard {
 		OperationSummary operationSummary = operationMap.get(operationName);
 		// Create operation summary if needed
 		if (operationSummary == null) {
-			operationSummary = new OperationSummary(new PoissonSamplingStrategy(name + "." + trackName + "."
+			operationSummary = new OperationSummary(new PoissonSamplingStrategy(name + "." + targetId + "."
 					+ operationName, meanResponseTimeSamplingInterval));
 			operationMap.put(operationName, operationSummary);
 		}
@@ -125,8 +123,6 @@ class Scorecard {
 	}
 
 	void processProfileResult(OperationExecution result, double meanResponseTimeSamplingInterval) {
-		LoadDefinition activeProfile = result.generatedDuring;
-		activeCount = activeProfile.getActivations();
 		processResult(result, meanResponseTimeSamplingInterval);
 	}
 
@@ -156,9 +152,8 @@ class Scorecard {
 
 		// Create result object
 		JSONObject result = new JSONObject();
-		result.put("track", trackName);
+		result.put("track", targetId);
 		result.put("interval_name", name);
-		result.put("active_count", activeCount);
 		result.put("run_duration", runDuration);
 		result.put("interval_duration", intervalDuration);
 		result.put("total_ops_successful", totalOpsSuccessful);
@@ -239,9 +234,6 @@ class Scorecard {
 	}
 
 	public void merge(Scorecard from) {
-		// For merges the activeCount is always set to 1
-		this.activeCount = 1;
-
 		// Merge another scorecard with "me"
 		this.totalOpsSuccessful += from.totalOpsSuccessful;
 		this.totalOpsFailed += from.totalOpsFailed;
@@ -285,8 +277,8 @@ class Scorecard {
 		return name;
 	}
 
-	public String getTrackName() {
-		return trackName;
+	public long getTargetId() {
+		return targetId;
 	}
 
 	public long getTotalOpsSuccessful() {
@@ -330,6 +322,6 @@ class Scorecard {
 	}
 
 	public String toString() {
-		return "[SCOREBOARD TRACK: " + this.trackName + "]";
+		return "target-" + targetId + " ";
 	}
 }
