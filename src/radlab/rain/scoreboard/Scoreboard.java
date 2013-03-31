@@ -418,6 +418,6 @@ public class Scoreboard implements Runnable, IScoreboard {
 	}
 
 	public String toString() {
-		return targetId + " - ";
+		return "target-" + targetId + ": ";
 	}
 }
