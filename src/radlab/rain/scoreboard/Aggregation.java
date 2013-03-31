@@ -32,7 +32,7 @@ public class Aggregation {
 
 			// Log summary of the target
 			String strStats = stats.toString();
-			logger.info("Target metrics: " + strStats);
+			logger.info("Target scoreboard statistics - " + target.getId() + ": " + strStats);
 
 			// Get the final scorecard for this track
 			Scorecard finalScorecard = scoreboard.getFinalScorecard();
@@ -58,16 +58,16 @@ public class Aggregation {
 		if (aggStats.size() > 0)
 			logger.info("# aggregated stats: " + aggStats.size());
 
-		for (String generatorName : aggStats.keySet()) {
-			Scorecard card = aggStats.get(generatorName);
+		for (String aggregationKey : aggStats.keySet()) {
+			Scorecard card = aggStats.get(aggregationKey);
 
 			// Sonar output
 			JSONObject stats = card.getIntervalStatistics();
 			String strStats = stats.toString();
-			logger.info("Rain metrics: " + strStats);
+			logger.info("Aggregated scorecard for - " + aggregationKey + ": " + strStats);
 		}
 
 		// Dump global card
-		logger.info("Global metrics: " + globalCard.getIntervalStatistics().toString());
+		logger.info("Global scorecard: " + globalCard.getIntervalStatistics().toString());
 	}
 }
