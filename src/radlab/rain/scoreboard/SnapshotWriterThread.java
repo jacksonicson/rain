@@ -65,7 +65,7 @@ class SnapshotWriterThread extends Thread {
 		interrupted = true;
 
 		// Interrupt this thread
-		interrupt();
+		super.interrupt();
 	}
 
 	void setMetricWriter(MetricWriter metricWriter) {

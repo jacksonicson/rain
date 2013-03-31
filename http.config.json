@@ -1,8 +1,8 @@
 {
     "timing": {
         "rampUp": 10,
-        "duration": 15,
-        "rampDown": 10,
+        "duration": 10,
+        "rampDown": 5,
     },
     
     "waitForStartSignal": false,
