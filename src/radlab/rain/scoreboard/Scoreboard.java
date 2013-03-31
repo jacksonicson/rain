@@ -337,14 +337,11 @@ public class Scoreboard implements Runnable, IScoreboard {
 			return;
 
 		long responseTime = result.getExecutionTime();
-		String loadDefinitionName = "";
-		if (result.generatedDuring != null)
-			loadDefinitionName = result.generatedDuring._name;
 
 		// Transferable stat object
 		ResponseTimeStat responseTimeStat = new ResponseTimeStat(result.timeFinished, responseTime, finalCard
 				.getTotalOpResponseTime(), finalCard.getTotalOpsSuccessful(), result.operationName,
-				result.operationRequest, loadDefinitionName, targetId);
+				result.operationRequest, targetId);
 
 		// Accept stat object
 		snapshotThread.accept(responseTimeStat);

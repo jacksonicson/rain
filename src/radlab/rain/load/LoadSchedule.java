@@ -17,12 +17,11 @@ public class LoadSchedule {
 	public int size() {
 		return loadUnits.size();
 	}
-	
+
 	public long getMaxAgents() {
-		int i = 0;
-		for (LoadDefinition unit : loadUnits) {
-			i = Math.max(i, unit.getNumberOfUsers());
-		}
+		long i = 0;
+		for (LoadDefinition load : loadUnits)
+			i = Math.max(i, load.getNumberOfUsers());
 		return i;
 	}
 }

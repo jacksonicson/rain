@@ -94,14 +94,14 @@ public abstract class Agent extends Thread implements IAgent {
 		}
 
 		// No rate limiting - execute operation immediately
-		long aggRatePerSec = loadUnit.openLoopMaxOpsPerSec;
+		long aggRatePerSec = loadUnit.getOpenLoopMaxOpsPerSec();
 		if (aggRatePerSec == 0) {
 			executorService.submit(operation);
 			return;
 		}
 
 		// Rate limited send
-		long activeUsers = loadUnit.numberOfUsers;
+		long activeUsers = loadUnit.getNumberOfUsers();
 		long now = System.currentTimeMillis();
 
 		// Is it time to send the request?

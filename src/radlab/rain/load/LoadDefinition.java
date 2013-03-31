@@ -31,51 +31,17 @@
 
 package radlab.rain.load;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 public class LoadDefinition {
-	public static String CFG_LOAD_PROFILE_INTERVAL_KEY = "interval";
-	public static String CFG_LOAD_PROFILE_TRANSITION_TIME_KEY = "transitionTime";
-	public static String CFG_LOAD_PROFILE_USERS_KEY = "users";
-	public static String CFG_LOAD_PROFILE_MIX_KEY = "mix";
-	public static String CFG_LOAD_PROFILE_NAME_KEY = "name";
-	public static String CFG_OPEN_LOOP_MAX_OPS_PER_SEC_KEY = "openLoopMaxOpsPerSec";
-	// Allow LoadProfile intervals to have names (no getter/setter)
-	public String _name = "";
 
-	public long interval;
-	protected long transitionTime;
-	public int numberOfUsers;
-	protected String mixName = "";
-	private long activeCount = 0; // How often has this interval become active, the load scheduler updates this
-	public int openLoopMaxOpsPerSec = 0; // Rate limit on async operations. A value of 0 means no rate limiting.
-	protected JSONObject config = null; // Save the original configuration object if its passed
+	private final long interval;
+	private final long transitionTime;
+	private final long numberOfUsers;
 
-	private long _timeStarted = -1; // LoadManagerThreads need to update this every time they advance the "clock"
+	private final String mixName;
+	private final int openLoopMaxOpsPerSec;
 
-	public LoadDefinition(JSONObject profileObj) throws JSONException {
-		this.interval = profileObj.getLong(CFG_LOAD_PROFILE_INTERVAL_KEY);
-		this.numberOfUsers = profileObj.getInt(CFG_LOAD_PROFILE_USERS_KEY);
-		this.mixName = profileObj.getString(CFG_LOAD_PROFILE_MIX_KEY);
-
-		// Load the transition time (if specified)
-		if (profileObj.has(CFG_LOAD_PROFILE_TRANSITION_TIME_KEY))
-			this.transitionTime = profileObj.getLong(CFG_LOAD_PROFILE_TRANSITION_TIME_KEY);
-
-		// Load the interval name (if specified)
-		if (profileObj.has(CFG_LOAD_PROFILE_NAME_KEY))
-			this._name = profileObj.getString(CFG_LOAD_PROFILE_NAME_KEY);
-
-		// Open loop rate limiting (if that's configured). By default there's no rate limiting
-		if (profileObj.has(CFG_OPEN_LOOP_MAX_OPS_PER_SEC_KEY)) {
-			this.openLoopMaxOpsPerSec = profileObj.getInt(CFG_OPEN_LOOP_MAX_OPS_PER_SEC_KEY);
-			if (this.openLoopMaxOpsPerSec < 0)
-				this.openLoopMaxOpsPerSec = 0;
-		}
-
-		this.config = profileObj;
-	}
+	private long activationCount;
+	private long timeStarted = -1;
 
 	public LoadDefinition(long interval, int numberOfUsers, String mixName) {
 		this(interval, numberOfUsers, mixName, 0);
@@ -83,9 +49,10 @@ public class LoadDefinition {
 
 	public LoadDefinition(long interval, int numberOfUsers, String mixName, long transitionTime) {
 		this.interval = interval;
+		this.transitionTime = transitionTime;
 		this.numberOfUsers = numberOfUsers;
 		this.mixName = mixName;
-		this.transitionTime = transitionTime;
+		this.openLoopMaxOpsPerSec = 0;
 	}
 
 	public LoadDefinition(long interval, int numberOfUsers, String mixName, long transitionTime, String name) {
@@ -93,82 +60,39 @@ public class LoadDefinition {
 		this.numberOfUsers = numberOfUsers;
 		this.mixName = mixName;
 		this.transitionTime = transitionTime;
-		this._name = name;
+		this.openLoopMaxOpsPerSec = 0;
 	}
 
 	public long getInterval() {
-		return interval * 1000;
+		return interval;
 	}
 
-	public void setInterval(long interval) {
-		this.interval = interval;
-	}
-
-	public int getNumberOfUsers() {
-		return this.numberOfUsers;
-	}
-
-	public void setNumberOfUsers(int val) {
-		this.numberOfUsers = val;
+	public long getNumberOfUsers() {
+		return numberOfUsers;
 	}
 
 	public String getMixName() {
 		return this.mixName;
 	}
 
-	public void setMixName(String val) {
-		this.mixName = val;
-	}
-
 	public long getTransitionTime() {
-		return (this.transitionTime * 1000);
-	}
-
-	public void setTransitionTime(long val) {
-		this.transitionTime = val;
+		return transitionTime;
 	}
 
 	public long getTimeStarted() {
-		return this._timeStarted;
-	}
-
-	public void setTimeStarted(long val) {
-		this._timeStarted = val;
-	}
-
-	public JSONObject getConfig() {
-		return this.config;
-	}
-
-	public void setConfig(JSONObject val) {
-		this.config = val;
+		return timeStarted;
 	}
 
 	public int getOpenLoopMaxOpsPerSec() {
-		return this.openLoopMaxOpsPerSec;
-	}
-
-	public void setOpenLoopMaxOpsPerSec(int val) {
-		this.openLoopMaxOpsPerSec = val;
-	}
-
-	public String toString() {
-		StringBuffer buf = new StringBuffer();
-		if (this._name == null || this._name.trim().length() == 0)
-			buf.append("[Duration: " + this.interval + " Users: " + this.numberOfUsers + " Mix: " + this.mixName
-					+ " Transition time: " + this.transitionTime + "]");
-		else
-			buf.append("[Duration: " + this.interval + " Users: " + this.numberOfUsers + " Mix: " + this.mixName
-					+ " Transition time: " + this.transitionTime + " Name: " + this._name + "]");
-		return buf.toString();
+		return openLoopMaxOpsPerSec;
 	}
 
 	public void activate() {
-		activeCount++;
-		setTimeStarted(System.currentTimeMillis());
+		activationCount++;
+		timeStarted = System.currentTimeMillis();
 	}
 
 	public long getActivations() {
-		return activeCount;
+		return activationCount;
 	}
 }
