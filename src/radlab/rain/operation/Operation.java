@@ -32,7 +32,6 @@
 package radlab.rain.operation;
 
 import radlab.rain.load.LoadDefinition;
-import radlab.rain.scoreboard.IScoreboard;
 
 /**
  * The Operation class is a encapsulation of "tasks to be done". An operation contains all features of the state
@@ -65,7 +64,7 @@ public abstract class Operation implements IOperation {
 		// Invoke the pre-execute hook here before we start the clock to time the operation's execution
 		preExecute();
 		timeStarted = System.currentTimeMillis();
-		OperationExecution result = null; 
+		OperationExecution result = null;
 		try {
 			execute();
 		} catch (Throwable e) {
@@ -84,7 +83,7 @@ public abstract class Operation implements IOperation {
 			// Run cleanup
 			cleanup();
 		}
-		
+
 		return result;
 	}
 
