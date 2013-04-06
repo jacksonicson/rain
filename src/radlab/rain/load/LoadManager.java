@@ -158,15 +158,17 @@ public class LoadManager extends Thread {
 
 	private boolean validateLoadDefinition(LoadDefinition load) {
 		// Check number of users
-		if (load.getNumberOfUsers() <= 0) {
-			logger.info("Invalid load profile. Number of users <= 0. Profile details: " + load.toString());
+		if (load.getNumberOfUsers() < 0) {
+			logger.info("Invalid load profile. Number of users < 0. Profile details: " + load.getNumberOfUsers());
 			return false;
 		}
 
 		// Check references to the mix matrix
-		if (load.getMixName().length() > 0 && !mixes.contains(load.getMixName())) {
-			logger.info("Invalid load profile. mixname not in track's mixmap. Profile details: " + load.toString());
-			return false;
+		if (load.getMixName() != null) {
+			if (load.getMixName().length() > 0 && !mixes.contains(load.getMixName())) {
+				logger.info("Invalid load profile. mixname not in track's mixmap. Profile details: " + load.toString());
+				return false;
+			}
 		}
 
 		return true;

@@ -104,7 +104,7 @@ public class AgentPOL extends Agent {
 			// Set operation references
 			nextOperation.setLoadDefinition(loadManager.getCurrentLoadProfile());
 
-			// Init
+			// Prepare the operation
 			nextOperation.prepare();
 
 			// Update last operation index.
@@ -141,7 +141,10 @@ public class AgentPOL extends Agent {
 					// Sleep for 1 second and check active state again
 					Thread.sleep(1000);
 				} else { // Generator is active
+
+					// IMPORTANT: Next operation is triggered here
 					triggerNextOperation(lastOperationIndex);
+
 				}
 			}
 
