@@ -17,7 +17,6 @@
     	"baseUrl" : "dss.in.tum.de",
     	"targetCount" : 1,
     	"targetConfig" : {
-    		
     	},
     },
 }

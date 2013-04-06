@@ -31,8 +31,6 @@
 
 package radlab.rain.operation;
 
-import radlab.rain.scoreboard.IScoreboard;
-
 /**
  * The Generator abstract class provides a default constructor, required properties, and specifies the methods that must
  * be implemented in order to interface with the benchmark architecture.
