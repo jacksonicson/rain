@@ -43,8 +43,8 @@ public class LoadDefinition {
 	private long activationCount;
 	private long timeStarted = -1;
 
-	public LoadDefinition(long interval, int numberOfUsers, String mixName) {
-		this(interval, numberOfUsers, mixName, 0);
+	public LoadDefinition(long interval, int numberOfUsers) {
+		this(interval, numberOfUsers, null, 0);
 	}
 
 	public LoadDefinition(long interval, int numberOfUsers, String mixName, long transitionTime) {
