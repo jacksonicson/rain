@@ -124,7 +124,7 @@ public class AgentPOL extends Agent {
 	 * Load generator loop. Runs the generator for each cycle and executes the returned operation.
 	 */
 	public void run() {
-		logger.info("New agent thread " + super.id);
+		logger.debug("New agent thread " + super.id);
 
 		try {
 			// Sleep until its time to start
@@ -148,7 +148,7 @@ public class AgentPOL extends Agent {
 				}
 			}
 
-			logger.info("Agent ended - interrupted: " + interrupted);
+			logger.debug("Agent ended - interrupted: " + interrupted);
 
 		} catch (InterruptedException ie) {
 			logger.error("Load generation thread interrupted exiting!");
