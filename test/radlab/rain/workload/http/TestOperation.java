@@ -29,48 +29,43 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package radlab.rain.scoreboard;
+package radlab.rain.workload.http;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import radlab.rain.operation.Operation;
+import radlab.rain.util.HttpTransport;
 
-import radlab.rain.Timing;
-import radlab.rain.operation.OperationExecution;
-import radlab.rain.util.MetricWriter;
+/**
+ * The HttpTestOperation class contains common static methods for use by the operations that inherit from this abstract
+ * class.
+ */
+public abstract class TestOperation extends Operation {
 
-public interface IScoreboard {
+	protected HttpTransport http;
+	private boolean async = false;
 
-	// Initialize the scoreboard
-	void initialize(Timing timing, long maxUsers);
+	protected TestGenerator generator;
 
-	// Set reference to a metric writer
-	void setMetricWriter(MetricWriter metricWriter);
+	public TestOperation(TestGenerator generator) {
+		this.generator = generator;
+	}
 
-	// Start recording data
-	void start();
+	@Override
+	public void prepare() {
+		TestGenerator httpTestGenerator = (TestGenerator) generator;
+		http = httpTestGenerator.httpTransport;
+	}
 
-	// Stop recording data
-	void stop();
+	@Override
+	public void cleanup() {
+	}
 
-	// Receives the results of an operation execution.
-	void dropOffOperation(OperationExecution result);
+	@Override
+	public boolean isAsync() {
+		return async;
+	}
 
-	void dropOffWaitTime(long time, String opName, long waitTime);
-
-	/**
-	 * Configuration settings
-	 */
-	void setLogSamplingProbability(double val);
-
-	void setMeanResponseTimeSamplingInterval(long val);
-
-	/**
-	 * Result aggregation
-	 */
-
-	// Returns a scorecard that contains aggregated stats
-	Scorecard getFinalScorecard();
-
-	// JSON serialized object that contains aggregated stats
-	JSONObject getStatistics() throws JSONException;
+	@Override
+	public void setAsync(boolean async) {
+		this.async = async;
+	}
 }

@@ -14,70 +14,59 @@ import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import radlab.rain.ObjectPoolGeneric;
-import radlab.rain.Poolable;
+import radlab.rain.IShutdown;
 import radlab.rain.RainConfig;
-import radlab.rain.scoreboard.Scorecard;
 import de.tum.in.sonar.collector.CollectService;
 import de.tum.in.sonar.collector.Identifier;
 import de.tum.in.sonar.collector.MetricReading;
 
-public class SonarRecorder extends Thread {
+public class SonarRecorder extends Thread implements IShutdown {
+	private static Logger logger = LoggerFactory.getLogger(SonarRecorder.class);
 
-	private static Logger logger = LoggerFactory.getLogger(Scorecard.class);
-
-	private String SONAR_HOST;
+	private static Object lock = new Object();
+	private static SonarRecorder singleton;
 
 	private CollectService.Client client;
 	private TTransport transport;
 	private String hostname;
 
-	private static SonarRecorder singleton;
-
-	private class Job extends Poolable {
+	private class Job {
 		Identifier id;
 		MetricReading value;
-
-		private Job(String tag) {
-			super(tag);
-		}
-
-		@Override
-		public void cleanup() {
-			id = null;
-			value = null;
-		}
 	}
 
 	private boolean running = true;
-	private ObjectPoolGeneric pool = new ObjectPoolGeneric(10000);
 	private BlockingQueue<Job> queue = new LinkedBlockingQueue<Job>();
 
-	private SonarRecorder(String sonarHost) {
-		this.SONAR_HOST = sonarHost;
-
+	private SonarRecorder() {
 		try {
 			connect();
 		} catch (TTransportException e) {
 			logger.error("Connection with sonar failed", e);
 		} catch (UnknownHostException e) {
-			logger.error(
-					"Connection with sonar failed, could not determine INet address",
-					e);
+			logger.error("Connection with sonar failed, could not determine INet address", e);
 		}
+
+		// Set thread name
+		setName("SonarRecorder");
 
 		// Launch thread
 		this.start();
+
+		// Register for shutdown
+		RainConfig.getInstance().register(this);
 	}
 
 	public void shutdown() {
+		logger.info("Shutting down SonarRecorder");
 		this.running = false;
+		this.interrupt();
 	}
 
 	public static SonarRecorder getInstance() {
-		if (SonarRecorder.singleton == null) {
-			String sonarHost = RainConfig.getInstance()._sonarHost;
-			SonarRecorder.singleton = new SonarRecorder(sonarHost);
+		synchronized (lock) {
+			if (SonarRecorder.singleton == null)
+				SonarRecorder.singleton = new SonarRecorder();
 		}
 
 		return SonarRecorder.singleton;
@@ -85,12 +74,12 @@ public class SonarRecorder extends Thread {
 
 	private void connect() throws TTransportException, UnknownHostException {
 		// Read configuration
-		String sonarServer = SONAR_HOST;
+		String sonarServer = RainConfig.getInstance().sonarHost;
 		logger.debug("sonar server: " + sonarServer);
 
 		// Get hostname
 		InetAddress addr = InetAddress.getLocalHost();
-		this.hostname = addr.getHostName();
+		hostname = addr.getHostName();
 
 		// Get Sonar connection
 		transport = new TSocket(sonarServer, 7921);
@@ -103,37 +92,29 @@ public class SonarRecorder extends Thread {
 	}
 
 	public void disconnect() {
-		this.transport.close();
+		transport.close();
 	}
 
 	public void run() {
 		while (running || !queue.isEmpty()) {
 			try {
 				Job job = queue.take();
-				job.id.setHostname(this.hostname);
+				job.id.setHostname(hostname);
 				client.logMetric(job.id, job.value);
-
-				// Return object to pool
-				pool.returnObject(job);
-
 			} catch (InterruptedException e) {
-				logger.warn("Iterrupted sonar recorder");
 			} catch (TException e) {
 				logger.error("Sonar recorder could not log metric", e);
 			}
 		}
 	}
 
-	public synchronized void record(Identifier id, MetricReading value) {
+	public void record(Identifier id, MetricReading value) {
 		// Only accept new records if recorder is still running
 		if (!running)
 			return;
 
 		// Get a new object from pool
-		Job job = (Job) pool.rentObject("metric");
-		if (job == null)
-			job = new Job("metric");
-
+		Job job = new Job();
 		job.id = id;
 		job.value = value;
 		queue.add(job);

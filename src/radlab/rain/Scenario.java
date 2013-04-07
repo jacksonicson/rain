@@ -31,322 +31,126 @@
 
 package radlab.rain;
 
-import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.util.Iterator;
-import java.util.TreeMap;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import radlab.rain.communication.RainPipe;
-import radlab.rain.util.ConfigUtil;
-import radlab.rain.util.SonarRecorder;
-//import java.util.Hashtable;
-//import java.util.LinkedList;
+import radlab.rain.scoreboard.Aggregation;
+import radlab.rain.target.ITarget;
+import radlab.rain.target.ITargetFactory;
+import radlab.rain.util.MetricWriter;
+import radlab.rain.util.MetricWriterFactory;
 
-/**
- * The Scenario class contains the specifications for a benchmark scenario, which includes the timings (i.e. ramp up, duration,
- * ramp down) and the different scenario tracks.
- */
 public class Scenario {
 	private static Logger logger = LoggerFactory.getLogger(Scenario.class);
-	public static String CFG_PROFILES_KEY = "profiles";
-	public static String CFG_PROFILES_CREATOR_CLASS_KEY = "profilesCreatorClass";
-	public static String CFG_PROFILES_CREATOR_CLASS_PARAMS_KEY = "profilesCreatorClassParams";
-	public static String CFG_TIMING_KEY = "timing";
-	public static String CFG_RAMP_UP_KEY = "rampUp";
-	public static String CFG_DURATION_KEY = "duration";
-	public static String CFG_RAMP_DOWN_KEY = "rampDown";
-	public static String CFG_VERBOSE_ERRORS_KEY = "verboseErrors";
-	public static String CFG_SONAR_HOSTNAME = "sonarHost";
-	public static String CFG_USE_PIPE = "usePipe";
-	public static String CFG_USE_THRIFT = "useThrift";
-	public static String CFG_PIPE_PORT = "pipePort";
-	public static String CFG_PIPE_THREADS = "pipeThreads";
-	public static String CFG_WAIT_FOR_START_SIGNAL = "waitForStartSignal";
-	public static String CFG_MAX_SHARED_THREADS = "maxSharedThreads";
-	public static String CFG_AGGREGATE_STATS = "aggregateStats";
 
-	public static final int DEFAULT_MAX_SHARED_THREADS = 10;
-	public static final boolean DEFAULT_AGGREGATE_STATS = false;
+	private Timing timing;
 
-	/** Ramp up time in seconds. */
-	private long _rampUp;
+	private ITargetFactory targetFactory;
 
-	/** Duration of the run in seconds. */
-	private long _duration;
+	private MetricWriterFactory.Type metricWriterType;
+	private JSONObject metricWriterConf;
 
-	/** Ramp down time in seconds. */
-	private long _rampDown;
+	private List<ITarget> targets;
 
-	/** Max number of threads to keep in the shared threadpool */
-	private int _maxSharedThreads = DEFAULT_MAX_SHARED_THREADS;
-
-	// Log aggregated stats
-	private boolean _aggregateStats = DEFAULT_AGGREGATE_STATS;
-
-	/** The instantiated tracks specified by the JSON configuration. */
-	// Use Hashtable instead of flat list
-	// private LinkedList<ScenarioTrack> _tracks = new
-	// LinkedList<ScenarioTrack>();
-	private TreeMap<String, ScenarioTrack> _tracks = new TreeMap<String, ScenarioTrack>();
-
-	public long getRampUp() {
-		return this._rampUp;
+	public Scenario(JSONObject config) throws Exception {
+		configure(config);
 	}
 
-	public void setRampUp(long val) {
-		this._rampUp = val;
-	}
+	Timing execute() throws Exception {
+		// Build tracks based on static configuration
+		targets = targetFactory.createTargets();
+		logger.info("Number of targets: " + targets.size());
 
-	public long getRampDown() {
-		return this._rampDown;
-	}
+		// Configure tracks
+		long id = 0;
+		for (ITarget target : targets) {
+			logger.debug("Initializing target " + target.getId());
 
-	public void setRampDown(long val) {
-		this._rampDown = val;
-	}
+			// Create a metric writer
+			MetricWriter metricWriter = MetricWriterFactory.createMetricWriter(metricWriterType, metricWriterConf);
 
-	public long getDuration() {
-		return this._duration;
-	}
-
-	public void setDuration(long val) {
-		this._duration = val;
-	}
-
-	public int getMaxSharedThreads() {
-		return this._maxSharedThreads;
-	}
-
-	public void setMaxSharedThreads(int val) {
-		this._maxSharedThreads = val;
-	}
-
-	public boolean getAggregateStats() {
-		return this._aggregateStats;
-	}
-
-	public void setAggregateStats(boolean val) {
-		this._aggregateStats = val;
-	}
-
-	public TreeMap<String, ScenarioTrack> getTracks() {
-		return this._tracks;
-	}
-
-	/** Create a new and uninitialized <code>Scenario</code>. */
-	public Scenario() {
-	}
-
-	/**
-	 * Create a new Scenario and load the profile specified in the given JSON configuration object.
-	 * 
-	 * @param jsonConfig
-	 *            The JSON object containing load specifications.
-	 */
-	public Scenario(JSONObject jsonConfig) throws Exception {
-		this.loadProfile(jsonConfig);
-	}
-
-	/**
-	 * Ask each scenario track to start.
-	 */
-	public void start() {
-		for (ScenarioTrack track : this._tracks.values()) {
-			track.start();
-		}
-	}
-
-	/**
-	 * Ask each scenario track to end.
-	 */
-	public void end() {
-		logger.info("Tracks to end: " + this._tracks.values());
-		for (ScenarioTrack track : this._tracks.values()) {
-			track.end();
-		}
-	}
-
-	/**
-	 * Reads the run specifications from the provided JSON configuration object. The timings (i.e. ramp up, duration, and ramp
-	 * down) are set and the scenario tracks are created.
-	 * 
-	 * @param jsonConfig
-	 *            The JSON object containing load specifications.
-	 */
-	public void loadProfile(JSONObject jsonConfig) throws Exception {
-		JSONObject tracksConfig = null;
-		try {
-			JSONObject timing = jsonConfig.getJSONObject(CFG_TIMING_KEY);
-			setRampUp(timing.getLong(Scenario.CFG_RAMP_UP_KEY));
-			setDuration(timing.getLong(Scenario.CFG_DURATION_KEY));
-			setRampDown(timing.getLong(Scenario.CFG_RAMP_DOWN_KEY));
-
-			// Set up Rain configuration params (if they've been provided)
-			if (jsonConfig.has(Scenario.CFG_VERBOSE_ERRORS_KEY)) {
-				boolean val = jsonConfig.getBoolean(Scenario.CFG_VERBOSE_ERRORS_KEY);
-				RainConfig.getInstance()._verboseErrors = val;
-			}
-
-			// Setup sonar recorder
-			if (jsonConfig.has(Scenario.CFG_SONAR_HOSTNAME)) {
-				String host = jsonConfig.getString(Scenario.CFG_SONAR_HOSTNAME);
-				RainConfig.getInstance()._sonarHost = host;
-			}
-
-			// Figure out whether we're using communication pipes
-
-			// Figure out whether we're waiting for a start signal from an
-			// external controller
-			if (jsonConfig.has(Scenario.CFG_PIPE_PORT)) {
-				RainConfig.getInstance()._pipePort = jsonConfig.getInt(Scenario.CFG_PIPE_PORT);
-				RainPipe.getInstance().setPort(RainConfig.getInstance()._pipePort);
-			}
-
-			if (jsonConfig.has(Scenario.CFG_PIPE_THREADS)) {
-				RainConfig.getInstance()._pipeThreads = jsonConfig.getInt(Scenario.CFG_PIPE_THREADS);
-				RainPipe.getInstance().setNumThreads(RainConfig.getInstance()._pipeThreads);
-			}
-
-			boolean usePipe = false;
-			if (jsonConfig.has(Scenario.CFG_USE_PIPE))
-				usePipe = jsonConfig.getBoolean(Scenario.CFG_USE_PIPE);
-
-			// We can only wait for start signal if we're using a pipe or thrift service to the
-			// outside world.
-			// If we're not using a pipe or thrift to the outside world then just launch
-			// the run.
-			if (usePipe) {
-				// Set in the config that we're using pipes
-				RainConfig.getInstance()._usePipe = usePipe;
-				// Check whether we're supposed to wait for a start signal
-				if (jsonConfig.has(Scenario.CFG_WAIT_FOR_START_SIGNAL)) {
-					RainConfig.getInstance()._waitForStartSignal = jsonConfig.getBoolean(Scenario.CFG_WAIT_FOR_START_SIGNAL);
-				}
-			}
-
-			boolean useThrift = false;
-			if (jsonConfig.has(Scenario.CFG_USE_THRIFT))
-				useThrift = jsonConfig.getBoolean(Scenario.CFG_USE_THRIFT);
-
-			// We can only wait for start signal if we're using a pipe or thrift service to the
-			// outside world.
-			// If we're not using a pipe or thrift to the outside world then just launch
-			// the run.
-			if (useThrift) {
-				// Set in the config that we're using pipes
-				RainConfig.getInstance()._useThrift = useThrift;
-
-				// Check whether we're supposed to wait for a start signal
-				if (jsonConfig.has(Scenario.CFG_WAIT_FOR_START_SIGNAL)) {
-					RainConfig.getInstance()._waitForStartSignal = jsonConfig.getBoolean(Scenario.CFG_WAIT_FOR_START_SIGNAL);
-				}
-			}
-
-			// Look for the profiles key OR the name of a class that
-			// generates the
-			// profiles.
-			if (jsonConfig.has(CFG_PROFILES_CREATOR_CLASS_KEY)) {
-				// Programmatic generation class takes precedence
-				// Create profile creator class by reflection
-				String profileCreatorClass = jsonConfig.getString(CFG_PROFILES_CREATOR_CLASS_KEY);
-				ProfileCreator creator = this.createLoadProfileCreator(profileCreatorClass);
-				JSONObject params = null;
-				// Look for profile creator params - if we find some then
-				// pass them
-				if (jsonConfig.has(CFG_PROFILES_CREATOR_CLASS_PARAMS_KEY))
-					params = jsonConfig.getJSONObject(CFG_PROFILES_CREATOR_CLASS_PARAMS_KEY);
-
-				tracksConfig = creator.createProfile(params);
-			} else // Otherwise there MUST be a profiles key in the config
-					// file
-			{
-				String filename = jsonConfig.getString(CFG_PROFILES_KEY);
-				String fileContents = ConfigUtil.readFileAsString(filename);
-				tracksConfig = new JSONObject(fileContents);
-			}
-
-			if (jsonConfig.has(CFG_MAX_SHARED_THREADS)) {
-				int sharedThreads = jsonConfig.getInt(CFG_MAX_SHARED_THREADS);
-				if (sharedThreads > 0)
-					this._maxSharedThreads = sharedThreads;
-			}
-
-			if (jsonConfig.has(CFG_AGGREGATE_STATS))
-				this._aggregateStats = jsonConfig.getBoolean(CFG_AGGREGATE_STATS);
-		} catch (JSONException e) {
-			logger.info("[SCENARIO] ERROR reading JSON configuration object. Reason: " + e.toString());
-			System.exit(1);
-		} catch (IOException e) {
-			logger.info("[SCENARIO] ERROR loading tracks configuration file. Reason: " + e.toString());
-			System.exit(1);
+			target.setTiming(timing);
+			target.setMetricWriter(metricWriter);
+			target.init(id++);
 		}
 
-		this.loadTracks(tracksConfig);
+		// Start all tracks
+		for (ITarget target : targets) {
+			logger.debug("Starting target " + target.getId());
+			target.start();
+		}
+
+		// Wait until all targets joined
+		for (ITarget target : targets) {
+			logger.debug("Waiting for target to join " + target.getId());
+			target.joinAgents();
+		}
+
+		// Stop running tracks
+		for (ITarget target : targets) {
+			logger.debug("Stopping target " + target.getId());
+			target.dispose();
+		}
+
+		logger.info("Scenario execution ended");
+
+		return timing;
+	}
+
+	private void configure(JSONObject jsonConfig) throws JSONException, BenchmarkFailedException {
+		// Read timing
+		JSONObject timing = jsonConfig.getJSONObject(ScenarioConfKeys.TIMING_KEY.toString());
+		long rampUp = timing.getLong(ScenarioConfKeys.RAMP_UP_KEY.toString()) * 1000;
+		long duration = timing.getLong(ScenarioConfKeys.DURATION_KEY.toString()) * 1000;
+		long rampDown = timing.getLong(ScenarioConfKeys.RAMP_DOWN_KEY.toString()) * 1000;
+		this.timing = new Timing(rampUp, duration, rampDown);
+
+		// New track factory
+		String targetFacClass = jsonConfig.getString(ScenarioConfKeys.TARGET_FACTORY_CLASS.toString());
+		targetFactory = createTargetFactory(targetFacClass);
+
+		// Configure track factory
+		JSONObject params = jsonConfig.getJSONObject(ScenarioConfKeys.TARGET_FACTORY_CONF.toString());
+		targetFactory.configure(params);
+
+		// Metric writer configuration
+		metricWriterType = MetricWriterFactory.Type.getType(jsonConfig.getString(ScenarioConfKeys.METRIC_WRITER_TYPE
+				.toString()));
+		metricWriterConf = jsonConfig.getJSONObject(ScenarioConfKeys.METRIC_WRITER_CONF.toString());
 	}
 
 	@SuppressWarnings("unchecked")
-	public ProfileCreator createLoadProfileCreator(String name) throws Exception {
-		ProfileCreator creator = null;
-		Class<ProfileCreator> creatorClass = (Class<ProfileCreator>) Class.forName(name);
-		Constructor<ProfileCreator> creatorCtor = creatorClass.getConstructor(new Class[] {});
-		creator = (ProfileCreator) creatorCtor.newInstance((Object[]) null);
-		return creator;
-	}
-
-	/**
-	 * Reads the track configuration from the provided JSON configuration object and creates each scenario track.
-	 * 
-	 * @param jsonConfig
-	 *            The JSON object containing load specifications.
-	 */
-	@SuppressWarnings("unchecked")
-	protected void loadTracks(JSONObject jsonConfig) {
+	private ITargetFactory createTargetFactory(String name) throws BenchmarkFailedException {
 		try {
-			Iterator<String> i = jsonConfig.keys();
-			while (i.hasNext()) {
-				String trackName = i.next();
-				JSONObject trackConfig = jsonConfig.getJSONObject(trackName);
-
-				String trackClassName = trackConfig.getString(ScenarioTrack.CFG_TRACK_CLASS_KEY);
-				ScenarioTrack track = this.createTrack(trackClassName, trackName);
-				track.setName(trackName);
-				track.initialize(trackConfig);
-
-				this._tracks.put(track._name, track);
-			}
-		} catch (JSONException e) {
-			logger.info("[SCENARIO] ERROR parsing tracks in JSON configuration file/object. Reason: " + e.toString());
-			e.printStackTrace();
-			System.exit(1);
+			Class<ITargetFactory> creatorClass = (Class<ITargetFactory>) Class.forName(name);
+			Constructor<ITargetFactory> creatorCtor = creatorClass.getConstructor(new Class[] {});
+			ITargetFactory creator = (ITargetFactory) creatorCtor.newInstance((Object[]) null);
+			return creator;
 		} catch (Exception e) {
-			logger.info("[SCENARIO] ERROR initializing tracks. Reason: " + e.toString());
-			e.printStackTrace();
-			System.exit(1);
+			throw new BenchmarkFailedException("Unable to instantiate track factory from class " + name, e);
 		}
 	}
 
-	/**
-	 * Factory method for creating scenario tracks.
-	 * 
-	 * @param trackClassName
-	 *            The class of the scenario track to create.
-	 * @param trackName
-	 *            The name of the instantiated track.
-	 * @return A newly instantiated scenario track.
-	 * 
-	 * @throws Exception
-	 */
-	@SuppressWarnings("unchecked")
-	public ScenarioTrack createTrack(String trackClassName, String trackName) throws Exception {
-		ScenarioTrack track = null;
-		Class<ScenarioTrack> trackClass = (Class<ScenarioTrack>) Class.forName(trackClassName);
-		Constructor<ScenarioTrack> trackCtor = trackClass.getConstructor(new Class[] { String.class, Scenario.class });
-		track = (ScenarioTrack) trackCtor.newInstance(new Object[] { trackName, this });
-		return track;
+	public void statAggregation(Timing timing) throws JSONException {
+		Aggregation aggregation = new Aggregation();
+		aggregation.aggregateScoreboards(timing, targets);
+	}
+
+	public List<String> getTargetNames() {
+		List<String> names = new ArrayList<String>();
+		for (ITarget track : targets) {
+			names.add(track.toString());
+		}
+		return names;
+	}
+
+	public Timing getTiming() {
+		return this.timing;
 	}
 }

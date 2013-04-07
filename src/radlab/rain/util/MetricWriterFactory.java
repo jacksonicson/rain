@@ -3,24 +3,46 @@ package radlab.rain.util;
 import org.json.JSONObject;
 
 public class MetricWriterFactory {
-	public final static String FILE_WRITER_TYPE = "file";
-	public final static String SOCKET_WRITER_TYPE = "socket";
-	public final static String SOCKET_OBJECT_WRITER_TYPE = "socketObj";
-	public final static String SONAR_WRITER_TYPE = "sonar";
+
+	public enum Type {
+		FILE_WRITER_TYPE("file"), SOCKET_WRITER_TYPE("socket"), SOCKET_OBJECT_WRITER_TYPE("object"), SONAR_WRITER_TYPE(
+				"sonar");
+
+		private final String value;
+
+		private Type(String value) {
+			this.value = value;
+		}
+
+		public String toString() {
+			return value;
+		}
+
+		public static Type getType(String value) {
+			if (value == null)
+				throw new IllegalArgumentException();
+			for (Type v : values())
+				if (value.equalsIgnoreCase(v.toString()))
+					return v;
+			throw new IllegalArgumentException();
+		}
+	}
 
 	private MetricWriterFactory() {
 	}
 
-	public static MetricWriter createMetricWriter(String writerType, JSONObject config) throws Exception {
-		if (writerType.equalsIgnoreCase(FILE_WRITER_TYPE))
+	public static MetricWriter createMetricWriter(Type type, JSONObject config) throws Exception {
+		switch (type) {
+		case FILE_WRITER_TYPE:
 			return new FileMetricWriter(config);
-		else if (writerType.equalsIgnoreCase(SOCKET_WRITER_TYPE))
+		case SOCKET_OBJECT_WRITER_TYPE:
 			return new SocketMetricWriter(config);
-		else if (writerType.equalsIgnoreCase(SOCKET_OBJECT_WRITER_TYPE))
+		case SOCKET_WRITER_TYPE:
 			return new SocketMetricObjectWriter(config);
-		else if (writerType.equalsIgnoreCase(SONAR_WRITER_TYPE))
+		case SONAR_WRITER_TYPE:
 			return new SonarMetricWriter(config);
-		else
-			return null;
+		}
+
+		return null;
 	}
 }

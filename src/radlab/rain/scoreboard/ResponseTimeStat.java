@@ -1,50 +1,22 @@
 package radlab.rain.scoreboard;
 
-import java.io.Serializable;
+public final class ResponseTimeStat {
+	public final long timestamp;
+	public final long responseTime;
+	public final long totalResponseTime;
+	public final long numObservations;
+	public final long targetId;
+	public final String operationName;
+	public final String operationRequest;
 
-import radlab.rain.Poolable;
-
-public class ResponseTimeStat extends Poolable implements Serializable 
-{
-	private static final long serialVersionUID = 1L;
-	public static final String NAME = "ResponseTimeStat";
-	
-	public long _timestamp = -1;
-	public long _responseTime = -1;
-	public long _totalResponseTime = -1;
-	public long _numObservations = -1; // totalResponseTime/numObservations => avg response time thus far
-	public String _operationName = "";
-	public String _operationRequest = "";
-	public String _generatedDuring = "";
-	public String _trackName = "";
-	
-	public ResponseTimeStat()
-	{
-		super( NAME );
-	}
-	
-	public ResponseTimeStat(String tag) 
-	{
-		super( tag );
-	}
-
-	@Override
-	public void cleanup() 
-	{
-		this._timestamp = -1;
-		this._responseTime = -1;
-		this._totalResponseTime = -1;
-		this._numObservations = -1;
-		this._operationName = "";
-		this._operationRequest = ""; // Any details about the operation, e.g., what was requested
-		this._generatedDuring = ""; // Interval name (if any) of when this operation was generated during a run
-	}
-	
-	@Override
-	public String toString()
-	{
-		StringBuffer buf = new StringBuffer();
-		buf.append( "[" ).append( this._generatedDuring ).append( "] " ).append( this._timestamp ).append( " " ).append( this._operationName ).append( " " ).append( this._responseTime ).append( " [" ).append( this._operationRequest ).append( "] ").append( this._totalResponseTime ).append( " " ).append( this._numObservations );
-		return buf.toString();
+	public ResponseTimeStat(long timestamp, long responseTime, long totalResponseTime, long numObservations,
+			String operationName, String operationRequest, long targetId) {
+		this.timestamp = timestamp;
+		this.responseTime = responseTime;
+		this.totalResponseTime = totalResponseTime;
+		this.numObservations = numObservations;
+		this.targetId = targetId;
+		this.operationName = operationName;
+		this.operationRequest = operationRequest;
 	}
 }

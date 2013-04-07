@@ -31,45 +31,52 @@
 
 package radlab.rain;
 
-import radlab.rain.communication.RainPipe;
+import java.util.ArrayList;
+import java.util.List;
+
 import radlab.rain.communication.thrift.ThriftService;
 
-// Singleton configuration class
+/**
+ * Singleton configuration class
+ */
 public class RainConfig {
 	// What can we configure?
-	public boolean _verboseErrors = true;
-	// Communication server params
-	public boolean _usePipe = false;
-	public int _pipePort = RainPipe.DEFAULT_PORT;
-	public int _pipeThreads = RainPipe.DEFAULT_NUM_THREADS;
+	public boolean verboseErrors = true;
+
 	// Thrift communication server params
-	public boolean _useThrift = false;
-	public int _thriftPort = ThriftService.DEFAULT_PORT;
+	public boolean useThrift = false;
+	public int thriftPort = ThriftService.DEFAULT_PORT;
+
 	// Should we wait for a start message before we start the run, default is no
-	public boolean _waitForStartSignal = false;
-	// Do we have a zookeeper address?
-	public String _zooKeeper = "";
-	public String _zkPath = "";
+	public boolean waitForStartSignal = true;
 
-	public String _sonarHost = "monitor0";
+	// Host that is running a Sonar collector
+	public String sonarHost = "monitor0";
 
-	private static Object configLock = new Object();
-	private static volatile RainConfig config = null;
+	private static Object singletonLock = new Object();
+	private static RainConfig config = null;
+
+	private List<IShutdown> shutdownHooks = new ArrayList<IShutdown>();
 
 	public static RainConfig getInstance() {
-		// Double-checked locking (avoids unnecessary locking after first
-		// initialization
-		// and mitigates against multiple parallel initializations)
-		if (config == null) {
-			synchronized (configLock) {
-				if (config == null)
-					config = new RainConfig();
-			}
+		synchronized (singletonLock) {
+			if (config == null)
+				config = new RainConfig();
 		}
-
 		return config;
 	}
 
+	public synchronized void register(IShutdown shutdown) {
+		this.shutdownHooks.add(shutdown);
+	}
+
+	public synchronized void triggerShutdown() {
+		for (IShutdown shutdown : shutdownHooks) {
+			shutdown.shutdown();
+		}
+	}
+
 	private RainConfig() {
+		// No one is allowed to create a instance
 	}
 }

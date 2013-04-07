@@ -1,12 +1,15 @@
 package radlab.rain.scoreboard;
 
-public class ErrorSummary {
-	private String failureClass = "";
-	private long errorCount = 0;
+class ErrorSummary {
+	private final String failureClass;
+	private long errorCount;
 
-	public ErrorSummary(String failureClass) {
+	ErrorSummary(String failureClass) {
 		this.failureClass = failureClass;
-		this.errorCount = 0;
+	}
+
+	void increment() {
+		errorCount++;
 	}
 
 	@Override

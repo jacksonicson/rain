@@ -29,48 +29,57 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package radlab.rain.scoreboard;
+package radlab.rain.operation;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import radlab.rain.load.LoadDefinition;
+import radlab.rain.scoreboard.TraceLabels;
 
-import radlab.rain.Timing;
-import radlab.rain.operation.OperationExecution;
-import radlab.rain.util.MetricWriter;
+/**
+ * The OperationExecution class is a wrapper for the results recorded from the execution of an operation. This wrapper
+ * can be passed off to an IScoreboard to be recorded and presented at a later time.
+ */
+public class OperationExecution {
 
-public interface IScoreboard {
+	final public String operationName;
+	final public String operationRequest;
 
-	// Initialize the scoreboard
-	void initialize(Timing timing, long maxUsers);
+	final public LoadDefinition generatedDuring;
 
-	// Set reference to a metric writer
-	void setMetricWriter(MetricWriter metricWriter);
+	final public boolean async;
+	final public boolean failed;
 
-	// Start recording data
-	void start();
+	final public long timeStarted;
+	final public long timeFinished;
+	final public long profileStartTime;
 
-	// Stop recording data
-	void stop();
+	final public long actionsPerformed;
 
-	// Receives the results of an operation execution.
-	void dropOffOperation(OperationExecution result);
-
-	void dropOffWaitTime(long time, String opName, long waitTime);
-
-	/**
-	 * Configuration settings
-	 */
-	void setLogSamplingProbability(double val);
-
-	void setMeanResponseTimeSamplingInterval(long val);
+	private TraceLabels traceLabel = TraceLabels.NO_TRACE_LABEL;
 
 	/**
-	 * Result aggregation
+	 * Copy constructor
 	 */
+	public OperationExecution(Operation operation) {
+		this.timeStarted = operation.getTimeStarted();
+		this.timeFinished = operation.getTimeFinished();
+		this.operationName = operation.getOperationName();
+		this.operationRequest = operation.getOperationRequest();
+		this.async = operation.isAsync();
+		this.failed = operation.isFailed();
+		this.generatedDuring = operation.getLoadDefinition();
+		this.profileStartTime = operation.getLoadDefinitionStartTime();
+		this.actionsPerformed = operation.getNumberOfActionsPerformed();
+	}
 
-	// Returns a scorecard that contains aggregated stats
-	Scorecard getFinalScorecard();
+	public TraceLabels getTraceLabel() {
+		return this.traceLabel;
+	}
 
-	// JSON serialized object that contains aggregated stats
-	JSONObject getStatistics() throws JSONException;
+	public void setTraceLabel(TraceLabels label) {
+		this.traceLabel = label;
+	}
+
+	public long getExecutionTime() {
+		return timeFinished - timeStarted;
+	}
 }

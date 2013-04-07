@@ -29,48 +29,21 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package radlab.rain.scoreboard;
+package radlab.rain.util;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import java.util.LinkedList;
 
-import radlab.rain.Timing;
-import radlab.rain.operation.OperationExecution;
-import radlab.rain.util.MetricWriter;
-
-public interface IScoreboard {
-
-	// Initialize the scoreboard
-	void initialize(Timing timing, long maxUsers);
-
-	// Set reference to a metric writer
-	void setMetricWriter(MetricWriter metricWriter);
-
-	// Start recording data
-	void start();
-
-	// Stop recording data
-	void stop();
-
-	// Receives the results of an operation execution.
-	void dropOffOperation(OperationExecution result);
-
-	void dropOffWaitTime(long time, String opName, long waitTime);
-
-	/**
-	 * Configuration settings
-	 */
-	void setLogSamplingProbability(double val);
-
-	void setMeanResponseTimeSamplingInterval(long val);
-
-	/**
-	 * Result aggregation
-	 */
-
-	// Returns a scorecard that contains aggregated stats
-	Scorecard getFinalScorecard();
-
-	// JSON serialized object that contains aggregated stats
-	JSONObject getStatistics() throws JSONException;
+public interface IMetricSampler 
+{
+	double getMeanSamplingInterval();
+	void setMeanSamplingInterval( double val );
+	void reset();
+	int getSamplesSeen();
+	int getSamplesCollected();
+	boolean accept( long observation );
+	long getNthPercentile( int pct );
+	double getSampleMean();
+	double getSampleStandardDeviation();
+	double getTvalue( double populationMean );
+	LinkedList<Long> getRawSamples();
 }

@@ -41,7 +41,7 @@ import radlab.rain.Benchmark;
 import de.tum.in.sonar.collector.Identifier;
 import de.tum.in.sonar.collector.MetricReading;
 
-public class PoissonSamplingStrategy implements ISamplingStrategy {
+public class PoissonSamplingStrategy implements IMetricSampler {
 
 	private static Logger logger = LoggerFactory.getLogger(Benchmark.class);
 

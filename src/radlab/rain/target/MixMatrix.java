@@ -29,22 +29,86 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package radlab.rain;
-
-import java.lang.Thread.UncaughtExceptionHandler;
+package radlab.rain.target;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * The UnexpectedDeathHandler class serves as the default exception handler for all LoadGenerationStrategy threads so
- * that a useful error and stack trace is printed.
- */
-public class UnexpectedDeathHandler implements UncaughtExceptionHandler {
-	private static Logger logger = LoggerFactory.getLogger(UnexpectedDeathHandler.class);
+public class MixMatrix {
+	private static Logger logger = LoggerFactory.getLogger(MixMatrix.class);
 
-	public void uncaughtException(Thread t, Throwable e) {
-		logger.error("Oops: Uncaught exception caused thread: " + t.getName() + " to die. Reason: " + e.toString(), e);
-		e.printStackTrace();
+	// Markov chain matrix
+	private double[][] mix;
+	private double[][] selectionMix = null;
+
+	public MixMatrix() {
+		normalize();
+		createSelectionMatrix();
+	}
+
+	public MixMatrix(double[][] mix) {
+		this.mix = mix;
+		normalize();
+		createSelectionMatrix();
+	}
+
+	public boolean isSelectionMixAvailable() {
+		return selectionMix != null;
+	}
+
+	public void normalize() {
+		for (int i = 0; i < mix.length; i++) {
+			double rowSum = 0.0;
+			for (int j = 0; j < mix.length; j++) {
+				rowSum += mix[i][j];
+			}
+
+			for (int k = 0; k < mix.length; k++) {
+				mix[i][k] /= rowSum;
+			}
+		}
+	}
+
+	public void createSelectionMatrix() {
+		// Do not recreate it
+		if (isSelectionMixAvailable())
+			return;
+
+		// New matrix
+		selectionMix = new double[mix.length][mix.length];
+
+		// Build matrix
+		for (int i = 0; i < mix.length; i++) {
+			selectionMix[i][0] = mix[i][0];
+			for (int j = 1; j < selectionMix.length; j++) {
+				selectionMix[i][j] = mix[i][j] + selectionMix[i][j - 1];
+			}
+		}
+	}
+
+	public double[][] getSelectionMix() {
+		return selectionMix;
+	}
+
+	public void dumpMix() {
+		for (int i = 0; i < mix.length; i++) {
+			for (int j = 0; j < mix.length; j++) {
+				logger.info(Double.toString(mix[i][j]));
+				logger.info(" ");
+			}
+			logger.info("");
+		}
+		logger.info("");
+	}
+
+	public void dumpSelectionMix() {
+		for (int i = 0; i < selectionMix.length; i++) {
+			for (int j = 0; j < selectionMix.length; j++) {
+				logger.info(Double.toString(selectionMix[i][j]));
+				logger.info(" ");
+			}
+			logger.info("");
+		}
+		logger.info("");
 	}
 }

@@ -1,0 +1,22 @@
+{
+    "timing": {
+        "rampUp": 10,
+        "duration": 10,
+        "rampDown": 5,
+    },
+    
+    "waitForStartSignal": false,
+    "useThrift": true,
+    "sonarHost" : "monitor0",
+    
+    "metricWriterType" : "sonar",
+    "metricWriterConf" : {},
+    
+    "targetFactoryClass": "radlab.rain.workload.http.TestBenchmark",    
+    "targetFactoryParams": {
+    	"baseUrl" : "dss.in.tum.de",
+    	"targetCount" : 1,
+    	"targetConfig" : {
+    	},
+    },
+}

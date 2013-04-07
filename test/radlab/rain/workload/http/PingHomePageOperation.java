@@ -29,48 +29,45 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package radlab.rain.scoreboard;
+package radlab.rain.workload.http;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import java.io.IOException;
 
-import radlab.rain.Timing;
-import radlab.rain.operation.OperationExecution;
-import radlab.rain.util.MetricWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public interface IScoreboard {
+import radlab.rain.scoreboard.IScoreboard;
 
-	// Initialize the scoreboard
-	void initialize(Timing timing, long maxUsers);
+public class PingHomePageOperation extends TestOperation {
+	private static final Logger logger = LoggerFactory.getLogger(PingHomePageOperation.class);
 
-	// Set reference to a metric writer
-	void setMetricWriter(MetricWriter metricWriter);
+	public PingHomePageOperation(TestGenerator generator) {
+		super(generator);
 
-	// Start recording data
-	void start();
+		this.operationName = "PingHome";
+		this.operationIndex = TestGenerator.PING_HOMEPAGE;
+	}
 
-	// Stop recording data
-	void stop();
+	@Override
+	public void execute() throws Throwable {
+		logger.debug("Executing ping homepage operation");
 
-	// Receives the results of an operation execution.
-	void dropOffOperation(OperationExecution result);
+		// Fetch the base url
+		try {
+			StringBuilder response = this.http.fetchUrl("http://" + generator.baseUrl);
+			trace();
 
-	void dropOffWaitTime(long time, String opName, long waitTime);
+			if (response.length() == 0) {
+				String errorMessage = "Home page GET ERROR - Received an empty response";
+				throw new IOException(errorMessage);
+			}
 
-	/**
-	 * Configuration settings
-	 */
-	void setLogSamplingProbability(double val);
+			failed = false;
 
-	void setMeanResponseTimeSamplingInterval(long val);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
+	}
 
-	/**
-	 * Result aggregation
-	 */
-
-	// Returns a scorecard that contains aggregated stats
-	Scorecard getFinalScorecard();
-
-	// JSON serialized object that contains aggregated stats
-	JSONObject getStatistics() throws JSONException;
 }
