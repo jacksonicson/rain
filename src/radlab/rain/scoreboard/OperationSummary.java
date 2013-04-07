@@ -36,8 +36,8 @@ import java.util.LinkedList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.OperationExecution;
-import radlab.rain.util.ISamplingStrategy;
+import radlab.rain.operation.OperationExecution;
+import radlab.rain.util.IMetricSampler;
 
 public class OperationSummary {
 	// Information recorded about one operation type
@@ -52,9 +52,9 @@ public class OperationSummary {
 
 	// Sample the response times so that we can give a "reasonable"
 	// estimate of the 90th and 99th percentiles.
-	private ISamplingStrategy responseTimeSampler;
+	private IMetricSampler responseTimeSampler;
 
-	public OperationSummary(ISamplingStrategy strategy) {
+	public OperationSummary(IMetricSampler strategy) {
 		responseTimeSampler = strategy;
 	}
 
@@ -63,31 +63,29 @@ public class OperationSummary {
 	}
 
 	void processResult(OperationExecution result, double meanResponseTimeSamplingInterval) {
-		if (result.isFailed()) {
+		if (result.failed) {
 			opsFailed++;
 		} else { // Result successful
 			opsSuccessful++;
 
-			actionsSuccessful += result.getActionsPerformed();
+			actionsSuccessful += result.actionsPerformed;
 
 			// Count operations
-			if (result.isAsynchronous()) {
+			if (result.async) {
 				asyncInvocations++;
 			} else {
 				syncInvocations++;
 			}
 
-			if (result.isInteractive()) {
-				long responseTime = result.getExecutionTime();
-				responseTimeSampler.accept(responseTime);
+			long responseTime = result.getExecutionTime();
+			responseTimeSampler.accept(responseTime);
 
-				// Response time
-				totalResponseTime += responseTime;
+			// Response time
+			totalResponseTime += responseTime;
 
-				// Update max and min response time
-				maxResponseTime = Math.max(maxResponseTime, responseTime);
-				minResponseTime = Math.min(minResponseTime, responseTime);
-			}
+			// Update max and min response time
+			maxResponseTime = Math.max(maxResponseTime, responseTime);
+			minResponseTime = Math.min(minResponseTime, responseTime);
 		}
 	}
 
@@ -128,7 +126,7 @@ public class OperationSummary {
 
 	}
 
-	private ISamplingStrategy getResponseTimeSampler() {
+	private IMetricSampler getResponseTimeSampler() {
 		return responseTimeSampler;
 	}
 

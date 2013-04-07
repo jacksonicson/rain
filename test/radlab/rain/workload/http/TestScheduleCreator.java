@@ -29,48 +29,28 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package radlab.rain.scoreboard;
+package radlab.rain.workload.http;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
-import radlab.rain.Timing;
-import radlab.rain.operation.OperationExecution;
-import radlab.rain.util.MetricWriter;
+import radlab.rain.load.LoadDefinition;
+import radlab.rain.load.LoadSchedule;
+import radlab.rain.load.LoadScheduleFactory;
 
-public interface IScoreboard {
+public class TestScheduleCreator implements LoadScheduleFactory {
 
-	// Initialize the scoreboard
-	void initialize(Timing timing, long maxUsers);
+	@Override
+	public LoadSchedule createSchedule() throws JSONException {
+		List<LoadDefinition> loadSchedule = new ArrayList<LoadDefinition>();
 
-	// Set reference to a metric writer
-	void setMetricWriter(MetricWriter metricWriter);
+		LoadDefinition i1 = new LoadDefinition(300, 10, "default", 0, "first");
 
-	// Start recording data
-	void start();
+		loadSchedule.add(i1);
 
-	// Stop recording data
-	void stop();
-
-	// Receives the results of an operation execution.
-	void dropOffOperation(OperationExecution result);
-
-	void dropOffWaitTime(long time, String opName, long waitTime);
-
-	/**
-	 * Configuration settings
-	 */
-	void setLogSamplingProbability(double val);
-
-	void setMeanResponseTimeSamplingInterval(long val);
-
-	/**
-	 * Result aggregation
-	 */
-
-	// Returns a scorecard that contains aggregated stats
-	Scorecard getFinalScorecard();
-
-	// JSON serialized object that contains aggregated stats
-	JSONObject getStatistics() throws JSONException;
+		LoadSchedule schedule = new LoadSchedule(loadSchedule);
+		return schedule;
+	}
 }

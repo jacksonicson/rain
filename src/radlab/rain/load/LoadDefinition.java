@@ -29,48 +29,70 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package radlab.rain.scoreboard;
+package radlab.rain.load;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+public class LoadDefinition {
 
-import radlab.rain.Timing;
-import radlab.rain.operation.OperationExecution;
-import radlab.rain.util.MetricWriter;
+	private final long interval;
+	private final long transitionTime;
+	private final long numberOfUsers;
 
-public interface IScoreboard {
+	private final String mixName;
+	private final int openLoopMaxOpsPerSec;
 
-	// Initialize the scoreboard
-	void initialize(Timing timing, long maxUsers);
+	private long activationCount;
+	private long timeStarted = -1;
 
-	// Set reference to a metric writer
-	void setMetricWriter(MetricWriter metricWriter);
+	public LoadDefinition(long interval, int numberOfUsers) {
+		this(interval, numberOfUsers, null, 0);
+	}
 
-	// Start recording data
-	void start();
+	public LoadDefinition(long interval, int numberOfUsers, String mixName, long transitionTime) {
+		this.interval = interval;
+		this.transitionTime = transitionTime;
+		this.numberOfUsers = numberOfUsers;
+		this.mixName = mixName;
+		this.openLoopMaxOpsPerSec = 0;
+	}
 
-	// Stop recording data
-	void stop();
+	public LoadDefinition(long interval, int numberOfUsers, String mixName, long transitionTime, String name) {
+		this.interval = interval;
+		this.numberOfUsers = numberOfUsers;
+		this.mixName = mixName;
+		this.transitionTime = transitionTime;
+		this.openLoopMaxOpsPerSec = 0;
+	}
 
-	// Receives the results of an operation execution.
-	void dropOffOperation(OperationExecution result);
+	public long getInterval() {
+		return interval;
+	}
 
-	void dropOffWaitTime(long time, String opName, long waitTime);
+	public long getNumberOfUsers() {
+		return numberOfUsers;
+	}
 
-	/**
-	 * Configuration settings
-	 */
-	void setLogSamplingProbability(double val);
+	public String getMixName() {
+		return this.mixName;
+	}
 
-	void setMeanResponseTimeSamplingInterval(long val);
+	public long getTransitionTime() {
+		return transitionTime;
+	}
 
-	/**
-	 * Result aggregation
-	 */
+	public long getTimeStarted() {
+		return timeStarted;
+	}
 
-	// Returns a scorecard that contains aggregated stats
-	Scorecard getFinalScorecard();
+	public int getOpenLoopMaxOpsPerSec() {
+		return openLoopMaxOpsPerSec;
+	}
 
-	// JSON serialized object that contains aggregated stats
-	JSONObject getStatistics() throws JSONException;
+	public void activate() {
+		activationCount++;
+		timeStarted = System.currentTimeMillis();
+	}
+
+	public long getActivations() {
+		return activationCount;
+	}
 }

@@ -29,48 +29,57 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package radlab.rain.scoreboard;
+package radlab.rain.workload.http;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import radlab.rain.Timing;
-import radlab.rain.operation.OperationExecution;
-import radlab.rain.util.MetricWriter;
+import radlab.rain.operation.Generator;
+import radlab.rain.operation.Operation;
+import radlab.rain.util.HttpTransport;
 
-public interface IScoreboard {
+public class TestGenerator extends Generator {
+	private static Logger logger = LoggerFactory.getLogger(TestGenerator.class);
 
-	// Initialize the scoreboard
-	void initialize(Timing timing, long maxUsers);
+	// Operation indices used in the mix matrix.
+	public static final int PING_HOMEPAGE = 0;
 
-	// Set reference to a metric writer
-	void setMetricWriter(MetricWriter metricWriter);
+	// private java.util.Random _randomNumberGenerator;
+	HttpTransport httpTransport;
+	String baseUrl;
 
-	// Start recording data
-	void start();
+	public TestGenerator(String baseUrl) {
+		this.baseUrl = baseUrl;
+	}
 
-	// Stop recording data
-	void stop();
+	public void initialize() {
+		this.httpTransport = new HttpTransport();
+	}
 
-	// Receives the results of an operation execution.
-	void dropOffOperation(OperationExecution result);
+	public Operation nextRequest(int lastOperation) {
+		return getOperation(PING_HOMEPAGE);
+	}
 
-	void dropOffWaitTime(long time, String opName, long waitTime);
+	public long getThinkTime() {
+		return 0;
+	}
 
-	/**
-	 * Configuration settings
-	 */
-	void setLogSamplingProbability(double val);
+	public long getCycleTime() {
+		return 0;
+	}
 
-	void setMeanResponseTimeSamplingInterval(long val);
+	public void dispose() {
+		// Do nothing
+	}
 
-	/**
-	 * Result aggregation
-	 */
+	public Operation getOperation(int opIndex) {
+		logger.debug("Generating operation");
 
-	// Returns a scorecard that contains aggregated stats
-	Scorecard getFinalScorecard();
-
-	// JSON serialized object that contains aggregated stats
-	JSONObject getStatistics() throws JSONException;
+		switch (opIndex) {
+		case PING_HOMEPAGE:
+			return new PingHomePageOperation(this);
+		default:
+			return null;
+		}
+	}
 }

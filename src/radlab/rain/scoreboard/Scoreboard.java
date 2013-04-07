@@ -33,7 +33,6 @@ package radlab.rain.scoreboard;
 
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Random;
 import java.util.TreeMap;
 
 import org.json.JSONArray;
@@ -42,54 +41,47 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import radlab.rain.LoadUnit;
-import radlab.rain.OperationExecution;
-import radlab.rain.Track;
+import radlab.rain.Timing;
+import radlab.rain.operation.OperationExecution;
+import radlab.rain.util.IMetricSampler;
 import radlab.rain.util.MetricWriter;
 import radlab.rain.util.PoissonSamplingStrategy;
-import radlab.rain.util.SonarRecorder;
 
 /**
- * The Scoreboard class implements the IScoreboard interface. Each Scoreboard is specific to a single instantiation of a track
- * (i.e. the statistical results of a a scoreboard pertain to the operations executed by only the. scenario track with which this
- * scoreboard is associated).<br />
+ * The Scoreboard class implements the IScoreboard interface. Each Scoreboard is specific to a single instantiation of a
+ * track (i.e. the statistical results of a a scoreboard pertain to the operations executed by only the. scenario track
+ * with which this scoreboard is associated).<br />
  * <br />
  * The graphs we want to show/statistics we want to record:
  * <ol>
  * <li>Offered load timeline (in ops or requests per sec in a bucket of time)</li>
  * <li>Offered load during the run (in ops or requests per sec)</li>
- * <li>Effective load during the run (in ops or requests per sec) (avg number of operations/requests that completed successfully
- * during the run duration</li>
+ * <li>Effective load during the run (in ops or requests per sec) (avg number of operations/requests that completed
+ * successfully during the run duration</li>
  * <li>Data distribution for each operation type - histogram of id's generated/used</li>
  * </ol>
  */
 public class Scoreboard implements Runnable, IScoreboard {
-	private static Logger log = LoggerFactory.getLogger(Scoreboard.class);
+	private static Logger logger = LoggerFactory.getLogger(Scoreboard.class);
 
 	// Time in seconds to wait for worker thread to exit before interrupt
 	public static int WORKER_EXIT_TIMEOUT = 60;
 
-	// Who owns this scoreboard
-	private String trackName;
-	private String trackTargetHost;
-	private Track scenarioTrack = null;
+	// Target that owns this scoreboard
+	private long targetId;
 
 	// If true, this scoreboard will refuse any new results.
 	// Indicates the thread status (started or stopped)
 	private boolean done = false;
 
-	// Random number generator
-	private Random _random = new Random();
-
 	// Response time sampling interval (wait time and operation summary)
 	private long meanResponseTimeSamplingInterval = 500;
 
 	// Log (trace) sampling probability
-	private double _logSamplingProbability = 1.0;
+	private double logSamplingProbability = 1.0;
 
-	// Time markers are set in the initialization method
-	private long startTime;
-	private long endTime;
+	// Timings
+	private Timing timing;
 
 	// Global counters for dropoffs and dropoff time (time waited for the lock to
 	// write a result to a processing queue)
@@ -99,18 +91,11 @@ public class Scoreboard implements Runnable, IScoreboard {
 	private long maxDropOffWaitTime = 0;
 
 	// Write metrics using the snapshotThread with the MetricWriter
-	private boolean usingMetricSnapshots = false;
 	private MetricWriter metricWriter = null;
 
 	// Final scorecard
 	// Basically holds all counters relevant for aggregated result statistics
 	private Scorecard finalCard = null;
-
-	// Scorecards: For each profile (= interval) there is one scorecard
-	// Each element of a workload profile is a profile in rain
-	// This scorecards are only generated if per-interval metrics are used
-	// Per-interval means, the <code>_generatedDuring</code> flag in OperationExecution is filled
-	private TreeMap<String, Scorecard> profileScorecards = new TreeMap<String, Scorecard>();
 
 	// Summary reports for each operation
 	private TreeMap<String, ErrorSummary> errorMap = new TreeMap<String, ErrorSummary>();
@@ -132,172 +117,126 @@ public class Scoreboard implements Runnable, IScoreboard {
 	/**
 	 * Creates a new Scoreboard with the track name specified. The Scoreboard returned must be initialized by calling
 	 * <code>initialize</code>.
-	 * 
-	 * @param trackName
-	 *            The track name to associate with this scoreboard.
 	 */
-	public Scoreboard(String trackName) {
-		this.trackName = trackName;
-	}
-
-	public void initialize(long startTime, long endTime, long maxUsers) {
-		this.startTime = startTime;
-		this.endTime = endTime;
-
-		long runDuration = this.endTime - this.startTime;
-		log.debug("run duration: " + runDuration);
-
-		finalCard = new Scorecard("final", trackName, runDuration, maxUsers);
-		reset();
-	}
-
-	public void initialize(long startTime, long endTime) {
-		initialize(startTime, endTime, 0);
+	public Scoreboard(long targetId) {
+		this.targetId = targetId;
 	}
 
 	@Override
-	public void reset() {
-		// Reset final card
-		finalCard.reset();
+	public void initialize(Timing timing, long maxUsers) {
+		this.timing = timing;
 
-		// Reset Scoreboard
-		this.processingQ.clear();
-		this.totalDropoffs = 0;
-		this.totalDropOffWaitTime = 0;
-		this.maxDropOffWaitTime = 0;
+		// Run duration
+		long runDuration = timing.steadyStateDuration();
+		logger.debug("run duration: " + runDuration);
 
-		synchronized (this.swapDropoffQueueLock) {
-			this.dropOffQ.clear();
-		}
-		synchronized (this.waitTimeDropOffLock) {
-			this.waitTimeMap.clear();
-		}
+		// Create a final scorecard
+		finalCard = new Scorecard(Scorecard.Type.FINAL, runDuration, maxUsers);
 	}
 
 	@Override
 	public void dropOffWaitTime(long time, String operationName, long waitTime) {
+		// Scoreboard closed?
 		if (isDone())
 			return;
-		if (!this.isSteadyState(time))
+
+		// In steady state
+		if (!timing.inSteadyState(time))
 			return;
 
-		synchronized (this.waitTimeDropOffLock) {
-			WaitTimeSummary waitTimeSummary = this.waitTimeMap.get(operationName);
+		// Dropoff
+		synchronized (waitTimeDropOffLock) {
+			WaitTimeSummary waitTimeSummary = waitTimeMap.get(operationName);
 
-			// Create wait time summary if it does not exist
+			// Create wait time summary if necessary
 			if (waitTimeSummary == null) {
-				waitTimeSummary = new WaitTimeSummary(new PoissonSamplingStrategy(trackName + "." + operationName,
-						this.meanResponseTimeSamplingInterval));
-				this.waitTimeMap.put(operationName, waitTimeSummary);
+				IMetricSampler sampler = new PoissonSamplingStrategy(targetId + "." + operationName,
+						this.meanResponseTimeSamplingInterval);
+				waitTimeSummary = new WaitTimeSummary(sampler);
+				waitTimeMap.put(operationName, waitTimeSummary);
 			}
 
+			// Dropoff wait time for the operation
 			waitTimeSummary.dropOff(waitTime);
 		}
 	}
 
 	@Override
 	public void dropOffOperation(OperationExecution result) {
+		// Scoreboard closed?
 		if (isDone())
 			return;
 
-		// Set result label
-		if (this.isRampUp(result.getTimeStarted()))
+		// Assign label to the operation execution
+		if (timing.inRampUp(result.timeStarted))
 			result.setTraceLabel(TraceLabels.RAMP_UP_LABEL);
-		else if (this.isSteadyState(result.getTimeFinished()))
+		else if (timing.inSteadyState(result.timeFinished))
 			result.setTraceLabel(TraceLabels.STEADY_STATE_TRACE_LABEL);
-		else if (this.isSteadyState(result.getTimeStarted()))
+		else if (timing.inSteadyState(result.timeStarted))
 			result.setTraceLabel(TraceLabels.LATE_LABEL);
-		else if (this.isRampDown(result.getTimeStarted()))
+		else if (timing.inRampDown(result.timeStarted))
 			result.setTraceLabel(TraceLabels.RAMP_DOWN_LABEL);
 
 		// Put all results into the dropoff queue
 		long lockStart = System.currentTimeMillis();
-		synchronized (this.swapDropoffQueueLock) {
+		synchronized (swapDropoffQueueLock) {
+			// Calculate time required to acquire this lock
 			long dropOffWaitTime = (System.currentTimeMillis() - lockStart);
 
 			// Update internal dropoff statistics
-			this.totalDropOffWaitTime += dropOffWaitTime;
-			this.maxDropOffWaitTime = Math.max(maxDropOffWaitTime, dropOffWaitTime);
-			this.totalDropoffs++;
+			totalDropOffWaitTime += dropOffWaitTime;
+			totalDropoffs++;
+			maxDropOffWaitTime = Math.max(maxDropOffWaitTime, dropOffWaitTime);
 
-			// Put this result into the dropoff queue
-			this.dropOffQ.add(result);
+			// Dropoff this operation execution
+			dropOffQ.add(result);
 		}
-
-		// TODO: If operation failed - log error reason
-
-		// Flip a coin to determine whether we log or not? (reduces amount of log information)
-		double randomVal = this._random.nextDouble();
-		if (this._logSamplingProbability == 1.0 || randomVal <= this._logSamplingProbability) {
-			// TODO: If needed file logging can be done here
-		} else // not logging
-		{
-			result.getOperation().disposeOfTrace();
-		}
-
-		// ATTENTION: Return operation object to pool
-		if (this.scenarioTrack.getObjectPool().isActive())
-			this.scenarioTrack.getObjectPool().returnObject(result.getOperation());
 	}
 
 	private final boolean isDone() {
-		return this.done;
-	}
-
-	private final boolean isSteadyState(long time) {
-		return (time >= this.startTime && time <= this.endTime);
-	}
-
-	private final boolean isRampUp(long time) {
-		return (time < this.startTime);
-	}
-
-	private final boolean isRampDown(long time) {
-		return (time > this.endTime);
+		return done;
 	}
 
 	@Override
 	public void start() {
-		if (!this.isRunning()) {
+		if (!isRunning()) {
 			this.done = false;
 
 			// Start worker thread
-			this.workerThread = new Thread(this);
-			this.workerThread.setName("Scoreboard-Worker");
-			this.workerThread.start();
+			workerThread = new Thread(this);
+			workerThread.setName("Scoreboard-Worker");
+			workerThread.start();
 
 			// Start snapshot thread
-			if (this.usingMetricSnapshots) {
-				if (this.metricWriter == null) {
-					log.warn(this + " Metric snapshots disabled - No metric writer instance provided");
-				} else {
-					this.snapshotThread = new SnapshotWriterThread(this.trackName);
-					this.snapshotThread.setMetricWriter(this.metricWriter);
-					this.snapshotThread.setName("Scoreboard-Snapshot-Writer");
-					this.snapshotThread.start();
-				}
+			if (metricWriter != null) {
+				snapshotThread = new SnapshotWriterThread();
+				snapshotThread.setMetricWriter(metricWriter);
+				snapshotThread.setName("Scoreboard-Snapshot-Writer");
+				snapshotThread.start();
+			} else {
+				logger.warn("Metric writer was not set, not using metric snapshots");
 			}
 		}
 	}
 
 	@Override
 	public void stop() {
-		if (this.isRunning()) {
+		if (isRunning()) {
 			this.done = true;
 
 			// Worker thread
 			try {
 				// Join worker thread
-				log.debug(this + " waiting " + WORKER_EXIT_TIMEOUT + " seconds for worker thread to exit!");
+				logger.debug(this + " waiting " + WORKER_EXIT_TIMEOUT + " seconds for worker thread to exit!");
 				workerThread.join(WORKER_EXIT_TIMEOUT * 1000);
 
 				// If its still alive try to interrupt it
 				if (workerThread.isAlive()) {
-					log.debug(this + " interrupting worker thread.");
+					logger.debug(this + " interrupting worker thread.");
 					workerThread.interrupt();
 				}
 			} catch (InterruptedException ie) {
-				log.info(this + " Interrupted waiting on worker thread exit!");
+				logger.info(this + " Interrupted waiting on worker thread exit!");
 			}
 
 			// Snapshot thread
@@ -305,39 +244,41 @@ public class Scoreboard implements Runnable, IScoreboard {
 				// Stop snapshot thread
 				if (snapshotThread != null) {
 					// Set stop flag
-					snapshotThread.set_done(true);
+					snapshotThread.interrupt();
 
 					// Wait to join
-					log.debug(this + " waiting " + WORKER_EXIT_TIMEOUT + " seconds for snapshot thread to exit!");
+					logger.debug(this + " waiting metric snapshot writer thread to join");
 					snapshotThread.join(WORKER_EXIT_TIMEOUT * 1000);
 
 					// If its still alive try to interrupt again
 					if (snapshotThread.isAlive()) {
-						log.debug(this + " interrupting snapshot thread.");
+						logger.debug(this + " interrupting snapshot thread.");
 						snapshotThread.interrupt();
 					}
 				}
 			} catch (InterruptedException ie) {
-				log.info(this + " Interrupted waiting on snapshot thread exit!");
+				logger.info(this + " Interrupted waiting on snapshot thread exit!");
 			}
 		}
 	}
 
+	/**
+	 * Check if the worker thread is running and alive
+	 */
 	private boolean isRunning() {
 		return (this.workerThread != null && this.workerThread.isAlive());
 	}
 
 	@Override
 	public void run() {
-		log.debug(this + " starting worker thread...");
+		logger.debug(this + " starting worker thread...");
 
-		// Run as long as the scoreboard is not done
-		// Or the dropoff queue still contains entries
+		// Run as long as the scoreboard is not done or the dropoff queue still contains entries
 		while (!isDone() || !dropOffQ.isEmpty()) {
 			if (!dropOffQ.isEmpty()) {
 
 				// Queue swap (dropOffQ with processingQ)
-				synchronized (this.swapDropoffQueueLock) {
+				synchronized (swapDropoffQueueLock) {
 					LinkedList<OperationExecution> temp = processingQ;
 					processingQ = dropOffQ;
 					dropOffQ = temp;
@@ -354,7 +295,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 						processSteadyStateResult(result);
 						break;
 					case LATE_LABEL:
-						finalCard.processLateOperation(result);
+						processLateStateResult(result);
 						break;
 					default:
 						// Not processed
@@ -366,86 +307,58 @@ public class Scoreboard implements Runnable, IScoreboard {
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException tie) {
-					log.info(this + " worker thread interrupted.");
+					logger.info(this + " worker thread interrupted.");
 				}
 			}
 		}
 
 		// Debugging
-		log.debug(this + " drop off queue size: " + this.dropOffQ.size());
-		log.debug(this + " processing queue size: " + this.processingQ.size());
-		log.debug(this + " worker thread finished!");
+		logger.debug(this + " drop off queue size (should be 0): " + dropOffQ.size());
+		logger.debug(this + " processing queue size (should be 0): " + processingQ.size());
+		logger.debug(this + " worker thread finished!");
+	}
+
+	private void processLateStateResult(OperationExecution result) {
+		finalCard.processLateOperation(result);
 	}
 
 	private void processSteadyStateResult(OperationExecution result) {
-		// Update per-interval (profile) cards
-		// This code is still here and the data is logged but the data is NOT required for SPECj 
-		// and it is therefore not in the JSON reports!
-		LoadUnit activeProfile = result._generatedDuring;
-		if (activeProfile != null) {
-			// For SPECj the profile names are not set. Profiles are generated based 
-			// on Times TS data. (Second condition is always false)
-			if ((activeProfile._name != null && activeProfile._name.length() > 0)) {
-				// Get scorecard for this interval
-				String profileName = activeProfile._name;
-				Scorecard profileScorecard = this.profileScorecards.get(profileName);
-				// Create a new scorecard if needed
-				if (profileScorecard == null) {
-					profileScorecard = new Scorecard(profileName, trackName, activeProfile._interval, activeProfile._numberOfUsers);
-					profileScorecards.put(profileName, profileScorecard);
-				}
-
-				// Process statistics
-				profileScorecard.processProfileResult(result, meanResponseTimeSamplingInterval);
-			}
-		}
-
 		// Process statistics
 		finalCard.processResult(result, meanResponseTimeSamplingInterval);
 
 		// If interactive, look at the total response time.
-		if (!result.isFailed() && result.isInteractive() && this.usingMetricSnapshots)
+		if (!result.failed)
 			issueMetricSnapshot(result);
 	}
 
 	private void issueMetricSnapshot(OperationExecution result) {
+		// If snapshot thread doesn't exist
+		if (snapshotThread == null)
+			return;
+
 		long responseTime = result.getExecutionTime();
-		ResponseTimeStat responseTimeStat = this.snapshotThread.provisionRTSObject();
-		if (responseTimeStat == null)
-			responseTimeStat = new ResponseTimeStat();
 
-		// Fill response time stat
-		responseTimeStat._timestamp = result.getTimeFinished();
-		responseTimeStat._responseTime = responseTime;
-		responseTimeStat._totalResponseTime = finalCard.getTotalOpResponseTime();
-		responseTimeStat._numObservations = finalCard.getTotalOpsSuccessful();
-		responseTimeStat._operationName = result._operationName;
-		responseTimeStat._trackName = trackName;
-		responseTimeStat._operationRequest = result._operationRequest;
+		// Transferable stat object
+		ResponseTimeStat responseTimeStat = new ResponseTimeStat(result.timeFinished, responseTime, finalCard
+				.getTotalOpResponseTime(), finalCard.getTotalOpsSuccessful(), result.operationName,
+				result.operationRequest, targetId);
 
-		if (result._generatedDuring != null)
-			responseTimeStat._generatedDuring = result._generatedDuring._name;
-
-		// Push this stat onto a Queue for the snapshot thread
-		this.snapshotThread.accept(responseTimeStat);
+		// Accept stat object
+		snapshotThread.accept(responseTimeStat);
 	}
 
 	@Override
 	public JSONObject getStatistics() throws JSONException {
-		// Run duration in seconds
-		double runDuration = (double) (this.endTime - this.startTime);
-
 		double averageDropOffQTime = 0;
 		if (totalDropoffs > 0)
 			averageDropOffQTime = (double) totalDropOffWaitTime / (double) totalDropoffs;
 
 		// Results
 		JSONObject result = new JSONObject();
-		result.put("track", trackName);
-		result.put("target_host", trackTargetHost);
-		result.put("run_duration", runDuration);
-		result.put("start_time", startTime);
-		result.put("end_time", endTime);
+		result.put("target_id", targetId);
+		result.put("run_duration", timing.steadyStateDuration());
+		result.put("start_time", timing.startSteadyState);
+		result.put("end_time", timing.endSteadyState);
 		result.put("total_dropoff_wait_time", totalDropOffWaitTime);
 		result.put("total_dropoffs", totalDropoffs);
 		result.put("average_drop_off_q_time", averageDropOffQTime);
@@ -453,32 +366,31 @@ public class Scoreboard implements Runnable, IScoreboard {
 		result.put("mean_response_time_sample_interval", meanResponseTimeSamplingInterval);
 
 		// Add final scorecard statistics
-		result.put("final_scorecard", finalCard.getStatistics(runDuration));
+		result.put("final_scorecard", finalCard.getStatistics(timing.steadyStateDuration()));
 
 		// Add other statistics
-		result.put("wait_stats", getWaitTimeStatistics(false));
+		result.put("wait_stats", getWaitTimeStatistics());
 
 		return result;
 	}
 
-	private JSONObject getWaitTimeStatistics(boolean purgePercentileData) throws JSONException {
+	private JSONObject getWaitTimeStatistics() throws JSONException {
 		JSONObject result = new JSONObject();
 
-		synchronized (this.finalCard) {
+		synchronized (finalCard) {
 			JSONArray waits = new JSONArray();
 			result.put("waits", waits);
 
 			for (Iterator<String> keys = finalCard.getOperationMap().keySet().iterator(); keys.hasNext();) {
 				String operationName = keys.next();
+
+				// Wait time summary for the operation
 				WaitTimeSummary waitSummary = waitTimeMap.get(operationName);
 
 				// Print out the operation summary.
 				JSONObject wait = waitSummary.getStatistics();
-				waits.put(wait);
 				wait.put("operation_name", operationName);
-
-				if (purgePercentileData)
-					waitSummary.resetSamples();
+				waits.put(wait);
 			}
 		}
 
@@ -487,23 +399,12 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 	@Override
 	public void setMeanResponseTimeSamplingInterval(long val) {
-		if (val > 0)
-			this.meanResponseTimeSamplingInterval = val;
+		this.meanResponseTimeSamplingInterval = val;
 	}
 
 	@Override
 	public void setLogSamplingProbability(double val) {
-		this._logSamplingProbability = val;
-	}
-
-	@Override
-	public void setMetricSnapshotInterval(long val) {
-
-	}
-
-	@Override
-	public void setUsingMetricSnapshots(boolean val) {
-		this.usingMetricSnapshots = val;
+		this.logSamplingProbability = val;
 	}
 
 	@Override
@@ -512,37 +413,11 @@ public class Scoreboard implements Runnable, IScoreboard {
 	}
 
 	@Override
-	public void setTargetHost(String val) {
-		this.trackTargetHost = val;
-	}
-
-	@Override
 	public Scorecard getFinalScorecard() {
 		return this.finalCard;
 	}
 
-	@Override
-	public void setScenarioTrack(Track scenarioTrack) {
-		this.scenarioTrack = scenarioTrack;
-	}
-
-	@Override
-	public long getStartTimestamp() {
-		return startTime;
-	}
-
-	@Override
-	public long getEndTimestamp() {
-		return endTime;
-	}
-
-	@Override
-	public Track getScenarioTrack() {
-		return scenarioTrack;
-	}
-
 	public String toString() {
-		return "[SCOREBOARD TRACK: " + this.trackName + "]";
+		return "target-" + targetId + ": ";
 	}
-
 }

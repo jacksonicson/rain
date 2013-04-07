@@ -35,7 +35,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.TreeMap;
 
 import org.apache.log4j.LogManager;
 import org.json.JSONException;
@@ -44,9 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import radlab.rain.communication.thrift.ThriftService;
-import radlab.rain.scoreboard.Scorecard;
 import radlab.rain.util.ConfigUtil;
-import radlab.rain.util.SonarRecorder;
 
 /**
  * The Benchmark class provides a framework to initialize and run a benchmark specified by a provided scenario.
@@ -54,105 +51,15 @@ import radlab.rain.util.SonarRecorder;
 public class Benchmark {
 	private static Logger logger = LoggerFactory.getLogger(Benchmark.class);
 
-	/**
-	 * Amount of time (in milliseconds) to wait before threads start issuing requests. This allows all of the threads to
-	 * start synchronously.
-	 */
-	private static final long TIME_TO_START = 10000;
-
 	public void start(Scenario scenario) throws Exception {
-		Thread.currentThread().setName("Benchmark-thread");
+		// Set current thread name
+		Thread.currentThread().setName("Benchmark");
 
-		// Calculate the run timings that will be used for all threads.
-		// start startS.S. endS.S. end
-		// | ramp up |------ duration ------| ramp down |
-		long start = System.currentTimeMillis() + Benchmark.TIME_TO_START;
-		long startSteadyState = start + (scenario.getRampUp() * 1000);
-		long endSteadyState = startSteadyState + (scenario.getDuration() * 1000);
-		long endRun = endSteadyState + (scenario.getRampDown() * 1000);
+		// Execute scenario
+		Timing timing = scenario.execute();
 
-		// Log benchmark schedule
-		JSONObject schedule = new JSONObject();
-		schedule.put("start", start);
-		schedule.put("startSteadyState", startSteadyState);
-		schedule.put("endSteadyState", endSteadyState);
-		schedule.put("endRun", endRun);
-		logger.info("Schedule: " + schedule.toString());
-
-		// Create threads
-		scenario.execute(start, startSteadyState, endSteadyState);
-
-		// Set up for stats aggregation across tracks based on the generators
-		// used
-		TreeMap<String, Scorecard> aggStats = new TreeMap<String, Scorecard>();
-		Scorecard globalCard = new Scorecard("global", "global", endSteadyState - startSteadyState);
-
-		// Shutdown the scoreboards and tally up the results.
-		for (Track track : scenario.getTracks().values()) {
-			// Aggregate stats across track based on the generator class name.
-			// If the generator
-			// class names are identical then there is potentially overlap in
-			// the operations issued
-			// based on the mix matrix used (if any)
-			// Stop the scoreboard
-			track.getScoreboard().stop();
-
-			// Write detailed statistics to sonar
-			JSONObject stats = track.getScoreboard().getStatistics();
-			String strStats = stats.toString();
-			logger.info("Track metrics: " + strStats);
-
-			// Get the name of the generator active for this track
-			String generatorClassName = track.getGeneratorClassName();
-			// Get the final scorecard for this track
-			Scorecard finalScorecard = track.getScoreboard().getFinalScorecard();
-			if (!aggStats.containsKey(generatorClassName)) {
-				Scorecard aggCard = new Scorecard("aggregated", generatorClassName,
-						finalScorecard.getIntervalDuration());
-				aggStats.put(generatorClassName, aggCard);
-			}
-			// Get the current aggregated scorecard for this generator
-			Scorecard aggCard = aggStats.get(generatorClassName);
-			// Merge the final card for this track with the current per-driver
-			// aggregated scorecard
-			aggCard.merge(finalScorecard);
-			aggStats.put(generatorClassName, aggCard);
-			// Collect scoreboard results
-			// Collect object pool results
-
-			// Merge global card
-			globalCard.merge(finalScorecard);
-
-			track.getObjectPool().shutdown();
-		}
-
-		// Check whether we're printing out aggregated stats
-		if (scenario.getAggregateStats()) {
-			// Print aggregated stats
-			if (aggStats.size() > 0)
-				logger.info("# aggregated stats: " + aggStats.size());
-
-			for (String generatorName : aggStats.keySet()) {
-				Scorecard card = aggStats.get(generatorName);
-
-				// Sonar output
-				JSONObject stats = card.getIntervalStatistics();
-				String strStats = stats.toString();
-				logger.info("Rain metrics: " + strStats);
-			}
-
-			// Dump global card
-			logger.info("Global metrics: " + globalCard.getIntervalStatistics().toString());
-		}
-
-		// Shutdown Sonar monitoring
-		SonarRecorder.getInstance().shutdown();
-
-		// Shutdown thrift server
-		if (RainConfig.getInstance()._useThrift) {
-			logger.debug("Shutting down the thrift communication!");
-			ThriftService.getInstance().stop();
-		}
+		// Aggregate scorecards
+		scenario.statAggregation(timing);
 	}
 
 	private static JSONObject loadConfiguration(String filename) {
@@ -185,6 +92,38 @@ public class Benchmark {
 		return null;
 	}
 
+	private static void configureGlobals(JSONObject jsonConfig) throws JSONException {
+		// Read global configuration settings
+		// Set up Rain configuration params
+		if (jsonConfig.has(ScenarioConfKeys.VERBOSE_ERRORS_KEY.toString())) {
+			boolean val = jsonConfig.getBoolean(ScenarioConfKeys.VERBOSE_ERRORS_KEY.toString());
+			RainConfig.getInstance().verboseErrors = val;
+		}
+
+		// Setup sonar recorder
+		if (jsonConfig.has(ScenarioConfKeys.SONAR_HOSTNAME.toString())) {
+			String host = jsonConfig.getString(ScenarioConfKeys.SONAR_HOSTNAME.toString());
+			RainConfig.getInstance().sonarHost = host;
+		}
+
+		// Check if thrift remote management is used
+		boolean useThrift = false;
+		if (jsonConfig.has(ScenarioConfKeys.USE_THRIFT.toString()))
+			useThrift = jsonConfig.getBoolean(ScenarioConfKeys.USE_THRIFT.toString());
+
+		if (useThrift) {
+			// Set in the config that we're using pipes
+			RainConfig.getInstance().useThrift = useThrift;
+
+			// Check whether we're supposed to wait for a start signal
+			if (jsonConfig.has(ScenarioConfKeys.WAIT_FOR_START_SIGNAL.toString())) {
+				RainConfig.getInstance().waitForStartSignal = jsonConfig
+						.getBoolean(ScenarioConfKeys.WAIT_FOR_START_SIGNAL.toString());
+			}
+		}
+
+	}
+
 	/**
 	 * Runs the benchmark. The only required argument is the configuration file path (e.g.
 	 * config/rain.config.sample.json).
@@ -202,18 +141,17 @@ public class Benchmark {
 
 			// Load configuration
 			JSONObject jsonConfig = loadConfiguration(args[0]);
+			configureGlobals(jsonConfig);
 
 			// Build scenario based on the configuration
 			Scenario scenario = new Scenario(jsonConfig);
 
-			// Set the global Scenario instance for the Driver
-			Benchmark benchmark = new Benchmark();
-
 			// Start thrift server for remote control
-			if (RainConfig.getInstance()._useThrift) {
-				ThriftService thrift = ThriftService.getInstance();
-				logger.info("Starting thrift communication! Using port: " + thrift.getPort());
-				thrift.start();
+			ThriftService service = null;
+			if (RainConfig.getInstance().useThrift) {
+				service = new ThriftService(scenario);
+				logger.info("Starting thrift communication! Using port: " + service.getPort());
+				service.start();
 			}
 
 			// Waiting for start signal
@@ -225,16 +163,22 @@ public class Benchmark {
 				logger.trace("Checking for wakeup");
 			}
 
-			// Start signal passed. Start scenario now
+			// Set the global Scenario instance for the Driver
+			Benchmark benchmark = new Benchmark();
 			logger.info("Starting scenario (threads)");
-			scenario.start();
 			benchmark.start(scenario);
-			scenario.end();
+
+			// Trigger shutdown hooks
+			RainConfig.getInstance().triggerShutdown();
+
+			if (service != null) {
+				logger.info("Stopping thrift communication! Using port: " + service.getPort());
+				service.stop();
+			}
 
 		} catch (Exception e) {
 			logger.error("error in benchmark", e);
 		} finally {
-			logger.info("Rain stopped");
 			LogManager.shutdown();
 		}
 	}

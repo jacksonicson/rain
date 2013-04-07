@@ -33,7 +33,7 @@ package radlab.rain.util;
 
 import java.util.LinkedList;
 
-public class NullSamplingStrategy implements ISamplingStrategy 
+public class NullSamplingStrategy implements IMetricSampler 
 {
 	private LinkedList<Long> _samples = new LinkedList<Long>();
 	private int _currentSample = 0;

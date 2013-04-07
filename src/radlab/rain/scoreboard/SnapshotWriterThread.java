@@ -1,114 +1,74 @@
 package radlab.rain.scoreboard;
 
-import java.util.LinkedList;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import radlab.rain.ObjectPoolGeneric;
 import radlab.rain.util.MetricWriter;
 
+/**
+ * Receives @see ResponseTimeStat objects. It aggregates all incoming data and writes the aggregated stats using a @see
+ * MetricWriter
+ */
 class SnapshotWriterThread extends Thread {
-	private static Logger log = LoggerFactory.getLogger(Scoreboard.class);
+	private static Logger logger = LoggerFactory.getLogger(SnapshotWriterThread.class);
 
-	private final String _trackName;
+	// Interrupt metric writer thread
+	private boolean interrupted = false;
 
-	private boolean _done = false;
-	private MetricWriter _metricWriter = null;
+	// Reference to the metric writer
+	private MetricWriter metricWriter = null;
 
-	private LinkedList<ResponseTimeStat> _responseTimeQ = new LinkedList<ResponseTimeStat>();
-	private Object _responseTimeQLock = new Object();
+	// Queue for processing stats objects
+	private BlockingQueue<ResponseTimeStat> queue = new LinkedBlockingQueue<ResponseTimeStat>();
 
-	private LinkedList<ResponseTimeStat> _processingQ = new LinkedList<ResponseTimeStat>();
-	private ObjectPoolGeneric _statsObjPool = null;
-
-	public SnapshotWriterThread(String trackName) {
-		this._trackName = trackName;
-
-		// Create object pool
-		this._statsObjPool = new ObjectPoolGeneric(80000);
-		this._statsObjPool.setTrackName(trackName);
-	}
-
+	/**
+	 * Put a new stat object into the incoming queue
+	 */
 	void accept(ResponseTimeStat responseTimeStat) {
-		synchronized (this._responseTimeQLock) {
-			this._responseTimeQ.add(responseTimeStat);
+		try {
+			queue.put(responseTimeStat);
+		} catch (InterruptedException e) {
+			logger.debug("Interrupted while logging response time stat");
 		}
 	}
 
-	public ResponseTimeStat provisionRTSObject() {
-		return (ResponseTimeStat) this._statsObjPool.rentObject(ResponseTimeStat.NAME);
-	}
-
+	@Override
 	public void run() {
-		// While there's work to do
-		while (!this._done || this._responseTimeQ.size() > 0) {
-			if (this._responseTimeQ.size() > 0) {
-				// Do the queue swap
-				synchronized (this._responseTimeQLock) {
-					LinkedList<ResponseTimeStat> temp = this._responseTimeQ;
-					this._responseTimeQ = this._processingQ;
-					this._processingQ = temp;
-				}
-
-				// Write everything out
-				ResponseTimeStat stat = null;
-				while (!this._processingQ.isEmpty()) {
-					stat = this._processingQ.removeFirst();
-
-					try {
-						if (this._metricWriter != null)
-							this._metricWriter.write(stat);
-
-					} catch (Exception e) {
-					} finally {
-						// Important
-						// Return the stats object to the pool
-						if (stat != null)
-							this._statsObjPool.returnObject(stat);
-					}
-				}
-
-			} else {
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException tie) {
-					log.info(this + " snapshot thread interrupted");
-				}
-			}
-		}
-
-		// Close metric writer
-		if (this._metricWriter != null) {
+		while (!interrupted) {
 			try {
-				this._metricWriter.close();
+				ResponseTimeStat nextStat = queue.take();
+				metricWriter.write(nextStat);
+			} catch (InterruptedException e) {
+				// Thread will terminate if interrupt flag is set
+				continue;
 			} catch (Exception e) {
-				log.error("failed while closing metric writer", e);
+				logger.error("Metric writer threw an exception", e);
 			}
 		}
 
-		// Shutdown object pool
-		if (this._statsObjPool.isActive())
-			this._statsObjPool.shutdown();
+		// Close metric writer as thread will terminate
+		if (metricWriter != null) {
+			try {
+				metricWriter.close();
+			} catch (Exception e) {
+				logger.error("failed while closing metric writer", e);
+			}
+		}
 	}
 
-	public void set_done(boolean _done) {
-		this._done = _done;
+	@Override
+	public void interrupt() {
+		// Set interrupted flag
+		interrupted = true;
+
+		// Interrupt this thread
+		super.interrupt();
 	}
 
-	public boolean getDone() {
-		return this._done;
-	}
-
-	public void setDone(boolean val) {
-		this._done = val;
-	}
-
-	public void setMetricWriter(MetricWriter val) {
-		this._metricWriter = val;
-	}
-
-	public String toString() {
-		return "[SNAPSHOTWRITER TRACK: " + this._trackName + "]";
+	void setMetricWriter(MetricWriter metricWriter) {
+		this.metricWriter = metricWriter;
 	}
 }
