@@ -30,11 +30,11 @@ public class InfrastructureControl {
 		}
 	}
 
-	Infrastructure.Client getClient() {
+	public Infrastructure.Client getClient() {
 		return this.client;
 	}
 
-	public void connect() throws UnknownHostException, TTransportException {
+	private void connect() throws UnknownHostException, TTransportException {
 		// Read configuration
 		String iaasHost = RainConfig.getInstance().iaasHost;
 		logger.debug("IaaS server: " + iaasHost);
@@ -44,7 +44,7 @@ public class InfrastructureControl {
 		String hostname = addr.getHostName();
 
 		// Get Sonar connection
-		transport = new TSocket(iaasHost, 7921);
+		transport = new TSocket(iaasHost, 9877);
 		transport.open();
 
 		TProtocol protocol = new TBinaryProtocol(transport);

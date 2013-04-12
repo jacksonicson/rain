@@ -11,7 +11,6 @@ import radlab.rain.agent.IAgent;
 import radlab.rain.agent.IAgentFactory;
 import radlab.rain.operation.Generator;
 import radlab.rain.operation.IGeneratorFactory;
-import radlab.rain.target.DefaultTarget;
 import radlab.rain.target.ITarget;
 import radlab.rain.target.ITargetFactory;
 
@@ -39,7 +38,7 @@ public class TestBenchmark implements ITargetFactory, IGeneratorFactory, IAgentF
 	}
 
 	protected ITarget createTarget() {
-		DefaultTarget target = new DefaultTarget();
+		TestTarget target = new TestTarget();
 		try {
 			target.configure(targetConfig);
 		} catch (JSONException e) {

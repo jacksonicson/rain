@@ -44,7 +44,7 @@ import radlab.rain.communication.thrift.ThriftService;
  */
 public class RainConfig {
 	private static Logger logger = LoggerFactory.getLogger(RainConfig.class);
-	
+
 	// What can we configure?
 	public boolean verboseErrors = true;
 
@@ -57,7 +57,7 @@ public class RainConfig {
 
 	// Host that is running a Sonar collector
 	public String sonarHost = "monitor0";
-	public String iaasHost = "192.168.96.6"; 
+	public String iaasHost = "192.168.96.6";
 
 	private static Object singletonLock = new Object();
 	private static RainConfig config = null;
@@ -77,7 +77,7 @@ public class RainConfig {
 	}
 
 	public synchronized void triggerShutdown() {
-		logger.info("running shutdown hooks..."); 
+		logger.info("running shutdown hooks...");
 		for (IShutdown shutdown : shutdownHooks) {
 			shutdown.shutdown();
 		}

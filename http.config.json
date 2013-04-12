@@ -29,16 +29,6 @@
     		"targetFactory": "f1",
     		"hostname" : "dss.in.tum.de",
     		},
-    		{
-    		"delay": 20,
-    		
-    		"rampUp": 5,
-	        "duration": 10,
-	        "rampDown": 5,
-    		
-    		"targetFactory": "f1",
-    		"hostname" : "dss.in.tum.de",
-    		}
     	]
     },
 }
