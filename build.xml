@@ -78,6 +78,14 @@
 			<arg value="java" />
 			<arg value="${thrift}/collector.thrift" />
 		</exec>
+
+		<exec executable="thrift">
+			<arg value="-out" />
+			<arg value="generated" />
+			<arg value="--gen" />
+			<arg value="java" />
+			<arg value="${thrift}/iaas.thrift" />
+		</exec>
 	</target>
 
 	<target name="clean">

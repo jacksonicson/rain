@@ -57,6 +57,7 @@ public class RainConfig {
 
 	// Host that is running a Sonar collector
 	public String sonarHost = "monitor0";
+	public String iaasHost = "192.168.96.6"; 
 
 	private static Object singletonLock = new Object();
 	private static RainConfig config = null;
