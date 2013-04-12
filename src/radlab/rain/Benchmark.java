@@ -56,10 +56,10 @@ public class Benchmark {
 		Thread.currentThread().setName("Benchmark");
 
 		// Execute scenario
-		Timing timing = scenario.execute();
+		scenario.execute();
 
 		// Aggregate scorecards
-		scenario.statAggregation(timing);
+		// scenario.statAggregation(timing);
 	}
 
 	private static JSONObject loadConfiguration(String filename) {

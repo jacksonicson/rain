@@ -17,6 +17,9 @@ public class TargetSchedule {
 
 	class TargetConf {
 		long delay;
+		long rampUp;
+		long duration;
+		long rampDown;
 		String hostname;
 		ITargetFactory factory;
 	}
@@ -60,9 +63,12 @@ public class TargetSchedule {
 			this.configs.add(targetConf);
 
 			JSONObject jsonConf = configs.getJSONObject(i);
-			targetConf.delay = jsonConf.getLong("delay");
+			targetConf.delay = jsonConf.getLong("delay") * 1000; // to milliseconds
 			targetConf.hostname = jsonConf.getString("hostname");
-			
+			targetConf.rampUp = jsonConf.getLong("rampUp") * 1000; // to milliseconds
+			targetConf.duration = jsonConf.getLong("duration") * 1000; // to milliseconds
+			targetConf.rampDown = jsonConf.getLong("rampDown") * 1000; // to milliseconds
+
 			JSONObject jsonFactoryConfig = factoryConfigurations.get(jsonConf.getString("targetFactory"));
 			targetConf.factory = buildTargetFactory(jsonFactoryConfig);
 		}

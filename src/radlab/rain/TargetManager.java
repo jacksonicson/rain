@@ -9,14 +9,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import radlab.rain.target.ITarget;
-import radlab.rain.target.ITargetFactory;
 import radlab.rain.util.MetricWriter;
 import radlab.rain.util.MetricWriterFactory;
 
 public class TargetManager extends Thread {
 	private static Logger logger = LoggerFactory.getLogger(TargetManager.class);
 
-	private Timing timing;
 	private TargetSchedule schedule;
 
 	private MetricWriterFactory.Type metricWriterType;
@@ -24,11 +22,12 @@ public class TargetManager extends Thread {
 
 	private long currentTargetId;
 
+	private long startBenchmarkTime;
+
 	private List<ITarget> targetsToJoin = new LinkedList<ITarget>();
 
-	public TargetManager(Timing timing, TargetSchedule schedule) {
+	public TargetManager(TargetSchedule schedule) {
 		this.schedule = schedule;
-		this.timing = timing;
 	}
 
 	public void setMetricWriterType(MetricWriterFactory.Type metricWriterType) {
@@ -39,10 +38,10 @@ public class TargetManager extends Thread {
 		this.metricWriterConf = conf;
 	}
 
-	private void createTarget(ITargetFactory factory, String hostname) throws Exception {
+	private void createTarget(TargetSchedule.TargetConf conf) throws Exception {
 		try {
 
-			List<ITarget> targets = factory.createTargets(hostname);
+			List<ITarget> targets = conf.factory.createTargets(conf.hostname);
 
 			// Configure all generated targets
 			for (ITarget target : targets) {
@@ -50,9 +49,13 @@ public class TargetManager extends Thread {
 
 				// Create a metric writer
 				MetricWriter metricWriter = MetricWriterFactory.createMetricWriter(metricWriterType, metricWriterConf);
-
-				target.setTiming(timing);
 				target.setMetricWriter(metricWriter);
+
+				// Set custom timing
+				Timing timing = new Timing(conf.rampUp, conf.duration, conf.rampDown);
+				target.setTiming(timing);
+
+				// Initialize
 				target.init(currentTargetId++);
 			}
 
@@ -68,12 +71,15 @@ public class TargetManager extends Thread {
 	}
 
 	public void run() {
+		// Set start benchmark time to now
+		startBenchmarkTime = System.currentTimeMillis();
+
 		while (schedule.hasNext()) {
 			// Next target configuration
 			TargetSchedule.TargetConf conf = schedule.next();
 
 			// How long to wait for the next target
-			long relativeTime = System.currentTimeMillis() - this.timing.startSteadyState;
+			long relativeTime = System.currentTimeMillis() - startBenchmarkTime;
 			long toWait = conf.delay - relativeTime;
 
 			// Wait for target to start
@@ -82,14 +88,14 @@ public class TargetManager extends Thread {
 			// Create and start target with its agents
 			try {
 				logger.info("Creating target on " + conf.hostname);
-				createTarget(conf.factory, conf.hostname);
+				createTarget(conf);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
 
 		// Wait for all targets to finish
-		logger.info("Waiting for all targets to stop"); 
+		logger.info("Waiting for all targets to stop");
 		for (ITarget target : targetsToJoin) {
 			try {
 				// Join agents on the target
@@ -97,9 +103,9 @@ public class TargetManager extends Thread {
 
 				// Dispose target
 				target.dispose();
-				
-				logger.info("Target joined: " + target.getId()); 
-				
+
+				logger.info("Target joined: " + target.getId());
+
 			} catch (InterruptedException e) {
 				logger.info("Interrupted while joining target", e);
 				continue;

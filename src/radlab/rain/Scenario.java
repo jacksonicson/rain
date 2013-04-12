@@ -44,8 +44,6 @@ import radlab.rain.util.MetricWriterFactory;
 public class Scenario {
 	private static Logger logger = LoggerFactory.getLogger(Scenario.class);
 
-	private Timing timing;
-
 	private MetricWriterFactory.Type metricWriterType;
 	private JSONObject metricWriterConf;
 
@@ -56,9 +54,9 @@ public class Scenario {
 		configure(config);
 	}
 
-	Timing execute() throws Exception {
+	void execute() throws Exception {
 		TargetSchedule schedule = new TargetSchedule(targetScheduleConf, targetFactoryConf);
-		TargetManager manager = new TargetManager(timing, schedule);
+		TargetManager manager = new TargetManager(schedule);
 		manager.setMetricWriterConf(metricWriterConf);
 		manager.setMetricWriterType(metricWriterType);
 
@@ -67,18 +65,9 @@ public class Scenario {
 
 		// Wait for manager to join
 		manager.join();
-
-		return timing;
 	}
 
 	private void configure(JSONObject jsonConfig) throws JSONException, BenchmarkFailedException {
-		// Read timing
-		JSONObject timing = jsonConfig.getJSONObject(ScenarioConfKeys.TIMING_KEY.toString());
-		long rampUp = timing.getLong(ScenarioConfKeys.RAMP_UP_KEY.toString()) * 1000;
-		long duration = timing.getLong(ScenarioConfKeys.DURATION_KEY.toString()) * 1000;
-		long rampDown = timing.getLong(ScenarioConfKeys.RAMP_DOWN_KEY.toString()) * 1000;
-		this.timing = new Timing(rampUp, duration, rampDown);
-
 		// Target factory configuration
 		this.targetFactoryConf = jsonConfig.getJSONObject("targetFactories");
 
@@ -105,6 +94,6 @@ public class Scenario {
 	}
 
 	public Timing getTiming() {
-		return this.timing;
+		return null;
 	}
 }

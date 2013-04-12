@@ -1,10 +1,4 @@
 {
-    "timing": {
-        "rampUp": 10,
-        "duration": 10,
-        "rampDown": 5,
-    },
-    
     "waitForStartSignal": false,
     "useThrift": true,
     "sonarHost" : "monitor0",
@@ -28,7 +22,10 @@
     		{
     		"delay": 0,
     		
-    		"duration":10,
+    		"rampUp": 5,
+	        "duration": 5,
+	        "rampDown": 5,
+    		
     		"targetFactory": "f1",
     		"hostname" : "dss.in.tum.de",
     		}
