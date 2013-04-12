@@ -81,6 +81,7 @@ public class TargetManager extends Thread {
 
 			// Create and start target with its agents
 			try {
+				logger.info("Creating target on " + conf.hostname);
 				createTarget(conf.factory, conf.hostname);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -88,6 +89,7 @@ public class TargetManager extends Thread {
 		}
 
 		// Wait for all targets to finish
+		logger.info("Waiting for all targets to stop"); 
 		for (ITarget target : targetsToJoin) {
 			try {
 				// Join agents on the target
@@ -95,6 +97,9 @@ public class TargetManager extends Thread {
 
 				// Dispose target
 				target.dispose();
+				
+				logger.info("Target joined: " + target.getId()); 
+				
 			} catch (InterruptedException e) {
 				logger.info("Interrupted while joining target", e);
 				continue;

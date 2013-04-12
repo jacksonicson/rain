@@ -27,6 +27,8 @@
     	"sequence" : [
     		{
     		"delay": 0,
+    		
+    		"duration":10,
     		"targetFactory": "f1",
     		"hostname" : "dss.in.tum.de",
     		}

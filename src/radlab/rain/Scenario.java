@@ -39,8 +39,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import radlab.rain.scoreboard.Aggregation;
-import radlab.rain.target.ITarget;
 import radlab.rain.util.MetricWriterFactory;
 
 public class Scenario {
@@ -54,8 +52,6 @@ public class Scenario {
 	private JSONObject targetScheduleConf;
 	private JSONObject targetFactoryConf;
 
-	private List<ITarget> targets;
-
 	public Scenario(JSONObject config) throws Exception {
 		configure(config);
 	}
@@ -68,6 +64,9 @@ public class Scenario {
 
 		// Start target manager
 		manager.start();
+
+		// Wait for manager to join
+		manager.join();
 
 		return timing;
 	}
@@ -93,15 +92,15 @@ public class Scenario {
 	}
 
 	public void statAggregation(Timing timing) throws JSONException {
-		Aggregation aggregation = new Aggregation();
-		aggregation.aggregateScoreboards(timing, targets);
+		// Aggregation aggregation = new Aggregation();
+		// aggregation.aggregateScoreboards(timing, targets);
 	}
 
 	public List<String> getTargetNames() {
 		List<String> names = new ArrayList<String>();
-		for (ITarget track : targets) {
-			names.add(track.toString());
-		}
+		// for (ITarget track : targets) {
+		// names.add(track.toString());
+		// }
 		return names;
 	}
 

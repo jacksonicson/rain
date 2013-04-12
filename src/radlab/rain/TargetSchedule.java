@@ -28,15 +28,17 @@ public class TargetSchedule {
 		configure(scheduleConf, factoryConf);
 	}
 
-	private ITargetFactory buildTargetFactory(String className, JSONObject config) throws BenchmarkFailedException {
+	private ITargetFactory buildTargetFactory(JSONObject config) throws BenchmarkFailedException {
 		try {
+			String className = config.getString("targetFactoryClass");
+			JSONObject factoryConfig = config.getJSONObject("targetFactoryParams");
 			Class<ITargetFactory> creatorClass = (Class<ITargetFactory>) Class.forName(className);
 			Constructor<ITargetFactory> creatorCtor = creatorClass.getConstructor(new Class[] {});
 			ITargetFactory creator = (ITargetFactory) creatorCtor.newInstance((Object[]) null);
-			creator.configure(config);
+			creator.configure(factoryConfig);
 			return creator;
 		} catch (Exception e) {
-			throw new BenchmarkFailedException("Unable to instantiate track factory from class " + className, e);
+			throw new BenchmarkFailedException("Unable to instantiate track", e);
 		}
 	}
 
@@ -60,8 +62,9 @@ public class TargetSchedule {
 			JSONObject jsonConf = configs.getJSONObject(i);
 			targetConf.delay = jsonConf.getLong("delay");
 			targetConf.hostname = jsonConf.getString("hostname");
+			
 			JSONObject jsonFactoryConfig = factoryConfigurations.get(jsonConf.getString("targetFactory"));
-			targetConf.factory = buildTargetFactory(jsonConf.getString("targetFactory"), jsonFactoryConfig);
+			targetConf.factory = buildTargetFactory(jsonFactoryConfig);
 		}
 	}
 
