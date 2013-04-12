@@ -30,7 +30,7 @@
     		"hostname" : "dss.in.tum.de",
     		},
     		{
-    		"delay": 15,
+    		"delay": 20,
     		
     		"rampUp": 5,
 	        "duration": 10,
