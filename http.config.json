@@ -12,11 +12,24 @@
     "metricWriterType" : "sonar",
     "metricWriterConf" : {},
     
-    "targetFactoryClass": "radlab.rain.workload.http.TestBenchmark",    
-    "targetFactoryParams": {
-    	"baseUrl" : "dss.in.tum.de",
-    	"targetCount" : 1,
-    	"targetConfig" : {
-    	},
+    "targetFactories" : {
+		"f1" : {
+			"targetFactoryClass": "radlab.rain.workload.http.TestBenchmark",    
+		    "targetFactoryParams": {
+		    	"targetCount" : 1,
+		    	"targetConfig" : {
+		    	},
+		    },
+		}    	
+    },
+    
+    "targetSchedule" : {
+    	"sequence" : [
+    		{
+    		"delay": 0,
+    		"targetFactory": "f1",
+    		"hostname" : "dss.in.tum.de",
+    		}
+    	]
     },
 }

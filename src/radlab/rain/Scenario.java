@@ -31,7 +31,6 @@
 
 package radlab.rain;
 
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,8 +41,6 @@ import org.slf4j.LoggerFactory;
 
 import radlab.rain.scoreboard.Aggregation;
 import radlab.rain.target.ITarget;
-import radlab.rain.target.ITargetFactory;
-import radlab.rain.util.MetricWriter;
 import radlab.rain.util.MetricWriterFactory;
 
 public class Scenario {
@@ -51,10 +48,11 @@ public class Scenario {
 
 	private Timing timing;
 
-	private ITargetFactory targetFactory;
-
 	private MetricWriterFactory.Type metricWriterType;
 	private JSONObject metricWriterConf;
+
+	private JSONObject targetScheduleConf;
+	private JSONObject targetFactoryConf;
 
 	private List<ITarget> targets;
 
@@ -63,42 +61,13 @@ public class Scenario {
 	}
 
 	Timing execute() throws Exception {
-		// Build tracks based on static configuration
-		targets = targetFactory.createTargets();
-		logger.info("Number of targets: " + targets.size());
+		TargetSchedule schedule = new TargetSchedule(targetScheduleConf, targetFactoryConf);
+		TargetManager manager = new TargetManager(timing, schedule);
+		manager.setMetricWriterConf(metricWriterConf);
+		manager.setMetricWriterType(metricWriterType);
 
-		// Configure tracks
-		long id = 0;
-		for (ITarget target : targets) {
-			logger.debug("Initializing target " + target.getId());
-
-			// Create a metric writer
-			MetricWriter metricWriter = MetricWriterFactory.createMetricWriter(metricWriterType, metricWriterConf);
-
-			target.setTiming(timing);
-			target.setMetricWriter(metricWriter);
-			target.init(id++);
-		}
-
-		// Start all tracks
-		for (ITarget target : targets) {
-			logger.debug("Starting target " + target.getId());
-			target.start();
-		}
-
-		// Wait until all targets joined
-		for (ITarget target : targets) {
-			logger.debug("Waiting for target to join " + target.getId());
-			target.joinAgents();
-		}
-
-		// Stop running tracks
-		for (ITarget target : targets) {
-			logger.debug("Stopping target " + target.getId());
-			target.dispose();
-		}
-
-		logger.info("Scenario execution ended");
+		// Start target manager
+		manager.start();
 
 		return timing;
 	}
@@ -111,30 +80,16 @@ public class Scenario {
 		long rampDown = timing.getLong(ScenarioConfKeys.RAMP_DOWN_KEY.toString()) * 1000;
 		this.timing = new Timing(rampUp, duration, rampDown);
 
-		// New track factory
-		String targetFacClass = jsonConfig.getString(ScenarioConfKeys.TARGET_FACTORY_CLASS.toString());
-		targetFactory = createTargetFactory(targetFacClass);
+		// Target factory configuration
+		this.targetFactoryConf = jsonConfig.getJSONObject("targetFactories");
 
-		// Configure track factory
-		JSONObject params = jsonConfig.getJSONObject(ScenarioConfKeys.TARGET_FACTORY_CONF.toString());
-		targetFactory.configure(params);
+		// Target schedule configuration
+		this.targetScheduleConf = jsonConfig.getJSONObject("targetSchedule");
 
 		// Metric writer configuration
 		metricWriterType = MetricWriterFactory.Type.getType(jsonConfig.getString(ScenarioConfKeys.METRIC_WRITER_TYPE
 				.toString()));
 		metricWriterConf = jsonConfig.getJSONObject(ScenarioConfKeys.METRIC_WRITER_CONF.toString());
-	}
-
-	@SuppressWarnings("unchecked")
-	private ITargetFactory createTargetFactory(String name) throws BenchmarkFailedException {
-		try {
-			Class<ITargetFactory> creatorClass = (Class<ITargetFactory>) Class.forName(name);
-			Constructor<ITargetFactory> creatorCtor = creatorClass.getConstructor(new Class[] {});
-			ITargetFactory creator = (ITargetFactory) creatorCtor.newInstance((Object[]) null);
-			return creator;
-		} catch (Exception e) {
-			throw new BenchmarkFailedException("Unable to instantiate track factory from class " + name, e);
-		}
 	}
 
 	public void statAggregation(Timing timing) throws JSONException {
