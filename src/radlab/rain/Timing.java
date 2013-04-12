@@ -35,6 +35,10 @@ public final class Timing {
 		}
 	}
 
+	public Timing(Timing timing) throws BenchmarkFailedException {
+		this(timing.rampUp, timing.duration, timing.rampDown);
+	}
+
 	public final long steadyStateDuration() {
 		return endSteadyState - startSteadyState;
 	}

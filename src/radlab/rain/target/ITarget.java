@@ -11,9 +11,6 @@ public interface ITarget extends Runnable {
 	// Metric writer is set
 	void setMetricWriter(MetricWriter metricWriter);
 
-	// Initialize is called after setting all references
-	void init(long id) throws Exception;
-
 	// Start
 	void start();
 
@@ -26,6 +23,9 @@ public interface ITarget extends Runnable {
 	// Statistics for this target
 	IScoreboard getScoreboard();
 
+	// Set identifier
+	void setId(int id); 
+	
 	// Returns identifier
 	long getId();
 

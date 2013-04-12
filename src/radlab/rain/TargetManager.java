@@ -45,8 +45,6 @@ public class TargetManager extends Thread {
 
 			// Configure all generated targets
 			for (ITarget target : targets) {
-				logger.debug("Initializing target " + target.getId());
-
 				// Create a metric writer
 				MetricWriter metricWriter = MetricWriterFactory.createMetricWriter(metricWriterType, metricWriterConf);
 				target.setMetricWriter(metricWriter);
@@ -54,9 +52,6 @@ public class TargetManager extends Thread {
 				// Set custom timing
 				Timing timing = new Timing(conf.rampUp, conf.duration, conf.rampDown);
 				target.setTiming(timing);
-
-				// Initialize
-				target.init(currentTargetId++);
 			}
 
 			// Start targets and add them to the join list

@@ -45,6 +45,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import radlab.rain.BenchmarkFailedException;
 import radlab.rain.Timing;
 import radlab.rain.agent.IAgent;
 import radlab.rain.agent.IAgentFactory;
@@ -118,10 +119,7 @@ public class DefaultTarget extends Thread implements ITarget {
 		logger.info("Shutting down target");
 	}
 
-	public void init(long id) throws Exception {
-		// Set identifier
-		this.id = id;
-
+	protected void init() throws Exception {
 		// Create load schedule creator and load schedule
 		loadSchedule = loadScheduleFactory.createSchedule();
 
@@ -139,6 +137,20 @@ public class DefaultTarget extends Thread implements ITarget {
 		// Setup target
 		logger.info("Setup process");
 		this.setup();
+
+		// Recalculate timing based on current timestamp
+		try {
+			timing = new Timing(timing);
+		} catch (BenchmarkFailedException e1) {
+			logger.error("Could not reestablish timing", e1);
+		}
+
+		// Initialize
+		try {
+			init();
+		} catch (Exception e1) {
+			logger.error("Could not initialize", e1); 
+		}
 
 		// Starting load manager
 		logger.debug("Starting load manager");
@@ -326,5 +338,10 @@ public class DefaultTarget extends Thread implements ITarget {
 	public String getAggregationIdentifier() {
 		// TODO: Needs some improvement
 		return generatorFactory.createGenerator().getClass().getName();
+	}
+
+	@Override
+	public void setId(int id) {
+		this.id = id;
 	}
 }
