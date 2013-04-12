@@ -14,9 +14,12 @@ public interface ITarget {
 	// Initialize is called after setting all references
 	void init(long id) throws Exception;
 
+	// Setup process like starting VMs
+	void setup(); 
+	
 	// Start is called after initialization
 	void start() throws Exception;
-
+	
 	// Blocks until all agent threads have joined
 	void joinAgents() throws InterruptedException;
 

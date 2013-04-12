@@ -8,12 +8,6 @@ import org.slf4j.LoggerFactory;
 public final class Timing {
 	private static Logger logger = LoggerFactory.getLogger(Timing.class);
 
-	/**
-	 * Amount of time (in milliseconds) to wait before threads start issuing requests. This allows all of the threads to
-	 * start synchronously.
-	 */
-	private static final long TIME_TO_START = 10000;
-
 	public final long start; // start of ramp up phase
 	public final long startSteadyState; // start steady state phase
 	public final long endSteadyState; // end steady state phase
@@ -28,7 +22,7 @@ public final class Timing {
 		this.duration = duration;
 		this.rampDown = rampDown;
 
-		start = System.currentTimeMillis() + Timing.TIME_TO_START;
+		start = System.currentTimeMillis();
 		startSteadyState = start + rampUp;
 		endSteadyState = startSteadyState + duration;
 		endRun = endSteadyState + rampDown;

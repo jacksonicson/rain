@@ -34,12 +34,17 @@ package radlab.rain;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import radlab.rain.communication.thrift.ThriftService;
 
 /**
  * Singleton configuration class
  */
 public class RainConfig {
+	private static Logger logger = LoggerFactory.getLogger(RainConfig.class);
+	
 	// What can we configure?
 	public boolean verboseErrors = true;
 
@@ -71,6 +76,7 @@ public class RainConfig {
 	}
 
 	public synchronized void triggerShutdown() {
+		logger.info("running shutdown hooks..."); 
 		for (IShutdown shutdown : shutdownHooks) {
 			shutdown.shutdown();
 		}

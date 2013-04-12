@@ -62,6 +62,8 @@ public class TargetManager extends Thread {
 			// Start targets and add them to the join list
 			for (ITarget target : targets) {
 				targetsToJoin.add(target);
+				
+				target.setup(); 
 				target.start();
 			}
 

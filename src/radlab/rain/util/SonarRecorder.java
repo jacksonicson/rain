@@ -92,7 +92,7 @@ public class SonarRecorder extends Thread implements IShutdown {
 	}
 
 	public void disconnect() {
-		transport.close();
+//		transport.close();
 	}
 
 	public void run() {

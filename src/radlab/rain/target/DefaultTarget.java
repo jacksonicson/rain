@@ -110,6 +110,14 @@ public class DefaultTarget implements ITarget {
 	// Executer pool
 	protected ExecutorService executor;
 
+	public void setup() {
+		logger.info("Setting up target"); 
+	}
+
+	public void teardown() {
+		logger.info("Shutting down target");
+	}
+
 	public void init(long id) throws Exception {
 		// Set identifier
 		this.id = id;
