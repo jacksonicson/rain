@@ -58,7 +58,7 @@ import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.scoreboard.Scoreboard;
 import radlab.rain.util.MetricWriter;
 
-public class DefaultTarget implements ITarget {
+public class DefaultTarget extends Thread implements ITarget {
 	private static Logger logger = LoggerFactory.getLogger(DefaultTarget.class);
 
 	// Target id
@@ -111,7 +111,7 @@ public class DefaultTarget implements ITarget {
 	protected ExecutorService executor;
 
 	public void setup() {
-		logger.info("Setting up target"); 
+		logger.info("Setting up target");
 	}
 
 	public void teardown() {
@@ -135,7 +135,11 @@ public class DefaultTarget implements ITarget {
 		executor = Executors.newCachedThreadPool();
 	}
 
-	public void start() throws Exception {
+	public void run() {
+		// Setup target
+		logger.info("Setup process");
+		this.setup();
+
 		// Starting load manager
 		logger.debug("Starting load manager");
 		loadManager.start();
@@ -145,13 +149,30 @@ public class DefaultTarget implements ITarget {
 		scoreboard.start();
 
 		// Create load generating units
-		createAgents(executor);
-		logger.debug("Agents created: " + agents.size());
+		try {
+			createAgents(executor);
+			logger.debug("Agents created: " + agents.size());
+		} catch (Exception e) {
+			logger.error("Could not create agents", e);
+		}
 
 		// Start load generating unit threads
-		logger.debug("Starting agents");
+		logger.info("Starting agents");
 		for (IAgent agent : agents)
 			agent.start();
+
+		// Wait for all agent threads to join
+		for (IAgent agent : agents) {
+			try {
+				agent.join();
+			} catch (InterruptedException e) {
+				logger.error("Could not join agent", e);
+			}
+		}
+
+		// Run shutdown code
+		logger.info("Teardown");
+		teardown();
 	}
 
 	private void createAgents(ExecutorService executor) throws Exception {
@@ -175,13 +196,6 @@ public class DefaultTarget implements ITarget {
 
 			// Add thread to thread list and start the thread
 			agents.add(agent);
-		}
-	}
-
-	public void joinAgents() throws InterruptedException {
-		// Wait for all agent threads to join
-		for (IAgent agent : agents) {
-			agent.join();
 		}
 	}
 

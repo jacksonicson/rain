@@ -63,7 +63,6 @@ public class TargetManager extends Thread {
 			for (ITarget target : targets) {
 				targetsToJoin.add(target);
 				
-				target.setup(); 
 				target.start();
 			}
 
@@ -101,7 +100,7 @@ public class TargetManager extends Thread {
 		for (ITarget target : targetsToJoin) {
 			try {
 				// Join agents on the target
-				target.joinAgents();
+				target.join(); 
 
 				// Dispose target
 				target.dispose();
