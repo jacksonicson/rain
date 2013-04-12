@@ -26,15 +26,19 @@ public class TargetManager extends Thread {
 
 	private List<ITarget> targetsToJoin = new LinkedList<ITarget>();
 
-	public TargetManager(TargetSchedule schedule) {
+	TargetManager(TargetSchedule schedule) {
 		this.schedule = schedule;
 	}
 
-	public void setMetricWriterType(MetricWriterFactory.Type metricWriterType) {
+	List<ITarget> getAllTargets() {
+		return targetsToJoin;
+	}
+
+	void setMetricWriterType(MetricWriterFactory.Type metricWriterType) {
 		this.metricWriterType = metricWriterType;
 	}
 
-	public void setMetricWriterConf(JSONObject conf) {
+	void setMetricWriterConf(JSONObject conf) {
 		this.metricWriterConf = conf;
 	}
 
@@ -57,7 +61,7 @@ public class TargetManager extends Thread {
 			// Start targets and add them to the join list
 			for (ITarget target : targets) {
 				targetsToJoin.add(target);
-				
+
 				target.start();
 			}
 
@@ -95,7 +99,7 @@ public class TargetManager extends Thread {
 		for (ITarget target : targetsToJoin) {
 			try {
 				// Join agents on the target
-				target.join(); 
+				target.join();
 
 				// Dispose target
 				target.dispose();

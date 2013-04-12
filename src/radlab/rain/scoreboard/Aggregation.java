@@ -9,15 +9,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import radlab.rain.Scenario;
-import radlab.rain.Timing;
 import radlab.rain.target.ITarget;
 
 public class Aggregation {
 	private static Logger logger = LoggerFactory.getLogger(Scenario.class);
 
-	public void aggregateScoreboards(Timing timing, List<ITarget> targets) throws JSONException {
+	private long calculateSteadyStateDuration(List<ITarget> targets) {
+		for (ITarget target : targets) {
+
+		}
+
+		return 100;
+	}
+
+	public void aggregateScoreboards(List<ITarget> targets) throws JSONException {
 		TreeMap<String, Scorecard> aggStats = new TreeMap<String, Scorecard>();
-		Scorecard globalCard = new Scorecard(Scorecard.Type.GLOBAL, timing.steadyStateDuration());
+		Scorecard globalCard = new Scorecard(Scorecard.Type.GLOBAL, calculateSteadyStateDuration(targets));
 
 		// Aggregate all targets
 		for (ITarget target : targets) {

@@ -39,6 +39,8 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import radlab.rain.scoreboard.Aggregation;
+import radlab.rain.target.ITarget;
 import radlab.rain.util.MetricWriterFactory;
 
 public class Scenario {
@@ -50,21 +52,23 @@ public class Scenario {
 	private JSONObject targetScheduleConf;
 	private JSONObject targetFactoryConf;
 
+	private TargetManager targetManager;
+
 	public Scenario(JSONObject config) throws Exception {
 		configure(config);
 	}
 
 	void execute() throws Exception {
 		TargetSchedule schedule = new TargetSchedule(targetScheduleConf, targetFactoryConf);
-		TargetManager manager = new TargetManager(schedule);
-		manager.setMetricWriterConf(metricWriterConf);
-		manager.setMetricWriterType(metricWriterType);
+		targetManager = new TargetManager(schedule);
+		targetManager.setMetricWriterConf(metricWriterConf);
+		targetManager.setMetricWriterType(metricWriterType);
 
 		// Start target manager
-		manager.start();
+		targetManager.start();
 
 		// Wait for manager to join
-		manager.join();
+		targetManager.join();
 	}
 
 	private void configure(JSONObject jsonConfig) throws JSONException, BenchmarkFailedException {
@@ -80,16 +84,16 @@ public class Scenario {
 		metricWriterConf = jsonConfig.getJSONObject(ScenarioConfKeys.METRIC_WRITER_CONF.toString());
 	}
 
-	public void statAggregation(Timing timing) throws JSONException {
-		// Aggregation aggregation = new Aggregation();
-		// aggregation.aggregateScoreboards(timing, targets);
+	public void statAggregation() throws JSONException {
+		Aggregation aggregation = new Aggregation();
+		aggregation.aggregateScoreboards(targetManager.getAllTargets());
 	}
 
 	public List<String> getTargetNames() {
 		List<String> names = new ArrayList<String>();
-		// for (ITarget track : targets) {
-		// names.add(track.toString());
-		// }
+		for (ITarget track : targetManager.getAllTargets()) {
+			names.add(track.toString());
+		}
 		return names;
 	}
 
