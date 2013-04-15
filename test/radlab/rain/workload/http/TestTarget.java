@@ -21,7 +21,10 @@ public class TestTarget extends DefaultTarget {
 	@Override
 	public void setup() {
 		try {
+			// Get a new domain
 			targetDomain = iaas.getClient().allocateDomain();
+			
+			// Wait until the domain is available
 			while (!iaas.getClient().isDomainReady(targetDomain)) {
 				logger.info("waiting for target domain...");
 				try {
@@ -30,6 +33,10 @@ public class TestTarget extends DefaultTarget {
 					e.printStackTrace();
 				}
 			}
+			
+			// Launch all necessary services
+			logger.info("Launching glassfish and database services");
+			iaas.getClient().launchDrone("start", targetDomain);
 		} catch (TException e) {
 			logger.error("error while creating target domain");
 		}
@@ -37,10 +44,14 @@ public class TestTarget extends DefaultTarget {
 
 	@Override
 	public void teardown() {
-		try {
-			iaas.getClient().deleteDomain(targetDomain);
-		} catch (TException e) {
-			logger.error("error while deleting target domain");
-		}
+//		try {
+//			// Get rid of the domain
+//			iaas.getClient().deleteDomain(targetDomain);
+//		} catch (TException e) {
+//			logger.error("error while deleting target domain");
+//		}
+		
+		// Disconnect from IaaS
+		iaas.disconnect(); 
 	}
 }

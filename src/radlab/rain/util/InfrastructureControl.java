@@ -52,5 +52,9 @@ public class InfrastructureControl {
 		// Create new client
 		client = new Infrastructure.Client(protocol);
 	}
+	
+	public void disconnect() {
+		transport.close(); 
+	}
 
 }

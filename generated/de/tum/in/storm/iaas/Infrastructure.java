@@ -37,6 +37,8 @@ public class Infrastructure {
 
     public boolean deleteDomain(String hostname) throws org.apache.thrift.TException;
 
+    public boolean launchDrone(String drone, String hostname) throws org.apache.thrift.TException;
+
   }
 
   public interface AsyncIface {
@@ -46,6 +48,8 @@ public class Infrastructure {
     public void isDomainReady(String hostname, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.isDomainReady_call> resultHandler) throws org.apache.thrift.TException;
 
     public void deleteDomain(String hostname, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.deleteDomain_call> resultHandler) throws org.apache.thrift.TException;
+
+    public void launchDrone(String drone, String hostname, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.launchDrone_call> resultHandler) throws org.apache.thrift.TException;
 
   }
 
@@ -135,6 +139,30 @@ public class Infrastructure {
         return result.success;
       }
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "deleteDomain failed: unknown result");
+    }
+
+    public boolean launchDrone(String drone, String hostname) throws org.apache.thrift.TException
+    {
+      send_launchDrone(drone, hostname);
+      return recv_launchDrone();
+    }
+
+    public void send_launchDrone(String drone, String hostname) throws org.apache.thrift.TException
+    {
+      launchDrone_args args = new launchDrone_args();
+      args.setDrone(drone);
+      args.setHostname(hostname);
+      sendBase("launchDrone", args);
+    }
+
+    public boolean recv_launchDrone() throws org.apache.thrift.TException
+    {
+      launchDrone_result result = new launchDrone_result();
+      receiveBase(result, "launchDrone");
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "launchDrone failed: unknown result");
     }
 
   }
@@ -248,6 +276,41 @@ public class Infrastructure {
       }
     }
 
+    public void launchDrone(String drone, String hostname, org.apache.thrift.async.AsyncMethodCallback<launchDrone_call> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      launchDrone_call method_call = new launchDrone_call(drone, hostname, resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class launchDrone_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private String drone;
+      private String hostname;
+      public launchDrone_call(String drone, String hostname, org.apache.thrift.async.AsyncMethodCallback<launchDrone_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.drone = drone;
+        this.hostname = hostname;
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("launchDrone", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        launchDrone_args args = new launchDrone_args();
+        args.setDrone(drone);
+        args.setHostname(hostname);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public boolean getResult() throws org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_launchDrone();
+      }
+    }
+
   }
 
   public static class Processor<I extends Iface> extends org.apache.thrift.TBaseProcessor<I> implements org.apache.thrift.TProcessor {
@@ -264,6 +327,7 @@ public class Infrastructure {
       processMap.put("allocateDomain", new allocateDomain());
       processMap.put("isDomainReady", new isDomainReady());
       processMap.put("deleteDomain", new deleteDomain());
+      processMap.put("launchDrone", new launchDrone());
       return processMap;
     }
 
@@ -312,6 +376,23 @@ public class Infrastructure {
       protected deleteDomain_result getResult(I iface, deleteDomain_args args) throws org.apache.thrift.TException {
         deleteDomain_result result = new deleteDomain_result();
         result.success = iface.deleteDomain(args.hostname);
+        result.setSuccessIsSet(true);
+        return result;
+      }
+    }
+
+    private static class launchDrone<I extends Iface> extends org.apache.thrift.ProcessFunction<I, launchDrone_args> {
+      public launchDrone() {
+        super("launchDrone");
+      }
+
+      protected launchDrone_args getEmptyArgsInstance() {
+        return new launchDrone_args();
+      }
+
+      protected launchDrone_result getResult(I iface, launchDrone_args args) throws org.apache.thrift.TException {
+        launchDrone_result result = new launchDrone_result();
+        result.success = iface.launchDrone(args.drone, args.hostname);
         result.setSuccessIsSet(true);
         return result;
       }
@@ -2312,6 +2393,809 @@ public class Infrastructure {
 
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, deleteDomain_result struct) throws org.apache.thrift.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(1);
+        if (incoming.get(0)) {
+          struct.success = iprot.readBool();
+          struct.setSuccessIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class launchDrone_args implements org.apache.thrift.TBase<launchDrone_args, launchDrone_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("launchDrone_args");
+
+    private static final org.apache.thrift.protocol.TField DRONE_FIELD_DESC = new org.apache.thrift.protocol.TField("drone", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField HOSTNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("hostname", org.apache.thrift.protocol.TType.STRING, (short)2);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new launchDrone_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new launchDrone_argsTupleSchemeFactory());
+    }
+
+    public String drone; // required
+    public String hostname; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      DRONE((short)1, "drone"),
+      HOSTNAME((short)2, "hostname");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // DRONE
+            return DRONE;
+          case 2: // HOSTNAME
+            return HOSTNAME;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.DRONE, new org.apache.thrift.meta_data.FieldMetaData("drone", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.HOSTNAME, new org.apache.thrift.meta_data.FieldMetaData("hostname", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(launchDrone_args.class, metaDataMap);
+    }
+
+    public launchDrone_args() {
+    }
+
+    public launchDrone_args(
+      String drone,
+      String hostname)
+    {
+      this();
+      this.drone = drone;
+      this.hostname = hostname;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public launchDrone_args(launchDrone_args other) {
+      if (other.isSetDrone()) {
+        this.drone = other.drone;
+      }
+      if (other.isSetHostname()) {
+        this.hostname = other.hostname;
+      }
+    }
+
+    public launchDrone_args deepCopy() {
+      return new launchDrone_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.drone = null;
+      this.hostname = null;
+    }
+
+    public String getDrone() {
+      return this.drone;
+    }
+
+    public launchDrone_args setDrone(String drone) {
+      this.drone = drone;
+      return this;
+    }
+
+    public void unsetDrone() {
+      this.drone = null;
+    }
+
+    /** Returns true if field drone is set (has been assigned a value) and false otherwise */
+    public boolean isSetDrone() {
+      return this.drone != null;
+    }
+
+    public void setDroneIsSet(boolean value) {
+      if (!value) {
+        this.drone = null;
+      }
+    }
+
+    public String getHostname() {
+      return this.hostname;
+    }
+
+    public launchDrone_args setHostname(String hostname) {
+      this.hostname = hostname;
+      return this;
+    }
+
+    public void unsetHostname() {
+      this.hostname = null;
+    }
+
+    /** Returns true if field hostname is set (has been assigned a value) and false otherwise */
+    public boolean isSetHostname() {
+      return this.hostname != null;
+    }
+
+    public void setHostnameIsSet(boolean value) {
+      if (!value) {
+        this.hostname = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case DRONE:
+        if (value == null) {
+          unsetDrone();
+        } else {
+          setDrone((String)value);
+        }
+        break;
+
+      case HOSTNAME:
+        if (value == null) {
+          unsetHostname();
+        } else {
+          setHostname((String)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case DRONE:
+        return getDrone();
+
+      case HOSTNAME:
+        return getHostname();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case DRONE:
+        return isSetDrone();
+      case HOSTNAME:
+        return isSetHostname();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof launchDrone_args)
+        return this.equals((launchDrone_args)that);
+      return false;
+    }
+
+    public boolean equals(launchDrone_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_drone = true && this.isSetDrone();
+      boolean that_present_drone = true && that.isSetDrone();
+      if (this_present_drone || that_present_drone) {
+        if (!(this_present_drone && that_present_drone))
+          return false;
+        if (!this.drone.equals(that.drone))
+          return false;
+      }
+
+      boolean this_present_hostname = true && this.isSetHostname();
+      boolean that_present_hostname = true && that.isSetHostname();
+      if (this_present_hostname || that_present_hostname) {
+        if (!(this_present_hostname && that_present_hostname))
+          return false;
+        if (!this.hostname.equals(that.hostname))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(launchDrone_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      launchDrone_args typedOther = (launchDrone_args)other;
+
+      lastComparison = Boolean.valueOf(isSetDrone()).compareTo(typedOther.isSetDrone());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetDrone()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.drone, typedOther.drone);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetHostname()).compareTo(typedOther.isSetHostname());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetHostname()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.hostname, typedOther.hostname);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("launchDrone_args(");
+      boolean first = true;
+
+      sb.append("drone:");
+      if (this.drone == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.drone);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("hostname:");
+      if (this.hostname == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.hostname);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class launchDrone_argsStandardSchemeFactory implements SchemeFactory {
+      public launchDrone_argsStandardScheme getScheme() {
+        return new launchDrone_argsStandardScheme();
+      }
+    }
+
+    private static class launchDrone_argsStandardScheme extends StandardScheme<launchDrone_args> {
+
+      public void read(org.apache.thrift.protocol.TProtocol iprot, launchDrone_args struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // DRONE
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.drone = iprot.readString();
+                struct.setDroneIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // HOSTNAME
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.hostname = iprot.readString();
+                struct.setHostnameIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.thrift.protocol.TProtocol oprot, launchDrone_args struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.drone != null) {
+          oprot.writeFieldBegin(DRONE_FIELD_DESC);
+          oprot.writeString(struct.drone);
+          oprot.writeFieldEnd();
+        }
+        if (struct.hostname != null) {
+          oprot.writeFieldBegin(HOSTNAME_FIELD_DESC);
+          oprot.writeString(struct.hostname);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class launchDrone_argsTupleSchemeFactory implements SchemeFactory {
+      public launchDrone_argsTupleScheme getScheme() {
+        return new launchDrone_argsTupleScheme();
+      }
+    }
+
+    private static class launchDrone_argsTupleScheme extends TupleScheme<launchDrone_args> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, launchDrone_args struct) throws org.apache.thrift.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetDrone()) {
+          optionals.set(0);
+        }
+        if (struct.isSetHostname()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetDrone()) {
+          oprot.writeString(struct.drone);
+        }
+        if (struct.isSetHostname()) {
+          oprot.writeString(struct.hostname);
+        }
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, launchDrone_args struct) throws org.apache.thrift.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(2);
+        if (incoming.get(0)) {
+          struct.drone = iprot.readString();
+          struct.setDroneIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.hostname = iprot.readString();
+          struct.setHostnameIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class launchDrone_result implements org.apache.thrift.TBase<launchDrone_result, launchDrone_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("launchDrone_result");
+
+    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.BOOL, (short)0);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new launchDrone_resultStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new launchDrone_resultTupleSchemeFactory());
+    }
+
+    public boolean success; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      SUCCESS((short)0, "success");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    private static final int __SUCCESS_ISSET_ID = 0;
+    private BitSet __isset_bit_vector = new BitSet(1);
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(launchDrone_result.class, metaDataMap);
+    }
+
+    public launchDrone_result() {
+    }
+
+    public launchDrone_result(
+      boolean success)
+    {
+      this();
+      this.success = success;
+      setSuccessIsSet(true);
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public launchDrone_result(launchDrone_result other) {
+      __isset_bit_vector.clear();
+      __isset_bit_vector.or(other.__isset_bit_vector);
+      this.success = other.success;
+    }
+
+    public launchDrone_result deepCopy() {
+      return new launchDrone_result(this);
+    }
+
+    @Override
+    public void clear() {
+      setSuccessIsSet(false);
+      this.success = false;
+    }
+
+    public boolean isSuccess() {
+      return this.success;
+    }
+
+    public launchDrone_result setSuccess(boolean success) {
+      this.success = success;
+      setSuccessIsSet(true);
+      return this;
+    }
+
+    public void unsetSuccess() {
+      __isset_bit_vector.clear(__SUCCESS_ISSET_ID);
+    }
+
+    /** Returns true if field success is set (has been assigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return __isset_bit_vector.get(__SUCCESS_ISSET_ID);
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      __isset_bit_vector.set(__SUCCESS_ISSET_ID, value);
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((Boolean)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return Boolean.valueOf(isSuccess());
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof launchDrone_result)
+        return this.equals((launchDrone_result)that);
+      return false;
+    }
+
+    public boolean equals(launchDrone_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true;
+      boolean that_present_success = true;
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (this.success != that.success)
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(launchDrone_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      launchDrone_result typedOther = (launchDrone_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+      }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("launchDrone_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      sb.append(this.success);
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class launchDrone_resultStandardSchemeFactory implements SchemeFactory {
+      public launchDrone_resultStandardScheme getScheme() {
+        return new launchDrone_resultStandardScheme();
+      }
+    }
+
+    private static class launchDrone_resultStandardScheme extends StandardScheme<launchDrone_result> {
+
+      public void read(org.apache.thrift.protocol.TProtocol iprot, launchDrone_result struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 0: // SUCCESS
+              if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+                struct.success = iprot.readBool();
+                struct.setSuccessIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.thrift.protocol.TProtocol oprot, launchDrone_result struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        oprot.writeBool(struct.success);
+        oprot.writeFieldEnd();
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class launchDrone_resultTupleSchemeFactory implements SchemeFactory {
+      public launchDrone_resultTupleScheme getScheme() {
+        return new launchDrone_resultTupleScheme();
+      }
+    }
+
+    private static class launchDrone_resultTupleScheme extends TupleScheme<launchDrone_result> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, launchDrone_result struct) throws org.apache.thrift.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetSuccess()) {
+          optionals.set(0);
+        }
+        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetSuccess()) {
+          oprot.writeBool(struct.success);
+        }
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, launchDrone_result struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
