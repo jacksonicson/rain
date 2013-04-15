@@ -47,7 +47,7 @@ public class TargetManager extends Thread {
 	private void createTarget(TargetConfiguration conf) throws Exception {
 		try {
 
-			List<ITarget> targets = conf.getFactory().createTargets(conf.getHostname());
+			List<ITarget> targets = conf.getFactory().createTargets();
 
 			// Configure all generated targets
 			for (ITarget target : targets) {
@@ -63,7 +63,6 @@ public class TargetManager extends Thread {
 			// Start targets and add them to the join list
 			for (ITarget target : targets) {
 				targetsToJoin.add(target);
-
 				target.start();
 			}
 
@@ -89,7 +88,6 @@ public class TargetManager extends Thread {
 
 			// Create and start target with its agents
 			try {
-				logger.info("Creating target on " + conf.getHostname());
 				createTarget(conf);
 			} catch (Exception e) {
 				e.printStackTrace();

@@ -55,7 +55,6 @@ public class TargetSchedule {
 
 			JSONObject jsonConf = configs.getJSONObject(i);
 			targetConf.setDelay(jsonConf.getLong("delay") * 1000); // to milliseconds
-			targetConf.setHostname(jsonConf.getString("hostname"));
 			targetConf.setRampUp(jsonConf.getLong("rampUp") * 1000); // to milliseconds
 			targetConf.setDuration(jsonConf.getLong("duration") * 1000); // to milliseconds
 			targetConf.setRampDown(jsonConf.getLong("rampDown") * 1000); // to milliseconds

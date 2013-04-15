@@ -12,6 +12,7 @@
 		    "targetFactoryParams": {
 		    	"targetCount" : 1,
 		    	"targetConfig" : {
+		    		"baseUrl" : "dss.in.tum.de",
 		    	},
 		    },
 		}    	
@@ -21,13 +22,10 @@
     	"sequence" : [
     		{
     		"delay": 0,
-    		
     		"rampUp": 5,
 	        "duration": 5,
 	        "rampDown": 5,
-    		
     		"targetFactory": "f1",
-    		"hostname" : "dss.in.tum.de",
     		},
     	]
     },

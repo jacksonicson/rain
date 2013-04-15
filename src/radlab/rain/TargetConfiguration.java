@@ -7,7 +7,6 @@ public class TargetConfiguration {
 	private long rampUp;
 	private long duration;
 	private long rampDown;
-	private String hostname;
 	private ITargetFactory factory;
 
 	public TargetConfiguration() {
@@ -43,14 +42,6 @@ public class TargetConfiguration {
 
 	public void setRampDown(long rampDown) {
 		this.rampDown = rampDown;
-	}
-
-	public String getHostname() {
-		return hostname;
-	}
-
-	public void setHostname(String hostname) {
-		this.hostname = hostname;
 	}
 
 	public ITargetFactory getFactory() {

@@ -23,12 +23,13 @@ public class TestBenchmark implements ITargetFactory, IGeneratorFactory, IAgentF
 	@Override
 	public void configure(JSONObject params) throws JSONException {
 		targetCount = params.getInt("targetCount");
+		
 		targetConfig = params.getJSONObject("targetConfig");
+		baseUrl = targetConfig.getString("baseUrl"); 
 	}
 
 	@Override
-	public List<ITarget> createTargets(String hostname) throws JSONException {
-		this.baseUrl = hostname;
+	public List<ITarget> createTargets() throws JSONException {
 
 		List<ITarget> tracks = new LinkedList<ITarget>();
 		for (int i = 0; i < targetCount; i++) {
