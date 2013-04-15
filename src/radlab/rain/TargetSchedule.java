@@ -15,16 +15,7 @@ import radlab.rain.target.ITargetFactory;
 
 public class TargetSchedule {
 
-	class TargetConf {
-		long delay;
-		long rampUp;
-		long duration;
-		long rampDown;
-		String hostname;
-		ITargetFactory factory;
-	}
-
-	private Queue<TargetConf> configs = new LinkedList<TargetConf>();
+	private Queue<TargetConfiguration> configs = new LinkedList<TargetConfiguration>();
 
 	public TargetSchedule(JSONObject scheduleConf, JSONObject factoryConf) throws JSONException,
 			BenchmarkFailedException {
@@ -59,22 +50,22 @@ public class TargetSchedule {
 		// Read target schedule configuration
 		JSONArray configs = scheduleConf.getJSONArray("sequence");
 		for (int i = 0; i < configs.length(); i++) {
-			TargetConf targetConf = new TargetConf();
+			TargetConfiguration targetConf = new TargetConfiguration();
 			this.configs.add(targetConf);
 
 			JSONObject jsonConf = configs.getJSONObject(i);
-			targetConf.delay = jsonConf.getLong("delay") * 1000; // to milliseconds
-			targetConf.hostname = jsonConf.getString("hostname");
-			targetConf.rampUp = jsonConf.getLong("rampUp") * 1000; // to milliseconds
-			targetConf.duration = jsonConf.getLong("duration") * 1000; // to milliseconds
-			targetConf.rampDown = jsonConf.getLong("rampDown") * 1000; // to milliseconds
+			targetConf.setDelay(jsonConf.getLong("delay") * 1000); // to milliseconds
+			targetConf.setHostname(jsonConf.getString("hostname"));
+			targetConf.setRampUp(jsonConf.getLong("rampUp") * 1000); // to milliseconds
+			targetConf.setDuration(jsonConf.getLong("duration") * 1000); // to milliseconds
+			targetConf.setRampDown(jsonConf.getLong("rampDown") * 1000); // to milliseconds
 
 			JSONObject jsonFactoryConfig = factoryConfigurations.get(jsonConf.getString("targetFactory"));
-			targetConf.factory = buildTargetFactory(jsonFactoryConfig);
+			targetConf.setFactory(buildTargetFactory(jsonFactoryConfig));
 		}
 	}
 
-	TargetConf next() {
+	TargetConfiguration next() {
 		return configs.poll();
 	}
 

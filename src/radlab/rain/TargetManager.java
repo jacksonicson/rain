@@ -15,15 +15,17 @@ import radlab.rain.util.MetricWriterFactory;
 public class TargetManager extends Thread {
 	private static Logger logger = LoggerFactory.getLogger(TargetManager.class);
 
+	// Reference to the target schedule
 	private TargetSchedule schedule;
 
+	// Metric writer configuration
 	private MetricWriterFactory.Type metricWriterType;
 	private JSONObject metricWriterConf;
 
-	private long currentTargetId;
-
+	// Timestamp when the whole benchmark (target manager) was started
 	private long startBenchmarkTime;
 
+	// List contains all targets that are created
 	private List<ITarget> targetsToJoin = new LinkedList<ITarget>();
 
 	TargetManager(TargetSchedule schedule) {
@@ -42,10 +44,10 @@ public class TargetManager extends Thread {
 		this.metricWriterConf = conf;
 	}
 
-	private void createTarget(TargetSchedule.TargetConf conf) throws Exception {
+	private void createTarget(TargetConfiguration conf) throws Exception {
 		try {
 
-			List<ITarget> targets = conf.factory.createTargets(conf.hostname);
+			List<ITarget> targets = conf.getFactory().createTargets(conf.getHostname());
 
 			// Configure all generated targets
 			for (ITarget target : targets) {
@@ -54,7 +56,7 @@ public class TargetManager extends Thread {
 				target.setMetricWriter(metricWriter);
 
 				// Set custom timing
-				Timing timing = new Timing(conf.rampUp, conf.duration, conf.rampDown);
+				Timing timing = new Timing(conf.getRampUp(), conf.getDuration(), conf.getRampDown());
 				target.setTiming(timing);
 			}
 
@@ -76,18 +78,18 @@ public class TargetManager extends Thread {
 
 		while (schedule.hasNext()) {
 			// Next target configuration
-			TargetSchedule.TargetConf conf = schedule.next();
+			TargetConfiguration conf = schedule.next();
 
 			// How long to wait for the next target
 			long relativeTime = System.currentTimeMillis() - startBenchmarkTime;
-			long toWait = conf.delay - relativeTime;
+			long toWait = conf.getDelay() - relativeTime;
 
 			// Wait for target to start
 			delay(toWait);
 
 			// Create and start target with its agents
 			try {
-				logger.info("Creating target on " + conf.hostname);
+				logger.info("Creating target on " + conf.getHostname());
 				createTarget(conf);
 			} catch (Exception e) {
 				e.printStackTrace();
