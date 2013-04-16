@@ -9,9 +9,6 @@ public class TargetConfiguration {
 	private long rampDown;
 	private ITargetFactory factory;
 
-	public TargetConfiguration() {
-	}
-
 	public long getDelay() {
 		return delay;
 	}

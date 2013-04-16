@@ -15,7 +15,8 @@ import radlab.rain.target.ITargetFactory;
 
 public class TargetSchedule {
 
-	private Queue<TargetConfiguration> configs = new LinkedList<TargetConfiguration>();
+	// Target queue
+	private Queue<TargetConfiguration> targetsToLaunch = new LinkedList<TargetConfiguration>();
 
 	public TargetSchedule(JSONObject scheduleConf, JSONObject factoryConf) throws JSONException,
 			BenchmarkFailedException {
@@ -51,7 +52,7 @@ public class TargetSchedule {
 		JSONArray configs = scheduleConf.getJSONArray("sequence");
 		for (int i = 0; i < configs.length(); i++) {
 			TargetConfiguration targetConf = new TargetConfiguration();
-			this.configs.add(targetConf);
+			this.targetsToLaunch.add(targetConf);
 
 			JSONObject jsonConf = configs.getJSONObject(i);
 			targetConf.setDelay(jsonConf.getLong("delay") * 1000); // to milliseconds
@@ -65,10 +66,10 @@ public class TargetSchedule {
 	}
 
 	TargetConfiguration next() {
-		return configs.poll();
+		return targetsToLaunch.poll();
 	}
 
 	boolean hasNext() {
-		return configs.isEmpty() == false;
+		return targetsToLaunch.isEmpty() == false;
 	}
 }

@@ -54,7 +54,9 @@ public class Scenario {
 		this.config = config;
 	}
 
-	void start() throws Exception {
+	void launch() throws Exception {
+		logger.info("Launching scenario..."); 
+		
 		JSONObject targetFactoryConf = config.getJSONObject("targetFactories");
 		JSONObject targetScheduleConf = config.getJSONObject("targetSchedule");
 		MetricWriterFactory.Type metricWriterType = MetricWriterFactory.Type.getType(config
