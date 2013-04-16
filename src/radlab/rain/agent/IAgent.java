@@ -16,18 +16,18 @@ public interface IAgent {
 
 	void setGenerator(Generator generator);
 
-	void run();
-
-	void dispose();
-
-	void doOperation(IOperation operation);
-
+	// Start agent
 	void start();
 
+	// Wait for the agent to join
+	void join() throws InterruptedException;
+	
 	// Stop the agent thread
 	void interrupt();
-
-	void join() throws InterruptedException;
-
+	
+	// Clean up after stopping the agent
+	void dispose();
+	
+	// Agent name
 	String getName();
 }

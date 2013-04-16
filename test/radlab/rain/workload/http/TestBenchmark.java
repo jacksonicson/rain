@@ -41,7 +41,7 @@ public class TestBenchmark implements ITargetFactory, IGeneratorFactory, IAgentF
 	protected ITarget createTarget() {
 		TestTarget target = new TestTarget();
 		try {
-			target.configure(targetConfig);
+			target.loadConfiguration(targetConfig);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}

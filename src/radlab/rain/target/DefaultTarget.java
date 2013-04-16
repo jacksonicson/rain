@@ -143,6 +143,30 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 		executor = Executors.newCachedThreadPool();
 	}
 
+	private void createAgents(ExecutorService executor) throws Exception {
+		// Determine maximum number of required lg units that are required by the schedule
+		long maxAgents = loadSchedule.getMaxAgents();
+
+		// Create all agents
+		for (int i = 0; i < maxAgents; i++) {
+			// Setup generator for each agent
+			Generator generator = generatorFactory.createGenerator();
+			generator.setMeanCycleTime((long) (meanCycleTime * 1000));
+			generator.setMeanThinkTime((long) (meanThinkTime * 1000));
+			generator.initialize();
+
+			// Allow the load generation strategy to be configurable
+			IAgent agent = agentFactory.createAgent(this.id, i);
+			agent.setLoadManager(loadManager);
+			agent.setGenerator(generator);
+			agent.setTiming(timing);
+			agent.setScoreboard(scoreboard);
+
+			// Add thread to thread list and start the thread
+			agents.add(agent);
+		}
+	}
+
 	private void createAgents() {
 		try {
 			createAgents(executor);
@@ -202,36 +226,13 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 		teardown();
 	}
 
-	private void createAgents(ExecutorService executor) throws Exception {
-		// Determine maximum number of required lg units that are required by the schedule
-		long maxAgents = loadSchedule.getMaxAgents();
-
-		// Create all agents
-		for (int i = 0; i < maxAgents; i++) {
-			// Setup generator for each agent
-			Generator generator = generatorFactory.createGenerator();
-			generator.setMeanCycleTime((long) (meanCycleTime * 1000));
-			generator.setMeanThinkTime((long) (meanThinkTime * 1000));
-			generator.initialize();
-
-			// Allow the load generation strategy to be configurable
-			IAgent agent = agentFactory.createAgent(this.id, i);
-			agent.setLoadManager(loadManager);
-			agent.setGenerator(generator);
-			agent.setTiming(timing);
-			agent.setScoreboard(scoreboard);
-
-			// Add thread to thread list and start the thread
-			agents.add(agent);
-		}
-	}
-
-	public void dispose() {
+	private void disposeAgents() {
 		// Shutdown all agent threads
 		// This should not be necessary if target was joined
 		for (IAgent agent : agents) {
 			try {
 				// Interrupt agent thread
+				// This should already be done
 				agent.interrupt();
 
 				// Wait for agent thread to join
@@ -242,8 +243,9 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 				agent.dispose();
 			}
 		}
+	}
 
-		// Shutdown load manager thread
+	private void disposeLoadManager() {
 		try {
 			logger.debug("Shutting down load manager");
 			loadManager.interrupt();
@@ -251,12 +253,20 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public void dispose() {
+		// Dispose agents
+		disposeAgents();
+
+		// Shutdown load manager thread
+		disposeLoadManager(); 
 
 		// Stop the scoreboard
 		scoreboard.stop();
 	}
 
-	public void configure(JSONObject config) throws JSONException {
+	public void loadConfiguration(JSONObject config) throws JSONException {
 		// Open-Loop Probability
 		if (config.has("pOpenLoop"))
 			openLoopProbability = config.getDouble("pOpenLoop");
@@ -350,7 +360,6 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 
 	@Override
 	public String getAggregationIdentifier() {
-		// TODO: Needs some improvement
 		return generatorFactory.createGenerator().getClass().getName();
 	}
 

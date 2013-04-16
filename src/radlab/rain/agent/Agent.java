@@ -131,7 +131,6 @@ public abstract class Agent extends Thread implements IAgent {
 
 	protected abstract void runSyncOperation(IOperation operation);
 
-	@Override
 	public void doOperation(IOperation operation) {
 		if (!operation.isAsync()) { // Synchronous mode
 			runSyncOperation(operation);
