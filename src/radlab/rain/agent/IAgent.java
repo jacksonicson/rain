@@ -3,7 +3,6 @@ package radlab.rain.agent;
 import radlab.rain.Timing;
 import radlab.rain.load.LoadManager;
 import radlab.rain.operation.Generator;
-import radlab.rain.operation.IOperation;
 import radlab.rain.scoreboard.IScoreboard;
 
 public interface IAgent {
@@ -19,15 +18,12 @@ public interface IAgent {
 	// Start agent
 	void start();
 
-	// Wait for the agent to join
+	// Wait for join
 	void join() throws InterruptedException;
-	
-	// Stop the agent thread
-	void interrupt();
-	
+
 	// Clean up after stopping the agent
 	void dispose();
-	
+
 	// Agent name
 	String getName();
 }

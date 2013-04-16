@@ -83,13 +83,13 @@ public class AgentPOL extends Agent {
 		return (id < loadProfile.getNumberOfUsers());
 	}
 
-	@Override
 	public void interrupt() {
 		interrupted = true;
 	}
 
 	@Override
 	public void dispose() {
+		this.interrupt();
 		this.generator.dispose();
 	}
 

@@ -230,18 +230,7 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 		// Shutdown all agent threads
 		// This should not be necessary if target was joined
 		for (IAgent agent : agents) {
-			try {
-				// Interrupt agent thread
-				// This should already be done
-				agent.interrupt();
-
-				// Wait for agent thread to join
-				agent.join();
-			} catch (InterruptedException ie) {
-				logger.error("Main thread interrupted... exiting!");
-			} finally {
-				agent.dispose();
-			}
+			agent.dispose();
 		}
 	}
 
@@ -260,7 +249,7 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 		disposeAgents();
 
 		// Shutdown load manager thread
-		disposeLoadManager(); 
+		disposeLoadManager();
 
 		// Stop the scoreboard
 		scoreboard.stop();
