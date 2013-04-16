@@ -51,17 +51,6 @@ import radlab.rain.util.ConfigUtil;
 public class Benchmark {
 	private static Logger logger = LoggerFactory.getLogger(Benchmark.class);
 
-	public void start(Scenario scenario) throws Exception {
-		// Set current thread name
-		Thread.currentThread().setName("Benchmark");
-
-		// Execute scenario
-		scenario.start();
-
-		// Aggregate scorecards
-		scenario.statAggregation();
-	}
-
 	private static JSONObject loadConfiguration(String filename) {
 		try {
 			StringBuffer configData = new StringBuffer();
@@ -124,13 +113,9 @@ public class Benchmark {
 
 	}
 
-	/**
-	 * Runs the benchmark. The only required argument is the configuration file path (e.g.
-	 * config/rain.config.sample.json).
-	 */
 	public static void main(String[] args) throws Exception {
 		try {
-
+			// Check argument length for configuration path
 			if (args.length < 1) {
 				logger.info("Unspecified name/path to configuration file!");
 				System.exit(1);
@@ -154,7 +139,7 @@ public class Benchmark {
 				service.start();
 			}
 
-			// Waiting for start signal
+			// Wait for start signal
 			if (RainConfig.getInstance().waitForStartSignal)
 				logger.info("Waiting for start signal...");
 			while (RainConfig.getInstance().waitForStartSignal) {
@@ -164,9 +149,16 @@ public class Benchmark {
 			}
 
 			// Set the global Scenario instance for the Driver
-			Benchmark benchmark = new Benchmark();
 			logger.info("Starting scenario (threads)");
-			benchmark.start(scenario);
+
+			// Set current thread name
+			Thread.currentThread().setName("Benchmark");
+
+			// Execute scenario
+			scenario.start();
+
+			// Aggregate scorecards
+			scenario.statAggregation();
 
 			// Trigger shutdown hooks
 			RainConfig.getInstance().triggerShutdown();
@@ -175,7 +167,6 @@ public class Benchmark {
 				logger.info("Stopping thrift communication! Using port: " + service.getPort());
 				service.stop();
 			}
-
 		} catch (Exception e) {
 			logger.error("error in benchmark", e);
 		} finally {
