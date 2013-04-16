@@ -46,20 +46,25 @@ import radlab.rain.util.MetricWriterFactory;
 public class Scenario {
 	private static Logger logger = LoggerFactory.getLogger(Scenario.class);
 
-	private MetricWriterFactory.Type metricWriterType;
-	private JSONObject metricWriterConf;
-
-	private JSONObject targetScheduleConf;
-	private JSONObject targetFactoryConf;
+	private JSONObject config;
 
 	private TargetManager targetManager;
 
 	public Scenario(JSONObject config) throws Exception {
-		configure(config);
+		this.config = config;
 	}
 
-	void execute() throws Exception {
+	void start() throws Exception {
+		JSONObject targetFactoryConf = config.getJSONObject("targetFactories");
+		JSONObject targetScheduleConf = config.getJSONObject("targetSchedule");
+		MetricWriterFactory.Type metricWriterType = MetricWriterFactory.Type.getType(config
+				.getString("metricWriterType"));
+		JSONObject metricWriterConf = config.getJSONObject("metricWriterConf");
+
+		// Create target schedule
 		TargetSchedule schedule = new TargetSchedule(targetScheduleConf, targetFactoryConf);
+
+		// Create target manager
 		targetManager = new TargetManager(schedule);
 		targetManager.setMetricWriterConf(metricWriterConf);
 		targetManager.setMetricWriterType(metricWriterType);
@@ -69,19 +74,6 @@ public class Scenario {
 
 		// Wait for manager to join
 		targetManager.join();
-	}
-
-	private void configure(JSONObject jsonConfig) throws JSONException, BenchmarkFailedException {
-		// Target factory configuration
-		this.targetFactoryConf = jsonConfig.getJSONObject("targetFactories");
-
-		// Target schedule configuration
-		this.targetScheduleConf = jsonConfig.getJSONObject("targetSchedule");
-
-		// Metric writer configuration
-		metricWriterType = MetricWriterFactory.Type.getType(jsonConfig.getString(ScenarioConfKeys.METRIC_WRITER_TYPE
-				.toString()));
-		metricWriterConf = jsonConfig.getJSONObject(ScenarioConfKeys.METRIC_WRITER_CONF.toString());
 	}
 
 	public void statAggregation() throws JSONException {

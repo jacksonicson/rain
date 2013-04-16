@@ -56,7 +56,7 @@ public class Benchmark {
 		Thread.currentThread().setName("Benchmark");
 
 		// Execute scenario
-		scenario.execute();
+		scenario.start();
 
 		// Aggregate scorecards
 		scenario.statAggregation();
