@@ -84,30 +84,30 @@ public class Benchmark {
 	private static void configureGlobals(JSONObject jsonConfig) throws JSONException {
 		// Read global configuration settings
 		// Set up Rain configuration params
-		if (jsonConfig.has(ScenarioConfKeys.VERBOSE_ERRORS_KEY.toString())) {
-			boolean val = jsonConfig.getBoolean(ScenarioConfKeys.VERBOSE_ERRORS_KEY.toString());
+		if (jsonConfig.has("verboseErrors")) {
+			boolean val = jsonConfig.getBoolean("verboseErrors");
 			RainConfig.getInstance().verboseErrors = val;
 		}
 
 		// Setup sonar recorder
-		if (jsonConfig.has(ScenarioConfKeys.SONAR_HOSTNAME.toString())) {
-			String host = jsonConfig.getString(ScenarioConfKeys.SONAR_HOSTNAME.toString());
+		if (jsonConfig.has("sonarHost")) {
+			String host = jsonConfig.getString("sonarHost");
 			RainConfig.getInstance().sonarHost = host;
 		}
 
 		// Check if thrift remote management is used
 		boolean useThrift = false;
-		if (jsonConfig.has(ScenarioConfKeys.USE_THRIFT.toString()))
-			useThrift = jsonConfig.getBoolean(ScenarioConfKeys.USE_THRIFT.toString());
+		if (jsonConfig.has("useThrift"))
+			useThrift = jsonConfig.getBoolean("useThrift");
 
 		if (useThrift) {
 			// Set in the config that we're using pipes
 			RainConfig.getInstance().useThrift = useThrift;
 
 			// Check whether we're supposed to wait for a start signal
-			if (jsonConfig.has(ScenarioConfKeys.WAIT_FOR_START_SIGNAL.toString())) {
+			if (jsonConfig.has("waitForStartSignal")) {
 				RainConfig.getInstance().waitForStartSignal = jsonConfig
-						.getBoolean(ScenarioConfKeys.WAIT_FOR_START_SIGNAL.toString());
+						.getBoolean("waitForStartSignal");
 			}
 		}
 
