@@ -18,50 +18,60 @@ public class TargetSchedule {
 	// Target queue
 	private Queue<TargetConfiguration> targetsToLaunch = new LinkedList<TargetConfiguration>();
 
-	public TargetSchedule(JSONObject scheduleConf, JSONObject factoryConf) throws JSONException,
-			BenchmarkFailedException {
-		configure(scheduleConf, factoryConf);
+	public TargetSchedule(JSONObject config) throws JSONException, BenchmarkFailedException {
+		loadConfigurations(config);
 	}
 
 	private ITargetFactory buildTargetFactory(JSONObject config) throws BenchmarkFailedException {
 		try {
+			// Factory class
 			String className = config.getString("targetFactoryClass");
+
+			// Parameters
 			JSONObject factoryConfig = config.getJSONObject("targetFactoryParams");
+
+			// Create class instance
 			Class<ITargetFactory> creatorClass = (Class<ITargetFactory>) Class.forName(className);
 			Constructor<ITargetFactory> creatorCtor = creatorClass.getConstructor(new Class[] {});
 			ITargetFactory creator = (ITargetFactory) creatorCtor.newInstance((Object[]) null);
+
+			// Configure factory
 			creator.configure(factoryConfig);
+
 			return creator;
 		} catch (Exception e) {
 			throw new BenchmarkFailedException("Unable to instantiate track", e);
 		}
 	}
 
-	private void configure(JSONObject scheduleConf, JSONObject factoryConf) throws JSONException,
-			BenchmarkFailedException {
-		// Read target factory configuration
+	private void loadConfigurations(JSONObject config) throws JSONException, BenchmarkFailedException {
+
+		// Read target factory configurations
+		JSONObject factoriesConf = config.getJSONObject("targetFactories");
 		Map<String, JSONObject> factoryConfigurations = new HashMap<String, JSONObject>();
-		Iterator<String> ikeys = factoryConf.keys();
+		Iterator<String> ikeys = factoriesConf.keys();
 		while (ikeys.hasNext()) {
 			String key = ikeys.next();
-			JSONObject factory = factoryConf.getJSONObject(key);
+			JSONObject factory = factoriesConf.getJSONObject(key);
 			factoryConfigurations.put(key, factory);
 		}
 
 		// Read target schedule configuration
-		JSONArray configs = scheduleConf.getJSONArray("sequence");
-		for (int i = 0; i < configs.length(); i++) {
+		JSONArray scheduleConf = config.getJSONArray("sequence");
+		for (int i = 0; i < scheduleConf.length(); i++) {
 			TargetConfiguration targetConf = new TargetConfiguration();
-			this.targetsToLaunch.add(targetConf);
+			targetsToLaunch.add(targetConf);
 
-			JSONObject jsonConf = configs.getJSONObject(i);
+			JSONObject jsonConf = scheduleConf.getJSONObject(i);
 			targetConf.setDelay(jsonConf.getLong("delay") * 1000); // to milliseconds
 			targetConf.setRampUp(jsonConf.getLong("rampUp") * 1000); // to milliseconds
 			targetConf.setDuration(jsonConf.getLong("duration") * 1000); // to milliseconds
 			targetConf.setRampDown(jsonConf.getLong("rampDown") * 1000); // to milliseconds
 
+			// Create factory instance
 			JSONObject jsonFactoryConfig = factoryConfigurations.get(jsonConf.getString("targetFactory"));
-			targetConf.setFactory(buildTargetFactory(jsonFactoryConfig));
+			ITargetFactory factory = buildTargetFactory(jsonFactoryConfig);
+			targetConf.setFactory(factory);
 		}
 	}
 

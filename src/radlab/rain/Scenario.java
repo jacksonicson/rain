@@ -56,21 +56,16 @@ public class Scenario {
 
 	void launch() throws Exception {
 		logger.info("Launching scenario..."); 
+
+		// Read metric writer
 		
-		JSONObject targetFactoryConf = config.getJSONObject("targetFactories");
-		JSONObject targetScheduleConf = config.getJSONObject("targetSchedule");
-		MetricWriterFactory.Type metricWriterType = MetricWriterFactory.Type.getType(config
-				.getString("metricWriterType"));
-		JSONObject metricWriterConf = config.getJSONObject("metricWriterConf");
 
 		// Create target schedule
-		TargetSchedule schedule = new TargetSchedule(targetScheduleConf, targetFactoryConf);
+		TargetSchedule schedule = new TargetSchedule(config);
 
 		// Create target manager
-		targetManager = new TargetManager(schedule);
-		targetManager.setMetricWriterConf(metricWriterConf);
-		targetManager.setMetricWriterType(metricWriterType);
-
+		targetManager = new TargetManager(config, schedule);
+		
 		// Start target manager
 		targetManager.start();
 

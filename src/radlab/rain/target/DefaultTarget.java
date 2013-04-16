@@ -59,7 +59,8 @@ import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.scoreboard.Scoreboard;
 import radlab.rain.util.MetricWriter;
 
-public class DefaultTarget extends Thread implements ITarget {
+public abstract class DefaultTarget extends Thread implements ITarget {
+	// Logger
 	private static Logger logger = LoggerFactory.getLogger(DefaultTarget.class);
 
 	// Target id
@@ -77,15 +78,6 @@ public class DefaultTarget extends Thread implements ITarget {
 	// Scoreboard
 	protected IScoreboard scoreboard;
 
-	// Generator factory
-	protected IGeneratorFactory generatorFactory;
-
-	// Load schedule used by the generator and strategy
-	protected LoadScheduleFactory loadScheduleFactory;
-
-	// Agent factory
-	protected IAgentFactory agentFactory;
-
 	// Load schedule
 	protected LoadSchedule loadSchedule;
 
@@ -94,6 +86,18 @@ public class DefaultTarget extends Thread implements ITarget {
 
 	// Markov chain matrices
 	protected Map<String, MixMatrix> mixMatrices = new HashMap<String, MixMatrix>();
+
+	/*
+	 * Factories
+	 */
+	// Generator factory
+	protected IGeneratorFactory generatorFactory;
+
+	// Load schedule used by the generator and strategy
+	protected LoadScheduleFactory loadScheduleFactory;
+
+	// Agent factory
+	protected IAgentFactory agentFactory;
 
 	// Execution times
 	protected double openLoopProbability = 0d;
@@ -108,18 +112,24 @@ public class DefaultTarget extends Thread implements ITarget {
 	// List of all load generating units
 	protected List<IAgent> agents = new ArrayList<IAgent>();
 
-	// Executer pool
+	// Executer thread pool
 	protected ExecutorService executor;
 
-	public void setup() {
-		logger.info("Setting up target");
-	}
+	/*
+	 * Abstract methods
+	 */
+	protected abstract void setup();
 
-	public void teardown() {
-		logger.info("Shutting down target");
-	}
+	protected abstract void teardown();
 
 	protected void init() throws Exception {
+		// Recalculate timing based on current timestamp
+		try {
+			timing = new Timing(timing);
+		} catch (BenchmarkFailedException e1) {
+			logger.error("Could not reestablish timing", e1);
+		}
+
 		// Create load schedule creator and load schedule
 		loadSchedule = loadScheduleFactory.createSchedule();
 
@@ -133,23 +143,41 @@ public class DefaultTarget extends Thread implements ITarget {
 		executor = Executors.newCachedThreadPool();
 	}
 
+	private void createAgents() {
+		try {
+			createAgents(executor);
+			logger.debug("Agents created: " + agents.size());
+		} catch (Exception e) {
+			logger.error("Could not create agents", e);
+		}
+	}
+
+	private void startAgents() {
+		logger.info("Starting agents");
+		for (IAgent agent : agents)
+			agent.start();
+	}
+
+	private void joinAgents() {
+		for (IAgent agent : agents) {
+			try {
+				agent.join();
+			} catch (InterruptedException e) {
+				logger.error("Could not join agent", e);
+			}
+		}
+	}
+
 	public void run() {
 		// Setup target
-		logger.info("Setup process");
-		this.setup();
-
-		// Recalculate timing based on current timestamp
-		try {
-			timing = new Timing(timing);
-		} catch (BenchmarkFailedException e1) {
-			logger.error("Could not reestablish timing", e1);
-		}
+		logger.info("Running target setup...");
+		setup();
 
 		// Initialize
 		try {
 			init();
-		} catch (Exception e1) {
-			logger.error("Could not initialize", e1); 
+		} catch (Exception e) {
+			logger.error("Initialization failed", e);
 		}
 
 		// Starting load manager
@@ -160,30 +188,17 @@ public class DefaultTarget extends Thread implements ITarget {
 		logger.debug("Starting scoreboard");
 		scoreboard.start();
 
-		// Create load generating units
-		try {
-			createAgents(executor);
-			logger.debug("Agents created: " + agents.size());
-		} catch (Exception e) {
-			logger.error("Could not create agents", e);
-		}
+		// Create agents
+		createAgents();
 
-		// Start load generating unit threads
-		logger.info("Starting agents");
-		for (IAgent agent : agents)
-			agent.start();
+		// Start agents
+		startAgents();
 
-		// Wait for all agent threads to join
-		for (IAgent agent : agents) {
-			try {
-				agent.join();
-			} catch (InterruptedException e) {
-				logger.error("Could not join agent", e);
-			}
-		}
+		// Wait for all agents to finish
+		joinAgents();
 
 		// Run shutdown code
-		logger.info("Teardown");
+		logger.info("Running target teardown ...");
 		teardown();
 	}
 
@@ -243,24 +258,24 @@ public class DefaultTarget extends Thread implements ITarget {
 
 	public void configure(JSONObject config) throws JSONException {
 		// Open-Loop Probability
-		if (config.has(TargetConfKeys.OPEN_LOOP_PROBABILITY_KEY.toString()))
-			openLoopProbability = config.getDouble(TargetConfKeys.OPEN_LOOP_PROBABILITY_KEY.toString());
+		if (config.has("pOpenLoop"))
+			openLoopProbability = config.getDouble("pOpenLoop");
 
 		// Log Sampling Probability
-		if (config.has(TargetConfKeys.LOG_SAMPLING_PROBABILITY_KEY.toString()))
-			logSamplingProbability = config.getDouble(TargetConfKeys.LOG_SAMPLING_PROBABILITY_KEY.toString());
+		if (config.has("pLogSampling"))
+			logSamplingProbability = config.getDouble("pLogSampling");
 
 		// Mean Cycle Time
-		if (config.has(TargetConfKeys.MEAN_CYCLE_TIME_KEY.toString()))
-			meanCycleTime = config.getDouble(TargetConfKeys.MEAN_CYCLE_TIME_KEY.toString());
+		if (config.has("meanCycleTime"))
+			meanCycleTime = config.getDouble("meanCycleTime");
 
 		// Mean Think Time
-		if (config.has(TargetConfKeys.MEAN_THINK_TIME_KEY.toString()))
-			meanThinkTime = config.getDouble(TargetConfKeys.MEAN_THINK_TIME_KEY.toString());
+		if (config.has("meanThinkTime"))
+			meanThinkTime = config.getDouble("meanThinkTime");
 
 		// Load Mix Matrices/Behavior Directives
-		if (config.has(TargetConfKeys.BEHAVIOR_KEY.toString())) {
-			JSONObject behavior = config.getJSONObject(TargetConfKeys.BEHAVIOR_KEY.toString());
+		if (config.has("behavior")) {
+			JSONObject behavior = config.getJSONObject("behavior");
 			Iterator<String> keyIt = behavior.keys();
 
 			// Each of the keys in the behavior section should be for some mix matrix
@@ -285,9 +300,8 @@ public class DefaultTarget extends Thread implements ITarget {
 		}
 
 		// Configure the response time sampler
-		if (config.has(TargetConfKeys.MEAN_RESPONSE_TIME_SAMPLE_INTERVAL.toString()))
-			meanResponseTimeSamplingInterval = config.getLong(TargetConfKeys.MEAN_RESPONSE_TIME_SAMPLE_INTERVAL
-					.toString());
+		if (config.has("meanResponseTimeSamplingInterval"))
+			meanResponseTimeSamplingInterval = config.getLong("meanResponseTimeSamplingInterval");
 	}
 
 	private IScoreboard createScoreboard() throws JSONException, Exception {

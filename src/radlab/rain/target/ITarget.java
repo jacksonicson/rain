@@ -11,24 +11,24 @@ public interface ITarget extends Runnable {
 	// Metric writer is set
 	void setMetricWriter(MetricWriter metricWriter);
 
+	// Set identifier
+	void setId(int id);
+
 	// Start
 	void start();
 
 	// Wait for target to finish
 	void join() throws InterruptedException;
 
-	// Stops all agents and helper threads
+	// Stops all agents and helper threads (is called after join)
 	void dispose();
 
-	// Statistics for this target
+	// Get statistics for this target
 	IScoreboard getScoreboard();
-
-	// Set identifier
-	void setId(int id); 
-	
-	// Returns identifier
-	long getId();
 
 	// Statistics aggregation identifier
 	String getAggregationIdentifier();
+
+	// Returns identifier
+	long getId();
 }

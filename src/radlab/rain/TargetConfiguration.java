@@ -3,6 +3,7 @@ package radlab.rain;
 import radlab.rain.target.ITargetFactory;
 
 public class TargetConfiguration {
+
 	private long delay;
 	private long rampUp;
 	private long duration;

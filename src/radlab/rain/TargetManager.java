@@ -28,25 +28,19 @@ public class TargetManager extends Thread {
 	// List contains all targets that are created
 	private List<ITarget> targetsToJoin = new LinkedList<ITarget>();
 
-	TargetManager(TargetSchedule schedule) {
+	TargetManager(JSONObject config, TargetSchedule schedule) throws JSONException {
 		this.schedule = schedule;
+		metricWriterType = MetricWriterFactory.Type.getType(config.getString("metricWriterType"));
+		metricWriterConf = config.getJSONObject("metricWriterConf");
 	}
 
 	List<ITarget> getAllTargets() {
 		return targetsToJoin;
 	}
 
-	void setMetricWriterType(MetricWriterFactory.Type metricWriterType) {
-		this.metricWriterType = metricWriterType;
-	}
-
-	void setMetricWriterConf(JSONObject conf) {
-		this.metricWriterConf = conf;
-	}
-
 	private void createTarget(TargetConfiguration conf) throws Exception {
 		try {
-
+			// Create targets
 			List<ITarget> targets = conf.getFactory().createTargets();
 
 			// Configure all generated targets
@@ -71,29 +65,7 @@ public class TargetManager extends Thread {
 		}
 	}
 
-	public void run() {
-		// Set start benchmark time to now
-		startBenchmarkTime = System.currentTimeMillis();
-
-		while (schedule.hasNext()) {
-			// Next target configuration
-			TargetConfiguration conf = schedule.next();
-
-			// How long to wait for the next target
-			long relativeTime = System.currentTimeMillis() - startBenchmarkTime;
-			long toWait = conf.getDelay() - relativeTime;
-
-			// Wait for target to start
-			delay(toWait);
-
-			// Create and start target with its agents
-			try {
-				createTarget(conf);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-
+	private void waitForShutdown() {
 		// Wait for all targets to finish
 		logger.info("Waiting for all targets to stop");
 		for (ITarget target : targetsToJoin) {
@@ -113,8 +85,42 @@ public class TargetManager extends Thread {
 		}
 	}
 
+	private void processSchedule() {
+		// Set start benchmark time to now
+		startBenchmarkTime = System.currentTimeMillis();
+
+		// Go over the schedule
+		while (schedule.hasNext()) {
+			// Next target configuration
+			TargetConfiguration conf = schedule.next();
+
+			// How long to wait for the next target
+			long relativeTime = System.currentTimeMillis() - startBenchmarkTime;
+			long toWait = conf.getDelay() - relativeTime;
+
+			// Wait for target to start
+			delay(toWait);
+
+			try {
+				// Create and start target with its agents
+				createTarget(conf);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public void run() {
+		// Process the complete schedule
+		processSchedule();
+
+		// Wait for shutdown
+		waitForShutdown();
+	}
+
 	private void delay(long wait) {
 		try {
+			// Sleep for the given delay
 			if (wait > 0)
 				Thread.sleep(wait);
 		} catch (InterruptedException e) {
