@@ -15,31 +15,31 @@ public class TestTarget extends DefaultTarget {
 
 	public TestTarget() {
 		super();
-		iaas = new InfrastructureControl();
+//		iaas = new InfrastructureControl();
 	}
 
 	@Override
 	public void setup() {
-		try {
-			// Get a new domain
-			targetDomain = iaas.getClient().allocateDomain();
-			
-			// Wait until the domain is available
-			while (!iaas.getClient().isDomainReady(targetDomain)) {
-				logger.info("waiting for target domain...");
-				try {
-					Thread.sleep(5000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-			
-			// Launch all necessary services
-			logger.info("Launching glassfish and database services");
-			iaas.getClient().launchDrone("start", targetDomain);
-		} catch (TException e) {
-			logger.error("error while creating target domain");
-		}
+//		try {
+//			// Get a new domain
+//			targetDomain = iaas.getClient().allocateDomain();
+//			
+//			// Wait until the domain is available
+//			while (!iaas.getClient().isDomainReady(targetDomain)) {
+//				logger.info("waiting for target domain...");
+//				try {
+//					Thread.sleep(5000);
+//				} catch (InterruptedException e) {
+//					e.printStackTrace();
+//				}
+//			}
+//			
+//			// Launch all necessary services
+//			logger.info("Launching glassfish and database services");
+//			iaas.getClient().launchDrone("start", targetDomain);
+//		} catch (TException e) {
+//			logger.error("error while creating target domain");
+//		}
 	}
 
 	@Override
@@ -52,6 +52,6 @@ public class TestTarget extends DefaultTarget {
 //		}
 		
 		// Disconnect from IaaS
-		iaas.disconnect(); 
+//		iaas.disconnect(); 
 	}
 }

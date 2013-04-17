@@ -68,6 +68,8 @@ public class PingHomePageOperation extends TestOperation {
 			e.printStackTrace();
 			throw e;
 		}
+		
+		throw new Exception("asldfkj"); 
 	}
 
 }
