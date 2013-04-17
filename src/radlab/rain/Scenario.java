@@ -41,7 +41,6 @@ import org.slf4j.LoggerFactory;
 
 import radlab.rain.scoreboard.Aggregation;
 import radlab.rain.target.ITarget;
-import radlab.rain.util.MetricWriterFactory;
 
 public class Scenario {
 	private static Logger logger = LoggerFactory.getLogger(Scenario.class);
@@ -55,17 +54,16 @@ public class Scenario {
 	}
 
 	void launch() throws Exception {
-		logger.info("Launching scenario..."); 
+		logger.info("Launching scenario...");
 
 		// Read metric writer
-		
 
 		// Create target schedule
 		TargetSchedule schedule = new TargetSchedule(config);
 
 		// Create target manager
 		targetManager = new TargetManager(config, schedule);
-		
+
 		// Start target manager
 		targetManager.start();
 
