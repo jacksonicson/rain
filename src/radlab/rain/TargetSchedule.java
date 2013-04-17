@@ -57,7 +57,7 @@ public class TargetSchedule {
 		}
 
 		// Read target schedule configuration
-		JSONArray scheduleConf = config.getJSONArray("sequence");
+		JSONArray scheduleConf = config.getJSONArray("targetSchedule");
 		for (int i = 0; i < scheduleConf.length(); i++) {
 			TargetConfiguration targetConf = new TargetConfiguration();
 			targetsToLaunch.add(targetConf);
