@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import radlab.rain.target.ITarget;
 import radlab.rain.util.MetricWriter;
-import radlab.rain.util.MetricWriterFactory;
+import radlab.rain.util.SonarMetricWriter;
 
 public class TargetManager extends Thread {
 	private static Logger logger = LoggerFactory.getLogger(TargetManager.class);
@@ -19,7 +19,6 @@ public class TargetManager extends Thread {
 	private TargetSchedule schedule;
 
 	// Metric writer configuration
-	private MetricWriterFactory.Type metricWriterType;
 	private JSONObject metricWriterConf;
 
 	// Timestamp when the whole benchmark (target manager) was started
@@ -30,7 +29,6 @@ public class TargetManager extends Thread {
 
 	TargetManager(JSONObject config, TargetSchedule schedule) throws JSONException {
 		this.schedule = schedule;
-		metricWriterType = MetricWriterFactory.Type.getType(config.getString("metricWriterType"));
 		metricWriterConf = config.getJSONObject("metricWriterConf");
 	}
 
@@ -38,7 +36,7 @@ public class TargetManager extends Thread {
 		return targetsToJoin;
 	}
 
-	private void createTarget(TargetConfiguration conf) throws Exception {
+	private void createTarget(TargetConfiguration conf) throws BenchmarkFailedException {
 		try {
 			// Create targets
 			List<ITarget> targets = conf.getFactory().createTargets();
@@ -46,7 +44,7 @@ public class TargetManager extends Thread {
 			// Configure all generated targets
 			for (ITarget target : targets) {
 				// Create a metric writer
-				MetricWriter metricWriter = MetricWriterFactory.createMetricWriter(metricWriterType, metricWriterConf);
+				MetricWriter metricWriter = new SonarMetricWriter(metricWriterConf);
 				target.setMetricWriter(metricWriter);
 
 				// Set custom timing
@@ -62,12 +60,13 @@ public class TargetManager extends Thread {
 
 		} catch (JSONException e) {
 			logger.error("Error creating factory targets", e);
+			throw new BenchmarkFailedException("Error creating target factory", e);
 		}
 	}
 
 	private void waitForShutdown() {
 		// Wait for all targets to finish
-		logger.info("Waiting for all targets to stop");
+		logger.info("Waiting for all targets to stop...");
 		for (ITarget target : targetsToJoin) {
 			try {
 				// Join agents on the target
@@ -76,16 +75,17 @@ public class TargetManager extends Thread {
 				// Dispose target
 				target.dispose();
 
+				// Log
 				logger.info("Target joined: " + target.getId());
-
 			} catch (InterruptedException e) {
-				logger.info("Interrupted while joining target", e);
+				// Doesn't matter, resume shutting down next target
+				logger.debug("Interrupted while joining target", e);
 				continue;
 			}
 		}
 	}
 
-	private void processSchedule() {
+	private void processSchedule() throws BenchmarkFailedException {
 		// Set start benchmark time to now
 		startBenchmarkTime = System.currentTimeMillis();
 
@@ -101,31 +101,34 @@ public class TargetManager extends Thread {
 			// Wait for target to start
 			delay(toWait);
 
-			try {
-				// Create and start target with its agents
-				createTarget(conf);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			// Create and start target with its agents
+			createTarget(conf);
 		}
 	}
 
 	public void run() {
 		// Process the complete schedule
-		processSchedule();
+		try {
+			processSchedule();
+		} catch (BenchmarkFailedException e) {
+			logger.error("Benchmark failed while processing target schedule", e);
+			System.exit(1);
+		}
 
 		// Wait for shutdown
 		waitForShutdown();
 	}
 
 	private void delay(long wait) {
-		try {
-			// Sleep for the given delay
-			if (wait > 0)
-				Thread.sleep(wait);
-		} catch (InterruptedException e) {
-			logger.error("Interrupted thread in target manager", e);
+		long endTime = System.currentTimeMillis() + wait;
+		while (System.currentTimeMillis() < endTime) {
+			try {
+				// Sleep for the given delay
+				Thread.sleep(endTime - System.currentTimeMillis());
+			} catch (InterruptedException e) {
+				// Doesn't matter, this runs in a loop
+				logger.debug("Interrupted thread in target manager", e);
+			}
 		}
 	}
-
 }

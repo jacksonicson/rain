@@ -96,7 +96,7 @@ public class LoadManager extends Thread {
 		try {
 			Thread.sleep(rampUp);
 		} catch (InterruptedException e) {
-			logger.error("Load manager was interrupted during ramp up phase");
+			logger.warn("Load manager was interrupted during ramp up phase");
 			return;
 		}
 
@@ -162,7 +162,7 @@ public class LoadManager extends Thread {
 			logger.info("Invalid load profile. Number of users < 0. Profile details: " + load.getNumberOfUsers());
 			return false;
 		}
-		
+
 		// Check references to the mix matrix
 		if (load.getMixName() != null) {
 			if (load.getMixName().length() > 0 && !mixes.contains(load.getMixName())) {
@@ -170,7 +170,7 @@ public class LoadManager extends Thread {
 				return false;
 			}
 		}
-		
+
 		return true;
 	}
 }

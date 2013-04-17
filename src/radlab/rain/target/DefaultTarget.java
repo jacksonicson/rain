@@ -122,16 +122,16 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 
 	protected abstract void teardown();
 
-	protected void init() throws Exception {
+	protected void init() throws BenchmarkFailedException {
 		// Recalculate timing based on current timestamp
-		try {
-			timing = new Timing(timing);
-		} catch (BenchmarkFailedException e1) {
-			logger.error("Could not reestablish timing", e1);
-		}
+		timing = new Timing(timing);
 
 		// Create load schedule creator and load schedule
-		loadSchedule = loadScheduleFactory.createSchedule();
+		try {
+			loadSchedule = loadScheduleFactory.createSchedule();
+		} catch (JSONException e) {
+			throw new BenchmarkFailedException("Error while configuring target load schedule", e);
+		}
 
 		// Create scoreboard
 		scoreboard = createScoreboard();
@@ -200,8 +200,9 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 		// Initialize
 		try {
 			init();
-		} catch (Exception e) {
-			logger.error("Initialization failed", e);
+		} catch (BenchmarkFailedException e) {
+			logger.error("Benchmark failed because target initialization failed", e);
+			System.exit(1);
 		}
 
 		// Starting load manager
@@ -239,8 +240,9 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 			logger.debug("Shutting down load manager");
 			loadManager.interrupt();
 			loadManager.join();
+			return;
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			// ignore
 		}
 	}
 
@@ -303,7 +305,7 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 			meanResponseTimeSamplingInterval = config.getLong("meanResponseTimeSamplingInterval");
 	}
 
-	private IScoreboard createScoreboard() throws JSONException, Exception {
+	private IScoreboard createScoreboard() {
 		logger.debug("Creating scoreboard for target " + id);
 
 		// Create scoreboard

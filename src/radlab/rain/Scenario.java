@@ -53,7 +53,7 @@ public class Scenario {
 		this.config = config;
 	}
 
-	void launch() throws Exception {
+	void launch() throws JSONException, BenchmarkFailedException {
 		logger.info("Launching scenario...");
 
 		// Read metric writer
@@ -68,7 +68,11 @@ public class Scenario {
 		targetManager.start();
 
 		// Wait for manager to join
-		targetManager.join();
+		try {
+			targetManager.join();
+		} catch (InterruptedException e) {
+			throw new BenchmarkFailedException("Target manager was interrupted", e);
+		}
 	}
 
 	public void statAggregation() throws JSONException {

@@ -106,8 +106,7 @@ public class Benchmark {
 
 			// Check whether we're supposed to wait for a start signal
 			if (jsonConfig.has("waitForStartSignal")) {
-				RainConfig.getInstance().waitForStartSignal = jsonConfig
-						.getBoolean("waitForStartSignal");
+				RainConfig.getInstance().waitForStartSignal = jsonConfig.getBoolean("waitForStartSignal");
 			}
 		}
 
@@ -167,8 +166,10 @@ public class Benchmark {
 				logger.info("Stopping thrift communication! Using port: " + service.getPort());
 				service.stop();
 			}
-		} catch (Exception e) {
-			logger.error("error in benchmark", e);
+		} catch (JSONException e) {
+			logger.error("Error in benchmark configuration", e);
+		} catch (BenchmarkFailedException e) {
+			logger.error("Benchmark failed ", e);
 		} finally {
 			LogManager.shutdown();
 		}

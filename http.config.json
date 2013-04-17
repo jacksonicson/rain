@@ -3,7 +3,6 @@
     "useThrift": true,
     "sonarHost" : "monitor0",
     
-    "metricWriterType" : "sonar",
     "metricWriterConf" : {},
     
     "targetFactories" : {

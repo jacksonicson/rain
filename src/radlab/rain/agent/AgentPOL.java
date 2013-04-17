@@ -144,7 +144,6 @@ public class AgentPOL extends Agent {
 
 					// IMPORTANT: Next operation is triggered here
 					triggerNextOperation(lastOperationIndex);
-
 				}
 			}
 

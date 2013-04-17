@@ -10,12 +10,12 @@ public abstract class MetricWriter {
 	public static String CFG_IP_ADDRESS_KEY = "ipaddress";
 	public static String CFG_PORT_KEY = "port";
 
-	public MetricWriter(JSONObject config) throws Exception {
+	public MetricWriter(JSONObject config) {
 	}
 
 	public abstract String getDetails();
 
-	public abstract boolean write(ResponseTimeStat stat) throws Exception;
+	public abstract boolean write(ResponseTimeStat stat);
 
 	public abstract void close() throws Exception;
 }
