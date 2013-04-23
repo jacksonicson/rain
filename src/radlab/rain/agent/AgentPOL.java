@@ -134,7 +134,7 @@ public class AgentPOL extends Agent {
 			int lastOperationIndex = -1;
 
 			// Check if benchmark is still running
-			while (System.currentTimeMillis() <= timing.endRun && !interrupted) {
+			while (System.currentTimeMillis() <= timing.endSteadyState && !interrupted) {
 				// If generator is not active
 				if (!isActive()) {
 					threadState = ThreadStates.Inactive;

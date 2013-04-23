@@ -119,15 +119,12 @@ public class LoadManager extends Thread {
 					currentLoad = advanceSchedule();
 				}
 			} catch (InterruptedException e) {
-				break;
+				continue;
 			} catch (Exception e) {
 				logger.error("Unknown error in load manager", e);
 				interrupted = true;
 			}
 		}
-
-		// Log finished
-		logger.info("LoadManager finished interrupted: " + interrupted);
 	}
 
 	private LoadDefinition getNextLoadProfile() {

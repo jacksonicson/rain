@@ -28,6 +28,7 @@ public class TargetManager extends Thread {
 	private List<ITarget> targetsToJoin = new LinkedList<ITarget>();
 
 	TargetManager(JSONObject config, TargetSchedule schedule) throws JSONException {
+		setName("TargetManager");
 		this.schedule = schedule;
 		metricWriterConf = config.getJSONObject("metricWriterConf");
 	}
