@@ -11,7 +11,6 @@ import radlab.rain.agent.IAgent;
 import radlab.rain.agent.IAgentFactory;
 import radlab.rain.operation.Generator;
 import radlab.rain.operation.IGeneratorFactory;
-import radlab.rain.target.DefaultTarget;
 import radlab.rain.target.ITarget;
 import radlab.rain.target.ITargetFactory;
 
@@ -24,12 +23,14 @@ public class TestBenchmark implements ITargetFactory, IGeneratorFactory, IAgentF
 	@Override
 	public void configure(JSONObject params) throws JSONException {
 		targetCount = params.getInt("targetCount");
+		
 		targetConfig = params.getJSONObject("targetConfig");
-		baseUrl = params.getString("baseUrl");
+		baseUrl = targetConfig.getString("baseUrl"); 
 	}
 
 	@Override
-	public List<ITarget> createTargets() throws JSONException {
+	public List<ITarget> createTargets(int workloadProfile) throws JSONException {
+
 		List<ITarget> tracks = new LinkedList<ITarget>();
 		for (int i = 0; i < targetCount; i++) {
 			tracks.add(createTarget());
@@ -38,9 +39,9 @@ public class TestBenchmark implements ITargetFactory, IGeneratorFactory, IAgentF
 	}
 
 	protected ITarget createTarget() {
-		DefaultTarget target = new DefaultTarget();
+		TestTarget target = new TestTarget();
 		try {
-			target.configure(targetConfig);
+			target.loadConfiguration(targetConfig);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}

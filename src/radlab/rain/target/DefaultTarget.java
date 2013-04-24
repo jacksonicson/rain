@@ -45,6 +45,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import radlab.rain.BenchmarkFailedException;
 import radlab.rain.Timing;
 import radlab.rain.agent.IAgent;
 import radlab.rain.agent.IAgentFactory;
@@ -58,7 +59,8 @@ import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.scoreboard.Scoreboard;
 import radlab.rain.util.MetricWriter;
 
-public class DefaultTarget implements ITarget {
+public abstract class DefaultTarget extends Thread implements ITarget {
+	// Logger
 	private static Logger logger = LoggerFactory.getLogger(DefaultTarget.class);
 
 	// Target id
@@ -76,15 +78,6 @@ public class DefaultTarget implements ITarget {
 	// Scoreboard
 	protected IScoreboard scoreboard;
 
-	// Generator factory
-	protected IGeneratorFactory generatorFactory;
-
-	// Load schedule used by the generator and strategy
-	protected LoadScheduleFactory loadScheduleFactory;
-
-	// Agent factory
-	protected IAgentFactory agentFactory;
-
 	// Load schedule
 	protected LoadSchedule loadSchedule;
 
@@ -93,6 +86,18 @@ public class DefaultTarget implements ITarget {
 
 	// Markov chain matrices
 	protected Map<String, MixMatrix> mixMatrices = new HashMap<String, MixMatrix>();
+
+	/*
+	 * Factories
+	 */
+	// Generator factory
+	protected IGeneratorFactory generatorFactory;
+
+	// Load schedule used by the generator and strategy
+	protected LoadScheduleFactory loadScheduleFactory;
+
+	// Agent factory
+	protected IAgentFactory agentFactory;
 
 	// Execution times
 	protected double openLoopProbability = 0d;
@@ -107,15 +112,26 @@ public class DefaultTarget implements ITarget {
 	// List of all load generating units
 	protected List<IAgent> agents = new ArrayList<IAgent>();
 
-	// Executer pool
+	// Executer thread pool
 	protected ExecutorService executor;
 
-	public void init(long id) throws Exception {
-		// Set identifier
-		this.id = id;
+	/*
+	 * Abstract methods
+	 */
+	protected abstract void setup();
+
+	protected abstract void teardown();
+
+	protected void init() throws BenchmarkFailedException {
+		// Recalculate timing based on current timestamp
+		timing = new Timing(timing);
 
 		// Create load schedule creator and load schedule
-		loadSchedule = loadScheduleFactory.createSchedule();
+		try {
+			loadSchedule = loadScheduleFactory.createSchedule();
+		} catch (JSONException e) {
+			throw new BenchmarkFailedException("Error while configuring target load schedule", e);
+		}
 
 		// Create scoreboard
 		scoreboard = createScoreboard();
@@ -125,25 +141,6 @@ public class DefaultTarget implements ITarget {
 
 		// Create a new thread pool
 		executor = Executors.newCachedThreadPool();
-	}
-
-	public void start() throws Exception {
-		// Starting load manager
-		logger.debug("Starting load manager");
-		loadManager.start();
-
-		// Start the scoreboard
-		logger.debug("Starting scoreboard");
-		scoreboard.start();
-
-		// Create load generating units
-		createAgents(executor);
-		logger.debug("Agents created: " + agents.size());
-
-		// Start load generating unit threads
-		logger.debug("Starting agents");
-		for (IAgent agent : agents)
-			agent.start();
 	}
 
 	private void createAgents(ExecutorService executor) throws Exception {
@@ -170,63 +167,116 @@ public class DefaultTarget implements ITarget {
 		}
 	}
 
-	public void joinAgents() throws InterruptedException {
-		// Wait for all agent threads to join
-		for (IAgent agent : agents) {
-			agent.join();
+	private void createAgents() {
+		try {
+			createAgents(executor);
+			logger.debug("Agents created: " + agents.size());
+		} catch (Exception e) {
+			logger.error("Could not create agents", e);
 		}
 	}
 
-	public void dispose() {
+	private void startAgents() {
+		logger.info("Starting agents");
+		for (IAgent agent : agents)
+			agent.start();
+	}
+
+	private void joinAgents() {
+		for (IAgent agent : agents) {
+			try {
+				agent.join();
+			} catch (InterruptedException e) {
+				logger.error("Could not join agent", e);
+			}
+		}
+	}
+
+	public void run() {
+		// Setup target
+		logger.info("Running target setup...");
+		setup();
+
+		// Initialize
+		try {
+			init();
+		} catch (BenchmarkFailedException e) {
+			logger.error("Benchmark failed because target initialization failed", e);
+			System.exit(1);
+		}
+
+		// Starting load manager
+		logger.debug("Starting load manager");
+		loadManager.start();
+
+		// Start the scoreboard
+		logger.debug("Starting scoreboard");
+		scoreboard.start();
+
+		// Create agents
+		createAgents();
+
+		// Start agents
+		startAgents();
+
+		// Wait for all agents to finish
+		joinAgents();
+
+		// Run shutdown code
+		logger.info("Running target teardown ...");
+		teardown();
+	}
+
+	private void disposeAgents() {
 		// Shutdown all agent threads
 		// This should not be necessary if target was joined
 		for (IAgent agent : agents) {
-			try {
-				// Interrupt agent thread
-				agent.interrupt();
-
-				// Wait for agent thread to join
-				agent.join();
-			} catch (InterruptedException ie) {
-				logger.error("Main thread interrupted... exiting!");
-			} finally {
-				agent.dispose();
-			}
+			agent.dispose();
 		}
+	}
 
-		// Shutdown load manager thread
+	private void disposeLoadManager() {
 		try {
 			logger.debug("Shutting down load manager");
 			loadManager.interrupt();
 			loadManager.join();
+			return;
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			// ignore
 		}
+	}
+
+	public void dispose() {
+		// Dispose agents
+		disposeAgents();
+
+		// Shutdown load manager thread
+		disposeLoadManager();
 
 		// Stop the scoreboard
 		scoreboard.stop();
 	}
 
-	public void configure(JSONObject config) throws JSONException {
+	public void loadConfiguration(JSONObject config) throws JSONException {
 		// Open-Loop Probability
-		if (config.has(TargetConfKeys.OPEN_LOOP_PROBABILITY_KEY.toString()))
-			openLoopProbability = config.getDouble(TargetConfKeys.OPEN_LOOP_PROBABILITY_KEY.toString());
+		if (config.has("pOpenLoop"))
+			openLoopProbability = config.getDouble("pOpenLoop");
 
 		// Log Sampling Probability
-		if (config.has(TargetConfKeys.LOG_SAMPLING_PROBABILITY_KEY.toString()))
-			logSamplingProbability = config.getDouble(TargetConfKeys.LOG_SAMPLING_PROBABILITY_KEY.toString());
+		if (config.has("pLogSampling"))
+			logSamplingProbability = config.getDouble("pLogSampling");
 
 		// Mean Cycle Time
-		if (config.has(TargetConfKeys.MEAN_CYCLE_TIME_KEY.toString()))
-			meanCycleTime = config.getDouble(TargetConfKeys.MEAN_CYCLE_TIME_KEY.toString());
+		if (config.has("meanCycleTime"))
+			meanCycleTime = config.getDouble("meanCycleTime");
 
 		// Mean Think Time
-		if (config.has(TargetConfKeys.MEAN_THINK_TIME_KEY.toString()))
-			meanThinkTime = config.getDouble(TargetConfKeys.MEAN_THINK_TIME_KEY.toString());
+		if (config.has("meanThinkTime"))
+			meanThinkTime = config.getDouble("meanThinkTime");
 
 		// Load Mix Matrices/Behavior Directives
-		if (config.has(TargetConfKeys.BEHAVIOR_KEY.toString())) {
-			JSONObject behavior = config.getJSONObject(TargetConfKeys.BEHAVIOR_KEY.toString());
+		if (config.has("behavior")) {
+			JSONObject behavior = config.getJSONObject("behavior");
 			Iterator<String> keyIt = behavior.keys();
 
 			// Each of the keys in the behavior section should be for some mix matrix
@@ -251,12 +301,11 @@ public class DefaultTarget implements ITarget {
 		}
 
 		// Configure the response time sampler
-		if (config.has(TargetConfKeys.MEAN_RESPONSE_TIME_SAMPLE_INTERVAL.toString()))
-			meanResponseTimeSamplingInterval = config.getLong(TargetConfKeys.MEAN_RESPONSE_TIME_SAMPLE_INTERVAL
-					.toString());
+		if (config.has("meanResponseTimeSamplingInterval"))
+			meanResponseTimeSamplingInterval = config.getLong("meanResponseTimeSamplingInterval");
 	}
 
-	private IScoreboard createScoreboard() throws JSONException, Exception {
+	private IScoreboard createScoreboard() {
 		logger.debug("Creating scoreboard for target " + id);
 
 		// Create scoreboard
@@ -302,7 +351,11 @@ public class DefaultTarget implements ITarget {
 
 	@Override
 	public String getAggregationIdentifier() {
-		// TODO: Needs some improvement
 		return generatorFactory.createGenerator().getClass().getName();
+	}
+
+	@Override
+	public void setId(int id) {
+		this.id = id;
 	}
 }

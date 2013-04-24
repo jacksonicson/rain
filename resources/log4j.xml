@@ -30,17 +30,21 @@
 	<logger name="de.tum.in.dss.http.Connection">
 		<level value="debug" />
 	</logger>
-	
+
 	<logger name="radlab.rain.agent.AgentPOL">
-		<level value="info" />
+		<level value="debug" />
 	</logger>
-	
+
+	<logger name="radlab.rain.workload.http">
+		<level value="debug" />
+	</logger>
+
 	<logger name="radlab.rain">
 		<level value="debug" />
 	</logger>
 
 	<root>
-		<priority value="info" />
+		<priority value="debug" />
 		<appender-ref ref="Console" />
 	</root>
 

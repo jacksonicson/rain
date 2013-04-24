@@ -83,13 +83,13 @@ public class AgentPOL extends Agent {
 		return (id < loadProfile.getNumberOfUsers());
 	}
 
-	@Override
 	public void interrupt() {
 		interrupted = true;
 	}
 
 	@Override
 	public void dispose() {
+		this.interrupt();
 		this.generator.dispose();
 	}
 
@@ -134,7 +134,7 @@ public class AgentPOL extends Agent {
 			int lastOperationIndex = -1;
 
 			// Check if benchmark is still running
-			while (System.currentTimeMillis() <= timing.endRun && !interrupted) {
+			while (System.currentTimeMillis() <= timing.endSteadyState && !interrupted) {
 				// If generator is not active
 				if (!isActive()) {
 					threadState = ThreadStates.Inactive;
@@ -144,7 +144,6 @@ public class AgentPOL extends Agent {
 
 					// IMPORTANT: Next operation is triggered here
 					triggerNextOperation(lastOperationIndex);
-
 				}
 			}
 

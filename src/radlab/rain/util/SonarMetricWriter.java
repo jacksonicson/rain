@@ -1,6 +1,5 @@
 package radlab.rain.util;
 
-import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
 import radlab.rain.scoreboard.ResponseTimeStat;
@@ -8,8 +7,6 @@ import de.tum.in.sonar.collector.Identifier;
 import de.tum.in.sonar.collector.MetricReading;
 
 public class SonarMetricWriter extends MetricWriter {
-
-	private static final Logger logger = Logger.getLogger(SonarMetricWriter.class);
 
 	private SonarRecorder sonarRecorder;
 
@@ -19,7 +16,7 @@ public class SonarMetricWriter extends MetricWriter {
 
 	private long[] thrBuffer = new long[10];
 
-	public SonarMetricWriter(JSONObject config) throws Exception {
+	public SonarMetricWriter(JSONObject config) {
 		super(config);
 
 		System.out.println("Start SonarMetricWriter");
@@ -34,7 +31,7 @@ public class SonarMetricWriter extends MetricWriter {
 	}
 
 	@Override
-	public boolean write(ResponseTimeStat rtimeStat) throws Exception {
+	public boolean write(ResponseTimeStat rtimeStat) {
 
 		if (lastSnapshotLog == 0) {
 			lastSnapshotLog = System.currentTimeMillis();

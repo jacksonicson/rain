@@ -1,22 +1,29 @@
 {
-    "timing": {
-        "rampUp": 10,
-        "duration": 10,
-        "rampDown": 5,
-    },
-    
     "waitForStartSignal": false,
     "useThrift": true,
     "sonarHost" : "monitor0",
     
-    "metricWriterType" : "sonar",
     "metricWriterConf" : {},
     
-    "targetFactoryClass": "radlab.rain.workload.http.TestBenchmark",    
-    "targetFactoryParams": {
-    	"baseUrl" : "dss.in.tum.de",
-    	"targetCount" : 1,
-    	"targetConfig" : {
-    	},
+    "targetFactories" : {
+		"f1" : {
+			"targetFactoryClass": "radlab.rain.workload.http.TestBenchmark",    
+		    "targetFactoryParams": {
+		    	"targetCount" : 1,
+		    	"targetConfig" : {
+		    		"baseUrl" : "dss.in.tum.de",
+		    	},
+		    },
+		}    	
     },
+    
+    "targetSchedule" : [
+		{
+		"delay": 0,
+		"rampUp": 5,
+        "duration": 5,
+        "rampDown": 5,
+		"targetFactory": "f1",
+		},
+	],
 }

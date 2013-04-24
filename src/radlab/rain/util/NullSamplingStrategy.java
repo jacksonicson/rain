@@ -33,19 +33,17 @@ package radlab.rain.util;
 
 import java.util.LinkedList;
 
-public class NullSamplingStrategy implements IMetricSampler 
-{
+public class NullSamplingStrategy implements IMetricSampler {
 	private LinkedList<Long> _samples = new LinkedList<Long>();
 	private int _currentSample = 0;
 	private long _sampleSum = 0;
-	
-	public NullSamplingStrategy() 
-	{}
+
+	public NullSamplingStrategy() {
+	}
 
 	// accept always keeps each sample seen
 	@Override
-	public boolean accept( long value ) 
-	{
+	public boolean accept(long value) {
 		this._currentSample++;
 		this._sampleSum += value;
 		this._samples.add(value);
@@ -53,86 +51,84 @@ public class NullSamplingStrategy implements IMetricSampler
 	}
 
 	@Override
-	public double getMeanSamplingInterval() 
-	{
-		return 0; // Returns 0 by design, sampling interval irrelevant for NullSamplingStrategy (it accepts every sample seen)
+	public double getMeanSamplingInterval() {
+		return 0; // Returns 0 by design, sampling interval irrelevant for NullSamplingStrategy (it accepts every sample
+					// seen)
 	}
 
 	@Override
-	public long getNthPercentile(int pct) 
-	{
-		return PoissonSamplingStrategy.getNthPercentile( pct, this._samples );
+	public long getNthPercentile(int pct) {
+		return PoissonSamplingStrategy.getNthPercentile(pct, this._samples);
 	}
 
 	@Override
-	public LinkedList<Long> getRawSamples() 
-	{
+	public LinkedList<Long> getRawSamples() {
 		return this._samples;
 	}
 
 	@Override
-	public double getSampleMean() 
-	{
+	public double getSampleMean() {
 		long samples = this.getSamplesCollected();
-		if( samples == 0 )
+		if (samples == 0)
 			return 0.0;
-		else return (double) this._sampleSum / (double) samples;
+		else
+			return (double) this._sampleSum / (double) samples;
 	}
 
 	@Override
-	public double getSampleStandardDeviation() 
-	{
+	public double getSampleStandardDeviation() {
 		long samples = this.getSamplesCollected();
-		if( samples == 0 || samples == 1 )
+		if (samples == 0 || samples == 1)
 			return 0.0;
-		
+
 		double sampleMean = this.getSampleMean();
-		
+
 		// Sum the deviations from the mean for all items
 		double deviationSqSum = 0.0;
-		for( Long value : this._samples )
-		{
+		for (Long value : this._samples) {
 			// Print out value so we can debug the sd computation
-			//System.out.println( value );
-			deviationSqSum += Math.pow( (double)(value - sampleMean), 2 );
+			// System.out.println( value );
+			deviationSqSum += Math.pow((double) (value - sampleMean), 2);
 		}
 		// Divide deviationSqSum by N-1 then return the square root
-		return Math.sqrt( deviationSqSum/(double)(samples - 1) );
+		return Math.sqrt(deviationSqSum / (double) (samples - 1));
 	}
 
 	@Override
-	public int getSamplesCollected() 
-	{
+	public int getSamplesCollected() {
 		return this._samples.size();
 	}
 
 	@Override
-	public int getSamplesSeen() 
-	{
+	public int getSamplesSeen() {
 		return this._currentSample;
 	}
 
 	@Override
-	public double getTvalue(double populationMean) 
-	{
+	public double getTvalue(double populationMean) {
 		long samples = this.getSamplesCollected();
-		if( samples == 0 || samples == 1 )
+		if (samples == 0 || samples == 1)
 			return 0.0;
+
+		double ret = (this.getSampleMean() - populationMean)
+				/ (this.getSampleStandardDeviation() / Math.sqrt(this.getSamplesCollected()));
+		if (Double.isNaN(ret))
+			ret = 0;
+		if (Double.isInfinite(ret))
+			ret = 0;
 		
-		return ( this.getSampleMean() - populationMean ) / ( this.getSampleStandardDeviation()/Math.sqrt( this.getSamplesCollected() ) );
+		return ret;
 	}
 
 	@Override
-	public void reset() 
-	{
+	public void reset() {
 		this._currentSample = 0;
 		this._samples.clear();
 		this._sampleSum = 0;
 	}
 
 	@Override
-	public void setMeanSamplingInterval(double val) 
-	{
+	public void setMeanSamplingInterval(double val) {
 		// Empty by design (sampling intervals are irrelevant for the NullSamplingStrategy: it accepts every sample)
 	}
 

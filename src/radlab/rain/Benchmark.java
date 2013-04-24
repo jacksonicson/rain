@@ -51,17 +51,6 @@ import radlab.rain.util.ConfigUtil;
 public class Benchmark {
 	private static Logger logger = LoggerFactory.getLogger(Benchmark.class);
 
-	public void start(Scenario scenario) throws Exception {
-		// Set current thread name
-		Thread.currentThread().setName("Benchmark");
-
-		// Execute scenario
-		Timing timing = scenario.execute();
-
-		// Aggregate scorecards
-		scenario.statAggregation(timing);
-	}
-
 	private static JSONObject loadConfiguration(String filename) {
 		try {
 			StringBuffer configData = new StringBuffer();
@@ -95,42 +84,37 @@ public class Benchmark {
 	private static void configureGlobals(JSONObject jsonConfig) throws JSONException {
 		// Read global configuration settings
 		// Set up Rain configuration params
-		if (jsonConfig.has(ScenarioConfKeys.VERBOSE_ERRORS_KEY.toString())) {
-			boolean val = jsonConfig.getBoolean(ScenarioConfKeys.VERBOSE_ERRORS_KEY.toString());
+		if (jsonConfig.has("verboseErrors")) {
+			boolean val = jsonConfig.getBoolean("verboseErrors");
 			RainConfig.getInstance().verboseErrors = val;
 		}
 
 		// Setup sonar recorder
-		if (jsonConfig.has(ScenarioConfKeys.SONAR_HOSTNAME.toString())) {
-			String host = jsonConfig.getString(ScenarioConfKeys.SONAR_HOSTNAME.toString());
+		if (jsonConfig.has("sonarHost")) {
+			String host = jsonConfig.getString("sonarHost");
 			RainConfig.getInstance().sonarHost = host;
 		}
 
 		// Check if thrift remote management is used
 		boolean useThrift = false;
-		if (jsonConfig.has(ScenarioConfKeys.USE_THRIFT.toString()))
-			useThrift = jsonConfig.getBoolean(ScenarioConfKeys.USE_THRIFT.toString());
+		if (jsonConfig.has("useThrift"))
+			useThrift = jsonConfig.getBoolean("useThrift");
 
 		if (useThrift) {
 			// Set in the config that we're using pipes
 			RainConfig.getInstance().useThrift = useThrift;
 
 			// Check whether we're supposed to wait for a start signal
-			if (jsonConfig.has(ScenarioConfKeys.WAIT_FOR_START_SIGNAL.toString())) {
-				RainConfig.getInstance().waitForStartSignal = jsonConfig
-						.getBoolean(ScenarioConfKeys.WAIT_FOR_START_SIGNAL.toString());
+			if (jsonConfig.has("waitForStartSignal")) {
+				RainConfig.getInstance().waitForStartSignal = jsonConfig.getBoolean("waitForStartSignal");
 			}
 		}
 
 	}
 
-	/**
-	 * Runs the benchmark. The only required argument is the configuration file path (e.g.
-	 * config/rain.config.sample.json).
-	 */
 	public static void main(String[] args) throws Exception {
 		try {
-
+			// Check argument length for configuration path
 			if (args.length < 1) {
 				logger.info("Unspecified name/path to configuration file!");
 				System.exit(1);
@@ -154,7 +138,7 @@ public class Benchmark {
 				service.start();
 			}
 
-			// Waiting for start signal
+			// Wait for start signal
 			if (RainConfig.getInstance().waitForStartSignal)
 				logger.info("Waiting for start signal...");
 			while (RainConfig.getInstance().waitForStartSignal) {
@@ -164,9 +148,16 @@ public class Benchmark {
 			}
 
 			// Set the global Scenario instance for the Driver
-			Benchmark benchmark = new Benchmark();
 			logger.info("Starting scenario (threads)");
-			benchmark.start(scenario);
+
+			// Set current thread name
+			Thread.currentThread().setName("Benchmark");
+
+			// Execute scenario
+			scenario.launch();
+
+			// Aggregate scorecards
+			scenario.statAggregation();
 
 			// Trigger shutdown hooks
 			RainConfig.getInstance().triggerShutdown();
@@ -175,9 +166,10 @@ public class Benchmark {
 				logger.info("Stopping thrift communication! Using port: " + service.getPort());
 				service.stop();
 			}
-
-		} catch (Exception e) {
-			logger.error("error in benchmark", e);
+		} catch (JSONException e) {
+			logger.error("Error in benchmark configuration", e);
+		} catch (BenchmarkFailedException e) {
+			logger.error("Benchmark failed ", e);
 		} finally {
 			LogManager.shutdown();
 		}

@@ -134,8 +134,11 @@ public class PoissonSamplingStrategy implements IMetricSampler {
 		if (samples == 0 || samples == 1)
 			return 0.0;
 
-		double ret = (this.getSampleMean() - populationMean) / (this.getSampleStandardDeviation() / Math.sqrt(this.getSamplesCollected()));
+		double ret = (this.getSampleMean() - populationMean)
+				/ (this.getSampleStandardDeviation() / Math.sqrt(this.getSamplesCollected()));
 		if (Double.isNaN(ret))
+			ret = 0;
+		if (Double.isInfinite(ret))
 			ret = 0;
 		return ret;
 	}
