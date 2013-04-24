@@ -47,6 +47,8 @@ public class Scenario {
 
 	private JSONObject config;
 
+	private TargetSchedule targetSchedule;
+
 	private TargetManager targetManager;
 
 	public Scenario(JSONObject config) throws Exception {
@@ -56,13 +58,11 @@ public class Scenario {
 	void launch() throws JSONException, BenchmarkFailedException {
 		logger.info("Launching scenario...");
 
-		// Read metric writer
-
 		// Create target schedule
-		TargetSchedule schedule = new TargetSchedule(config);
+		targetSchedule = new TargetSchedule(config);
 
 		// Create target manager
-		targetManager = new TargetManager(config, schedule);
+		targetManager = new TargetManager(config, targetSchedule);
 
 		// Start target manager
 		targetManager.start();
@@ -88,7 +88,7 @@ public class Scenario {
 		return names;
 	}
 
-	public Timing getTiming() {
-		return null;
+	public TargetSchedule getTargetSchedule() {
+		return targetSchedule;
 	}
 }

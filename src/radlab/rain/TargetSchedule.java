@@ -18,6 +18,10 @@ public class TargetSchedule {
 	// Target queue
 	private Queue<TargetConfiguration> targetsToLaunch = new LinkedList<TargetConfiguration>();
 
+	// Global timing
+	private long rampUp;
+	private long duration;
+
 	public TargetSchedule(JSONObject config) throws JSONException, BenchmarkFailedException {
 		loadConfigurations(config);
 	}
@@ -73,7 +77,23 @@ public class TargetSchedule {
 			JSONObject jsonFactoryConfig = factoryConfigurations.get(jsonConf.getString("targetFactory"));
 			ITargetFactory factory = buildTargetFactory(jsonFactoryConfig);
 			targetConf.setFactory(factory);
+
+			// Update duration
+			long finishTime = targetConf.getDelay() + targetConf.getRampUp() + targetConf.getDuration()
+					+ targetConf.getRampDown();
+			duration = Math.max(finishTime, duration);
 		}
+
+		// Read global timing
+		rampUp = config.getJSONObject("timing").getLong("rampUp");
+	}
+
+	public long getRampUp() {
+		return rampUp;
+	}
+
+	public long duration() {
+		return duration;
 	}
 
 	TargetConfiguration next() {
@@ -84,3 +104,4 @@ public class TargetSchedule {
 		return targetsToLaunch.isEmpty() == false;
 	}
 }
+

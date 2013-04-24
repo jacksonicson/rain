@@ -11,7 +11,5 @@ service RainService {
 	
 	long getRampUpTime();
 	
-	long getRampDownTime();
-	
 	long getDurationTime();
 }
