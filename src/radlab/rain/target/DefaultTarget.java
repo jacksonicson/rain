@@ -123,9 +123,6 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 	protected abstract void teardown();
 
 	protected void init() throws BenchmarkFailedException {
-		// Set thread name
-		setName("DefaultTarget"); 
-		
 		// Recalculate timing based on current timestamp
 		timing = new Timing(timing);
 

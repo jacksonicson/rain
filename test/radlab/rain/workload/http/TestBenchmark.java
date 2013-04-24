@@ -29,7 +29,7 @@ public class TestBenchmark implements ITargetFactory, IGeneratorFactory, IAgentF
 	}
 
 	@Override
-	public List<ITarget> createTargets() throws JSONException {
+	public List<ITarget> createTargets(int workloadProfile) throws JSONException {
 
 		List<ITarget> tracks = new LinkedList<ITarget>();
 		for (int i = 0; i < targetCount; i++) {
