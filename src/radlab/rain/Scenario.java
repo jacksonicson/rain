@@ -45,24 +45,20 @@ import radlab.rain.target.ITarget;
 public class Scenario {
 	private static Logger logger = LoggerFactory.getLogger(Scenario.class);
 
-	private JSONObject config;
-
 	private TargetSchedule targetSchedule;
 
 	private TargetManager targetManager;
 
 	public Scenario(JSONObject config) throws Exception {
-		this.config = config;
-	}
-
-	void launch() throws JSONException, BenchmarkFailedException {
-		logger.info("Launching scenario...");
-
 		// Create target schedule
 		targetSchedule = new TargetSchedule(config);
 
 		// Create target manager
 		targetManager = new TargetManager(config, targetSchedule);
+	}
+
+	void launch() throws JSONException, BenchmarkFailedException {
+		logger.info("Launching scenario...");
 
 		// Start target manager
 		targetManager.start();

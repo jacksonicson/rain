@@ -24,27 +24,27 @@
 
 
 	<logger name="de.tum.in.dss.http.HttpResponseParser">
-		<level value="debug" />
+		<level value="info" />
 	</logger>
 
 	<logger name="de.tum.in.dss.http.Connection">
-		<level value="debug" />
+		<level value="info" />
 	</logger>
 
 	<logger name="radlab.rain.agent.AgentPOL">
-		<level value="debug" />
+		<level value="info" />
 	</logger>
 
 	<logger name="radlab.rain.workload.http">
-		<level value="debug" />
+		<level value="info" />
 	</logger>
 
 	<logger name="radlab.rain">
-		<level value="debug" />
+		<level value="info" />
 	</logger>
 
 	<root>
-		<priority value="debug" />
+		<priority value="info" />
 		<appender-ref ref="Console" />
 	</root>
 

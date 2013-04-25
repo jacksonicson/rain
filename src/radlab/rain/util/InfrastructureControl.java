@@ -6,6 +6,7 @@ import java.net.UnknownHostException;
 import org.apache.log4j.Logger;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
@@ -41,13 +42,14 @@ public class InfrastructureControl {
 
 		// Get hostname
 		InetAddress addr = InetAddress.getLocalHost();
-		String hostname = addr.getHostName();
 
 		// Get Sonar connection
 		transport = new TSocket(iaasHost, 9877);
 		transport.open();
+		
+		TFramedTransport tt = new TFramedTransport(transport); 
 
-		TProtocol protocol = new TBinaryProtocol(transport);
+		TProtocol protocol = new TBinaryProtocol(tt);
 
 		// Create new client
 		client = new Infrastructure.Client(protocol);

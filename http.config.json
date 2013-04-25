@@ -5,6 +5,10 @@
     
     "metricWriterConf" : {},
     
+    "timing" : {
+    	"rampUp" : 0,
+    },
+    
     "targetFactories" : {
 		"f1" : {
 			"targetFactoryClass": "radlab.rain.workload.http.TestBenchmark",    
@@ -24,6 +28,7 @@
         "duration": 5,
         "rampDown": 5,
 		"targetFactory": "f1",
+		"workloadProfile" : 1,
 		},
 	],
 }
