@@ -1,5 +1,6 @@
 package radlab.rain.util;
 
+import org.apache.commons.math3.stat.descriptive.rank.Percentile;
 import org.json.JSONObject;
 
 import radlab.rain.scoreboard.ResponseTimeStat;
@@ -30,6 +31,78 @@ public class SonarMetricWriter extends MetricWriter {
 		return "SonarMetricWriter";
 	}
 
+	final class Aggregation {
+		long rTime;
+	}
+
+	private final int BUFFER = 3000;
+	private int aggregationLength = 0;
+	private final Aggregation[] aggregations = new Aggregation[BUFFER];
+
+	private void updateCalculations(ResponseTimeStat rtimeStat) {
+		// Response time buckets
+		int responseTime = (int) (rtimeStat.responseTime / 1000);
+		if (responseTime < (thrBuffer.length - 1)) {
+			thrBuffer[responseTime]++;
+		} else {
+			thrBuffer[thrBuffer.length - 1]++;
+		}
+
+		// Fill current aggregation object
+		Aggregation current = aggregations[aggregationLength];
+		if(current == null)
+		{
+			current = new Aggregation();
+			aggregations[aggregationLength] = current; 
+		}
+		aggregationLength++; 
+		current.rTime = rtimeStat.responseTime;
+	}
+
+	private void resetCalculations() {
+		aggregationLength = 0;
+
+		// Clear buffers
+		for (int i = 0; i < thrBuffer.length; i++)
+			thrBuffer[i] = 0;
+	}
+
+	private long[] calcMinMaxRTime() {
+		long min = Long.MAX_VALUE;
+		long max = 0;
+		for (int i = 0; i < aggregationLength; i++) {
+			long rtime = aggregations[i].rTime;
+			min = Math.min(min, rtime);
+			max = Math.max(max, rtime);
+		}
+
+		return new long[] { min, max };
+	}
+
+	private double[] calcPercentileRTime(double[] ps) {
+		double[] data = new double[BUFFER];
+		for (int j = 0; j < aggregationLength; j++) {
+			data[j] = aggregations[j].rTime;
+		}
+
+		double[] res = new double[ps.length];
+		for (int i = 0; i < ps.length; i++) {
+			Percentile percentile = new Percentile(ps[i]);
+			res[i] = percentile.evaluate(data, 0, aggregationLength);
+		}
+
+		return res;
+	}
+
+	private final void log(long timestamp, String name, long value) {
+		Identifier id = new Identifier();
+		id.setTimestamp(timestamp);
+		id.setSensor(name);
+		MetricReading reading = new MetricReading();
+		reading.setValue(value);
+		sonarRecorder.record(id, reading);
+	}
+
 	@Override
 	public boolean write(ResponseTimeStat rtimeStat) {
 
@@ -39,16 +112,14 @@ public class SonarMetricWriter extends MetricWriter {
 			lastNumObservations = rtimeStat.numObservations;
 		}
 
-		int responseTime = (int) (rtimeStat.responseTime / 1000);
-		if (responseTime < (thrBuffer.length - 1)) {
-			thrBuffer[responseTime]++;
-		} else {
-			thrBuffer[thrBuffer.length - 1]++;
-		}
-
+		// Delta since the last snapshot
 		long delta = (System.currentTimeMillis() - lastSnapshotLog);
-		if (delta > 3000) {
 
+		// Update aggregation
+		updateCalculations(rtimeStat);
+
+		// Snapshot metrics
+		if (delta > 3000) {
 			Identifier id;
 			long timestamp = rtimeStat.timestamp / 1000;
 			MetricReading value;
@@ -106,6 +177,15 @@ public class SonarMetricWriter extends MetricWriter {
 			value.setValue(deltaResponseTime);
 			sonarRecorder.record(id, value);
 
+			// Log min max and percentile response times
+			long[] minmax = calcMinMaxRTime();
+			double[] pths = calcPercentileRTime(new double[] { 0.5, 0.9, 0.99 });
+			log(timestamp, "rain.rtime.min." + rtimeStat.targetId, minmax[0]);
+			log(timestamp, "rain.rtime.max." + rtimeStat.targetId, minmax[1]);
+			log(timestamp, "rain.rtime.50th." + rtimeStat.targetId, (long) pths[0]);
+			log(timestamp, "rain.rtime.90th." + rtimeStat.targetId, (long) pths[1]);
+			log(timestamp, "rain.rtime.99th." + rtimeStat.targetId, (long) pths[2]);
+
 			// Log thrBuffer
 			for (int i = 0; i < thrBuffer.length; i++) {
 				id = new Identifier();
@@ -121,9 +201,7 @@ public class SonarMetricWriter extends MetricWriter {
 			lastTotalResponseTime = rtimeStat.totalResponseTime;
 			lastNumObservations = rtimeStat.numObservations;
 
-			// Clear buffers
-			for (int i = 0; i < thrBuffer.length; i++)
-				thrBuffer[i] = 0;
+			resetCalculations();
 		}
 
 		return false;
