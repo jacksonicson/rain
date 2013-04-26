@@ -34,7 +34,7 @@
 		<pathelement location="thirdparty/mongo-2.5.3/mongo-2.5.3.jar" />
 		<pathelement location="thirdparty/riak-java-client/target/riak-client-1.0.6-SNAPSHOT-jar-with-dependencies.jar" />
 		<pathelement location="thirdparty/hbase-0.92.1/hbase-0.92.1.jar" />
-		<pathelement location="thirdparty/thrift/libthrift-0.8.0.jar" />
+		<pathelement location="thirdparty/thrift/libthrift-0.9.0.jar" />
 		<pathelement location="thirdparty/thrift/slf4j-api-1.5.8.jar" />
 		<pathelement location="thirdparty/thrift/slf4j-log4j12-1.5.8.jar" />
 	</path>
