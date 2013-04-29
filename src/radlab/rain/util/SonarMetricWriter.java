@@ -121,52 +121,22 @@ public class SonarMetricWriter extends MetricWriter {
 			double deltaAverageResponseTime = deltaResponseTime / deltaObservations;
 
 			// Total average response time
-			id = new Identifier();
-			id.setTimestamp(timestamp);
-			id.setSensor("rain.avgrtime." + rtimeStat.targetId);
-			value = new MetricReading();
-			value.setValue(totalAveragegResponseTime);
-			sonarRecorder.record(id, value);
-
+			log(timestamp, "rain.avgrtime." + rtimeStat.targetId, (long)totalAveragegResponseTime);
+			
 			// Delta average response time
-			id = new Identifier();
-			id.setTimestamp(timestamp);
-			id.setSensor("rain.rtime." + rtimeStat.targetId);
-			value = new MetricReading();
-			value.setValue(deltaAverageResponseTime);
-			sonarRecorder.record(id, value);
-
+			log(timestamp, "rain.rtime." + rtimeStat.targetId, (long)deltaAverageResponseTime);
+			
 			// Total observations
-			id = new Identifier();
-			id.setTimestamp(timestamp);
-			id.setSensor("rain.tobservations." + rtimeStat.targetId);
-			value = new MetricReading();
-			value.setValue(rtimeStat.numObservations);
-			sonarRecorder.record(id, value);
+			log(timestamp, "rain.tobservations." + rtimeStat.targetId, (long)rtimeStat.numObservations);
 
 			// Delta observations
-			id = new Identifier();
-			id.setTimestamp(timestamp);
-			id.setSensor("rain.dobservations." + rtimeStat.targetId);
-			value = new MetricReading();
-			value.setValue(deltaObservations);
-			sonarRecorder.record(id, value);
+			log(timestamp, "rain.dobservations." + rtimeStat.targetId, (long)deltaObservations);
 
 			// Total response time
-			id = new Identifier();
-			id.setTimestamp(timestamp);
-			id.setSensor("rain.trtime." + rtimeStat.targetId);
-			value = new MetricReading();
-			value.setValue(rtimeStat.totalResponseTime);
-			sonarRecorder.record(id, value);
+			log(timestamp, "rain.trtime." + rtimeStat.targetId, (long)rtimeStat.totalResponseTime);
 
 			// Delta response time
-			id = new Identifier();
-			id.setTimestamp(timestamp);
-			id.setSensor("rain.drtime." + rtimeStat.targetId);
-			value = new MetricReading();
-			value.setValue(deltaResponseTime);
-			sonarRecorder.record(id, value);
+			log(timestamp, "rain.drtime." + rtimeStat.targetId, (long)deltaResponseTime);
 
 			// Log min max and percentile response times
 			long[] minmax = calcMinMaxRTime();

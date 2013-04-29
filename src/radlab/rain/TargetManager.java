@@ -27,6 +27,9 @@ public class TargetManager extends Thread {
 	// List contains all targets that are created
 	private List<ITarget> targetsToJoin = new LinkedList<ITarget>();
 
+	// Target ID
+	private int targetId;
+
 	TargetManager(JSONObject config, TargetSchedule schedule) throws JSONException {
 		setName("TargetManager");
 		this.schedule = schedule;
@@ -47,6 +50,7 @@ public class TargetManager extends Thread {
 				// Create a metric writer
 				MetricWriter metricWriter = new SonarMetricWriter(metricWriterConf);
 				target.setMetricWriter(metricWriter);
+				target.setId(targetId++);
 
 				// Set custom timing
 				Timing timing = new Timing(conf.getRampUp(), conf.getDuration(), conf.getRampDown());
