@@ -64,7 +64,7 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 	private static Logger logger = LoggerFactory.getLogger(DefaultTarget.class);
 
 	// Target id
-	private long id;
+	protected long id;
 
 	// Timings
 	protected Timing timing;
