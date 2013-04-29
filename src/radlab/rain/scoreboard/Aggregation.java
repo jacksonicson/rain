@@ -15,11 +15,11 @@ public class Aggregation {
 	private static Logger logger = LoggerFactory.getLogger(Scenario.class);
 
 	private long calculateSteadyStateDuration(List<ITarget> targets) {
+		long totalSteadyState = 0; 
 		for (ITarget target : targets) {
-
+			totalSteadyState += target.getScoreboard().getFinalScorecard().getTimeActive(); 
 		}
-
-		return 100;
+		return totalSteadyState; 
 	}
 
 	public void aggregateScoreboards(List<ITarget> targets) throws JSONException {
