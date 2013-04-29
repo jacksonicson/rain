@@ -31,13 +31,9 @@ public class SonarMetricWriter extends MetricWriter {
 		return "SonarMetricWriter";
 	}
 
-	final class Aggregation {
-		long rTime;
-	}
-
 	private final int BUFFER = 3000;
 	private int aggregationLength = 0;
-	private final Aggregation[] aggregations = new Aggregation[BUFFER];
+	private long[] rtime = new long[BUFFER];
 
 	private void updateCalculations(ResponseTimeStat rtimeStat) {
 		// Response time buckets
@@ -48,15 +44,10 @@ public class SonarMetricWriter extends MetricWriter {
 			thrBuffer[thrBuffer.length - 1]++;
 		}
 
+		rtime[aggregationLength] = rtimeStat.responseTime;
+
 		// Fill current aggregation object
-		Aggregation current = aggregations[aggregationLength];
-		if(current == null)
-		{
-			current = new Aggregation();
-			aggregations[aggregationLength] = current; 
-		}
-		aggregationLength++; 
-		current.rTime = rtimeStat.responseTime;
+		aggregationLength++;
 	}
 
 	private void resetCalculations() {
@@ -71,9 +62,9 @@ public class SonarMetricWriter extends MetricWriter {
 		long min = Long.MAX_VALUE;
 		long max = 0;
 		for (int i = 0; i < aggregationLength; i++) {
-			long rtime = aggregations[i].rTime;
-			min = Math.min(min, rtime);
-			max = Math.max(max, rtime);
+			long test = rtime[i];
+			min = Math.min(min, test);
+			max = Math.max(max, test);
 		}
 
 		return new long[] { min, max };
@@ -82,7 +73,7 @@ public class SonarMetricWriter extends MetricWriter {
 	private double[] calcPercentileRTime(double[] ps) {
 		double[] data = new double[BUFFER];
 		for (int j = 0; j < aggregationLength; j++) {
-			data[j] = aggregations[j].rTime;
+			data[j] = rtime[j];
 		}
 
 		double[] res = new double[ps.length];
