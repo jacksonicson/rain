@@ -50,7 +50,11 @@ public class TargetManager extends Thread {
 				// Create a metric writer
 				MetricWriter metricWriter = new SonarMetricWriter(metricWriterConf);
 				target.setMetricWriter(metricWriter);
-				target.setId(targetId++);
+				
+				// Set target Id
+				logger.debug("TargetID: " + targetId); 
+				target.setId(targetId);
+				targetId += 1; 
 
 				// Set custom timing
 				Timing timing = new Timing(conf.getRampUp(), conf.getDuration(), conf.getRampDown());
