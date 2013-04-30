@@ -43,9 +43,9 @@ import org.slf4j.LoggerFactory;
 
 import radlab.rain.Timing;
 import radlab.rain.operation.OperationExecution;
+import radlab.rain.util.AllSamplingStrategy;
 import radlab.rain.util.IMetricSampler;
 import radlab.rain.util.MetricWriter;
-import radlab.rain.util.PoissonSamplingStrategy;
 
 /**
  * The Scoreboard class implements the IScoreboard interface. Each Scoreboard is specific to a single instantiation of a
@@ -150,8 +150,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 			// Create wait time summary if necessary
 			if (waitTimeSummary == null) {
-				IMetricSampler sampler = new PoissonSamplingStrategy(targetId + "." + operationName,
-						this.meanResponseTimeSamplingInterval);
+				IMetricSampler sampler = new AllSamplingStrategy();
 				waitTimeSummary = new WaitTimeSummary(sampler);
 				waitTimeMap.put(operationName, waitTimeSummary);
 			}

@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import radlab.rain.RainConfig;
 import radlab.rain.operation.OperationExecution;
+import radlab.rain.util.AllSamplingStrategy;
 import radlab.rain.util.NullSamplingStrategy;
 import radlab.rain.util.PoissonSamplingStrategy;
 
@@ -82,8 +83,7 @@ public class Scorecard {
 
 		// Create operation summary if needed
 		if (operationSummary == null) {
-			operationSummary = new OperationSummary(new PoissonSamplingStrategy(operationName,
-					meanResponseTimeSamplingInterval));
+			operationSummary = new OperationSummary(new AllSamplingStrategy());
 			operationSummaryMap.put(operationName, operationSummary);
 		}
 

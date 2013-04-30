@@ -109,7 +109,9 @@ public class OperationSummary {
 		operation.put("average_response_time", getAverageResponseTime());
 		operation.put("min_response_time", minResponseTime);
 		operation.put("max_response_time", maxResponseTime);
+		operation.put("50_percentile_response_time", responseTimeSampler.getNthPercentile(50));
 		operation.put("90_percentile_response_time", responseTimeSampler.getNthPercentile(90));
+		operation.put("95_percentile_response_time", responseTimeSampler.getNthPercentile(95));
 		operation.put("99_percentile_response_time", responseTimeSampler.getNthPercentile(99));
 		operation.put("sample_mean", responseTimeSampler.getSampleMean());
 		operation.put("sample_stdev", responseTimeSampler.getSampleStandardDeviation());

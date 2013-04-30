@@ -33,118 +33,103 @@ package radlab.rain.util;
 
 import java.util.LinkedList;
 
-import org.apache.commons.math3.stat.descriptive.moment.Mean;
-import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
-import org.apache.commons.math3.stat.descriptive.rank.Percentile;
+public class AllSamplingStrategy implements IMetricSampler {
+	private LinkedList<Long> _samples = new LinkedList<Long>();
+	private int _currentSample = 0;
+	private long _sampleSum = 0;
 
-public class NullSamplingStrategy implements IMetricSampler {
-	private final int SIZE = 1000;
-	private int index;
-	private LinkedList<double[]> samples = new LinkedList<double[]>();
-
-	private boolean invalidBuffer = true;
-	private double[] buffer;
-
-	public NullSamplingStrategy() {
-		reset();
-	}
-
-	private void newBucket() {
-		double[] bucket = new double[SIZE];
-		samples.add(0, bucket);
-		index = 0;
+	public AllSamplingStrategy() {
 	}
 
 	// accept always keeps each sample seen
 	@Override
 	public boolean accept(long value) {
-		double[] bucket = samples.peek();
-		bucket[index++] = value;
-		invalidBuffer = true;
-		if (index >= SIZE)
-			newBucket();
+		this._currentSample++;
+		this._sampleSum += value;
+		this._samples.add(value);
 		return true;
 	}
 
 	@Override
 	public double getMeanSamplingInterval() {
-		return 0;
-	}
-
-	private void updateBuffer() {
-		if (!invalidBuffer)
-			return;
-
-		buffer = new double[SIZE * samples.size()];
-		for (int i = 0; i < samples.size(); i++) {
-			double[] bucket = samples.get(i);
-			System.arraycopy(bucket, 0, buffer, i * SIZE, SIZE);
-		}
+		return 0; // Returns 0 by design, sampling interval irrelevant for NullSamplingStrategy (it accepts every sample
+					// seen)
 	}
 
 	@Override
 	public long getNthPercentile(int pct) {
-		updateBuffer();
-		Percentile percentile = new Percentile(pct);
-		return (long) percentile.evaluate(buffer, 0, getSamplesCollected());
+		return PoissonSamplingStrategy.getNthPercentile(pct, this._samples);
 	}
 
 	@Override
 	public LinkedList<Long> getRawSamples() {
-		LinkedList<Long> data = new LinkedList<Long>();
-		for (int i = 0; i < samples.size(); i++) {
-			double[] bucket = samples.get(i);
-
-			int max = SIZE;
-			if (i == (samples.size() - 1))
-				max = index;
-
-			for (int j = 0; j < max; j++) {
-				data.add((long) bucket[j]);
-			}
-		}
-		return data;
+		return this._samples;
 	}
 
 	@Override
 	public double getSampleMean() {
-		updateBuffer();
-		Mean mean = new Mean();
-		return mean.evaluate(buffer, 0, getSamplesCollected());
+		long samples = this.getSamplesCollected();
+		if (samples == 0)
+			return 0.0;
+		else
+			return (double) this._sampleSum / (double) samples;
 	}
 
 	@Override
 	public double getSampleStandardDeviation() {
-		updateBuffer();
-		StandardDeviation sd = new StandardDeviation();
-		return sd.evaluate(buffer, 0, getSamplesCollected());
+		long samples = this.getSamplesCollected();
+		if (samples == 0 || samples == 1)
+			return 0.0;
+
+		double sampleMean = this.getSampleMean();
+
+		// Sum the deviations from the mean for all items
+		double deviationSqSum = 0.0;
+		for (Long value : this._samples) {
+			// Print out value so we can debug the sd computation
+			// System.out.println( value );
+			deviationSqSum += Math.pow((double) (value - sampleMean), 2);
+		}
+		// Divide deviationSqSum by N-1 then return the square root
+		return Math.sqrt(deviationSqSum / (double) (samples - 1));
 	}
 
 	@Override
 	public int getSamplesCollected() {
-		return (samples.size() - 1) * SIZE + index;
+		return this._samples.size();
 	}
 
 	@Override
 	public int getSamplesSeen() {
-		return getSamplesCollected();
+		return this._currentSample;
 	}
 
 	@Override
 	public double getTvalue(double populationMean) {
-		return 0.0;
+		long samples = this.getSamplesCollected();
+		if (samples == 0 || samples == 1)
+			return 0.0;
+
+		double ret = (this.getSampleMean() - populationMean)
+				/ (this.getSampleStandardDeviation() / Math.sqrt(this.getSamplesCollected()));
+		if (Double.isNaN(ret))
+			ret = 0;
+		if (Double.isInfinite(ret))
+			ret = 0;
+		
+		return ret;
 	}
 
 	@Override
 	public void reset() {
-		invalidBuffer = true;
-		samples.clear();
-		index = 0;
-		newBucket();
+		this._currentSample = 0;
+		this._samples.clear();
+		this._sampleSum = 0;
 	}
 
 	@Override
 	public void setMeanSamplingInterval(double val) {
-		// unused
+		// Empty by design (sampling intervals are irrelevant for the NullSamplingStrategy: it accepts every sample)
 	}
+
 }
