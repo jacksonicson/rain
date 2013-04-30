@@ -166,6 +166,10 @@ public class Benchmark {
 				logger.info("Stopping thrift communication! Using port: " + service.getPort());
 				service.stop();
 			}
+
+			// Log joined message
+			logger.info("JOINED");
+
 		} catch (JSONException e) {
 			logger.error("Error in benchmark configuration", e);
 		} catch (BenchmarkFailedException e) {
