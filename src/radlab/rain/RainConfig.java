@@ -62,6 +62,9 @@ public class RainConfig {
 	private static Object singletonLock = new Object();
 	private static RainConfig config = null;
 
+	// Threshold for the operation response time
+	public static double rtime_T;
+
 	private List<IShutdown> shutdownHooks = new ArrayList<IShutdown>();
 
 	public static RainConfig getInstance() {

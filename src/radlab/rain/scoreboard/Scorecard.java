@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import radlab.rain.RainConfig;
 import radlab.rain.operation.OperationExecution;
 import radlab.rain.util.NullSamplingStrategy;
 import radlab.rain.util.PoissonSamplingStrategy;
@@ -42,6 +43,7 @@ public class Scorecard {
 	private long totalOpsInitiated = 0;
 	private long totalOpsLate = 0;
 	private long totalOpResponseTime = 0;
+	private long opsFailedRtimeThreshold = 0;
 	private long intervalDuration = 0;
 	private long numberOfUsers = 0;
 	private long minResponseTime = Long.MAX_VALUE;
@@ -107,6 +109,10 @@ public class Scorecard {
 			// Response time
 			totalOpResponseTime += responseTime;
 
+			// Update threshold failes
+			if (responseTime > RainConfig.rtime_T)
+				opsFailedRtimeThreshold++;
+
 			// Update max and min response time
 			maxResponseTime = Math.max(maxResponseTime, responseTime);
 			minResponseTime = Math.min(minResponseTime, responseTime);
@@ -150,6 +156,7 @@ public class Scorecard {
 		result.put("total_ops_initiated", totalOpsInitiated);
 		result.put("total_ops_late", totalOpsLate);
 		result.put("total_op_response_time", totalOpResponseTime);
+		result.put("ops_failed_response_time_threshold", opsFailedRtimeThreshold);
 		result.put("number_of_users", numberOfUsers);
 		result.put("total_operations", totalOperations);
 		result.put("offered_load_ops", offeredLoadOps);
@@ -229,6 +236,7 @@ public class Scorecard {
 		this.totalOpsInitiated += from.totalOpsInitiated;
 		this.totalOpsLate += from.totalOpsLate;
 		this.totalOpResponseTime += from.totalOpResponseTime;
+		this.opsFailedRtimeThreshold += from.opsFailedRtimeThreshold;
 		this.numberOfUsers += from.numberOfUsers;
 		this.maxResponseTime = Math.max(maxResponseTime, from.maxResponseTime);
 		this.minResponseTime = Math.min(minResponseTime, from.minResponseTime);

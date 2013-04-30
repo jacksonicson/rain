@@ -95,6 +95,12 @@ public class Benchmark {
 			RainConfig.getInstance().sonarHost = host;
 		}
 
+		// Response time threshold
+		if (jsonConfig.has("rtime_T")) {
+			double rtime = jsonConfig.getDouble("rtime_T"); 
+			RainConfig.getInstance().rtime_T = rtime;  
+		}
+
 		// Check if thrift remote management is used
 		boolean useThrift = false;
 		if (jsonConfig.has("useThrift"))
