@@ -38,6 +38,7 @@ import org.json.JSONObject;
 
 import radlab.rain.operation.OperationExecution;
 import radlab.rain.util.IMetricSampler;
+import de.tum.in.dss.psquare.PSquared;
 
 public class OperationSummary {
 	// Information recorded about one operation type
@@ -53,6 +54,12 @@ public class OperationSummary {
 	// Sample the response times so that we can give a "reasonable"
 	// estimate of the 90th and 99th percentiles.
 	private IMetricSampler responseTimeSampler;
+
+	// Percentile estimation based on the P-square algorithm
+	private PSquared rtime99th = new PSquared(.99f);
+	private PSquared rtime95th = new PSquared(.95f);
+	private PSquared rtime90th = new PSquared(.90f);
+	private PSquared rtime50th = new PSquared(.50f);
 
 	public OperationSummary(IMetricSampler strategy) {
 		responseTimeSampler = strategy;
@@ -77,8 +84,15 @@ public class OperationSummary {
 				syncInvocations++;
 			}
 
+			// Update response time sample
 			long responseTime = result.getExecutionTime();
 			responseTimeSampler.accept(responseTime);
+
+			// Update response time percentile estimations
+			rtime99th.accept(responseTime);
+			rtime95th.accept(responseTime);
+			rtime90th.accept(responseTime);
+			rtime50th.accept(responseTime);
 
 			// Response time
 			totalResponseTime += responseTime;
@@ -113,6 +127,12 @@ public class OperationSummary {
 		operation.put("90_percentile_response_time", responseTimeSampler.getNthPercentile(90));
 		operation.put("95_percentile_response_time", responseTimeSampler.getNthPercentile(95));
 		operation.put("99_percentile_response_time", responseTimeSampler.getNthPercentile(99));
+
+		operation.put("p50_rtime_estimation", rtime50th.getPValue());
+		operation.put("p90_rtime_estimation", rtime90th.getPValue());
+		operation.put("p95_rtime_estimation", rtime95th.getPValue());
+		operation.put("p99_rtime_estimation", rtime99th.getPValue());
+
 		operation.put("sample_mean", responseTimeSampler.getSampleMean());
 		operation.put("sample_stdev", responseTimeSampler.getSampleStandardDeviation());
 		operation.put("tvalue_avg_resp_time", responseTimeSampler.getTvalue(getAverageResponseTime()));
