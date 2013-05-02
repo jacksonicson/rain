@@ -56,10 +56,10 @@ public class OperationSummary {
 	private IMetricSampler responseTimeSampler;
 
 	// Percentile estimation based on the P-square algorithm
-	private PSquared rtime99th = new PSquared(.99f);
-	private PSquared rtime95th = new PSquared(.95f);
-	private PSquared rtime90th = new PSquared(.90f);
-	private PSquared rtime50th = new PSquared(.50f);
+	private PSquared rtime99th = new PSquared(0.99f);
+	private PSquared rtime95th = new PSquared(0.95f);
+	private PSquared rtime90th = new PSquared(0.90f);
+	private PSquared rtime50th = new PSquared(0.50f);
 
 	public OperationSummary(IMetricSampler strategy) {
 		responseTimeSampler = strategy;
@@ -163,8 +163,9 @@ public class OperationSummary {
 		maxResponseTime = Math.max(maxResponseTime, from.maxResponseTime);
 
 		LinkedList<Long> rhsRawSamples = from.getResponseTimeSampler().getRawSamples();
-		for (Long obs : rhsRawSamples)
+		for (Long obs : rhsRawSamples) {
 			responseTimeSampler.accept(obs);
+		}
 	}
 
 	public long getOpsSuccessful() {
