@@ -38,6 +38,7 @@
 		<pathelement location="thirdparty/thrift/slf4j-api-1.5.8.jar" />
 		<pathelement location="thirdparty/thrift/slf4j-log4j12-1.5.8.jar" />
 		<pathelement location="thirdparty/commons-math3-3.2.jar" />
+		<pathelement location="thirdparty/psquared.jar" />
 	</path>
 
 	<target name="compile" depends="thrift">
