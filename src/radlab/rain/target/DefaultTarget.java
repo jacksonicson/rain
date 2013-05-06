@@ -290,10 +290,6 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 				mixMatrices.put(mixName, new MixMatrix(data));
 			}
 		}
-
-		// Configure the response time sampler
-		if (config.has("meanResponseTimeSamplingInterval"))
-			meanResponseTimeSamplingInterval = config.getLong("meanResponseTimeSamplingInterval");
 	}
 
 	private IScoreboard createScoreboard() {
@@ -304,7 +300,6 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 
 		// Set the log sampling probability for the scoreboard
 		scoreboard.initialize(timing, loadSchedule.getMaxAgents());
-		scoreboard.setMeanResponseTimeSamplingInterval(meanResponseTimeSamplingInterval);
 		scoreboard.start();
 
 		return scoreboard;

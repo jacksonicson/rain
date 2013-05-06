@@ -45,7 +45,7 @@ public class Aggregation {
 			Scorecard finalScorecard = scoreboard.getFinalScorecard();
 			if (!aggStats.containsKey(aggregationIdentifier)) {
 				Scorecard aggCard = new Scorecard(Scorecard.Type.AGGREGATED, finalScorecard.getTimeActive(),
-						aggregationIdentifier, 0);
+						aggregationIdentifier);
 				aggStats.put(aggregationIdentifier, aggCard);
 			}
 			// Get the current aggregated scorecard for this generator

@@ -68,7 +68,7 @@ public class OperationSummary {
 		responseTimeSampler.reset();
 	}
 
-	void processResult(OperationExecution result, double meanResponseTimeSamplingInterval) {
+	void processResult(OperationExecution result) {
 		if (result.failed) {
 			opsFailed++;
 		} else { // Result successful

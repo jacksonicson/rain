@@ -23,11 +23,11 @@ public class Scorecard {
 	private static Logger logger = LoggerFactory.getLogger(Scorecard.class);
 
 	enum Type {
-		GLOBAL, AGGREGATED, FINAL, LOAD_DEFINITION
+		GLOBAL, AGGREGATED, TARGET
 	}
 
 	// Scorecard type
-	private Type type = Type.FINAL;
+	private Type type = Type.TARGET;
 
 	// Aggregation identifier
 	private String aggregationIdentifier;
@@ -35,17 +35,25 @@ public class Scorecard {
 	// What goes on the scorecard?
 	private long totalOpsSuccessful = 0;
 	private long totalOpsFailed = 0;
+
 	private long totalActionsSuccessful = 0;
+
 	private long totalOpsAsync = 0;
 	private long totalOpsSync = 0;
+
 	private long totalOpsInitiated = 0;
 	private long totalOpsLate = 0;
+
 	private long totalOpResponseTime = 0;
 	private long opsFailedRtimeThreshold = 0;
+
 	private long intervalDuration = 0;
-	private long numberOfUsers = 0;
+
 	private long minResponseTime = Long.MAX_VALUE;
 	private long maxResponseTime = 0;
+
+	// Summary of all operations
+	private OperationSummary summary = new OperationSummary(new NullSamplingStrategy());
 
 	// A mapping of each operation with its summary
 	private TreeMap<String, OperationSummary> operationSummaryMap = new TreeMap<String, OperationSummary>();
@@ -55,13 +63,8 @@ public class Scorecard {
 		this.intervalDuration = timeActive;
 	}
 
-	Scorecard(Type type, long timeActive, long numberOfUsers) {
+	Scorecard(Type type, long timeActive, String aggregationIdentifier) {
 		this(type, timeActive);
-		this.numberOfUsers = numberOfUsers;
-	}
-
-	Scorecard(Type type, long timeActive, String aggregationIdentifier, long numberOfUsers) {
-		this(type, timeActive, numberOfUsers);
 		this.aggregationIdentifier = aggregationIdentifier;
 	}
 
@@ -70,7 +73,7 @@ public class Scorecard {
 		totalOpsLate++;
 	}
 
-	void processResult(OperationExecution result, double meanResponseTimeSamplingInterval) {
+	void processResult(OperationExecution result) {
 		// Update global counters counters
 		String operationName = result.operationName;
 		totalOpsInitiated++;
@@ -85,7 +88,7 @@ public class Scorecard {
 		}
 
 		// Process result for the operation
-		operationSummary.processResult(result, meanResponseTimeSamplingInterval);
+		operationSummary.processResult(result);
 
 		// Process result for this scorecard
 		if (result.failed) {
@@ -154,7 +157,6 @@ public class Scorecard {
 		result.put("total_ops_late", totalOpsLate);
 		result.put("total_op_response_time", totalOpResponseTime);
 		result.put("ops_failed_response_time_threshold", opsFailedRtimeThreshold);
-		result.put("number_of_users", numberOfUsers);
 		result.put("total_operations", totalOperations);
 		result.put("offered_load_ops", offeredLoadOps);
 		result.put("effective_load_ops", effectiveLoadOps);
@@ -234,7 +236,6 @@ public class Scorecard {
 		this.totalOpsLate += from.totalOpsLate;
 		this.totalOpResponseTime += from.totalOpResponseTime;
 		this.opsFailedRtimeThreshold += from.opsFailedRtimeThreshold;
-		this.numberOfUsers += from.numberOfUsers;
 		this.maxResponseTime = Math.max(maxResponseTime, from.maxResponseTime);
 		this.minResponseTime = Math.min(minResponseTime, from.minResponseTime);
 

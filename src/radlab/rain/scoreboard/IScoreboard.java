@@ -53,8 +53,6 @@ public interface IScoreboard {
 
 	void dropOffWaitTime(long time, String opName, long waitTime);
 
-	void setMeanResponseTimeSamplingInterval(long val);
-
 	// Returns a scorecard that contains aggregated stats
 	Scorecard getFinalScorecard();
 

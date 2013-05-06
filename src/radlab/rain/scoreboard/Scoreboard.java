@@ -59,9 +59,6 @@ public class Scoreboard extends Thread implements Runnable, IScoreboard {
 	// Indicates the thread status (started or stopped)
 	private boolean done = false;
 
-	// Response time sampling interval (wait time and operation summary)
-	private long meanResponseTimeSamplingInterval = 500;
-
 	// Global counters for drop-offs and dropoff time (time waited for the lock to
 	// write a result to a processing queue)
 	// They are only used for internal statistics about the scoreboard behavior
@@ -104,7 +101,7 @@ public class Scoreboard extends Thread implements Runnable, IScoreboard {
 		logger.debug("run duration: " + runDuration);
 
 		// Create a final scorecard
-		scorecard = new Scorecard(Scorecard.Type.FINAL, runDuration, maxUsers);
+		scorecard = new Scorecard(Scorecard.Type.TARGET, runDuration);
 	}
 
 	@Override
@@ -289,7 +286,7 @@ public class Scoreboard extends Thread implements Runnable, IScoreboard {
 
 	private void processSteadyStateResult(OperationExecution result) {
 		// Process statistics
-		scorecard.processResult(result, meanResponseTimeSamplingInterval);
+		scorecard.processResult(result);
 
 		// If interactive, look at the total response time.
 		if (!result.failed)
@@ -328,7 +325,6 @@ public class Scoreboard extends Thread implements Runnable, IScoreboard {
 		result.put("total_dropoffs", totalDropoffs);
 		result.put("average_drop_off_q_time", averageDropOffQTime);
 		result.put("max_drop_off_q_time", maxDropOffWaitTime);
-		result.put("mean_response_time_sample_interval", meanResponseTimeSamplingInterval);
 
 		// Add final scorecard statistics
 		result.put("final_scorecard", scorecard.getStatistics(timing.steadyStateDuration()));
@@ -360,11 +356,6 @@ public class Scoreboard extends Thread implements Runnable, IScoreboard {
 		}
 
 		return result;
-	}
-
-	@Override
-	public void setMeanResponseTimeSamplingInterval(long val) {
-		this.meanResponseTimeSamplingInterval = val;
 	}
 
 	@Override
