@@ -3,8 +3,6 @@
     "useThrift": true,
     "sonarHost" : "monitor0",
     
-    "metricWriterConf" : {},
-    
     "timing" : {
     	"rampUp" : 0,
     },
