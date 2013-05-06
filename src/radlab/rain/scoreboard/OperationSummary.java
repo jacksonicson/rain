@@ -35,20 +35,29 @@ import java.util.LinkedList;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import radlab.rain.RainConfig;
 import radlab.rain.operation.OperationExecution;
 import de.tum.in.dss.psquare.PSquared;
 
 public class OperationSummary {
+	private static Logger logger = LoggerFactory.getLogger(OperationSummary.class);
+	
 	// Information recorded about one operation type
 	private long opsSuccessful = 0;
 	private long opsFailed = 0;
 	private long actionsSuccessful = 0;
-	private long totalResponseTime = 0;
-	private long asyncInvocations = 0;
-	private long syncInvocations = 0;
+
+	private long opsAsync = 0;
+	private long opsSync = 0;
+
 	private long minResponseTime = Long.MAX_VALUE;
 	private long maxResponseTime = Long.MIN_VALUE;
+
+	private long totalResponseTime = 0;
+	private long opsFailedRtimeThreshold = 0;
 
 	// Sample the response times so that we can give a "reasonable"
 	// estimate of the 90th and 99th percentiles.
@@ -78,14 +87,17 @@ public class OperationSummary {
 
 			// Count operations
 			if (result.async) {
-				asyncInvocations++;
+				opsAsync++;
 			} else {
-				syncInvocations++;
+				opsSync++;
 			}
 
 			// Update response time sample
 			long responseTime = result.getExecutionTime();
 			responseTimeSampler.accept(responseTime);
+			totalResponseTime += responseTime;
+			if (responseTime > RainConfig.rtime_T)
+				opsFailedRtimeThreshold++;
 
 			// Update response time percentile estimations
 			rtime99th.accept(responseTime);
@@ -93,71 +105,88 @@ public class OperationSummary {
 			rtime90th.accept(responseTime);
 			rtime50th.accept(responseTime);
 
-			// Response time
-			totalResponseTime += responseTime;
-
 			// Update max and min response time
 			maxResponseTime = Math.max(maxResponseTime, responseTime);
 			minResponseTime = Math.min(minResponseTime, responseTime);
 		}
 	}
 
-	JSONObject getStatistics() throws JSONException {
-		// Calculations
-		long minResponseTime = this.minResponseTime;
-		if (minResponseTime == Long.MAX_VALUE)
-			minResponseTime = 0;
+	JSONObject getStatistics(double runDuration) throws JSONException {
+		// Total operations executed
+		long totalOperations = opsSuccessful + opsFailed;
 
-		long maxResponseTime = this.maxResponseTime;
-		if (maxResponseTime == Long.MIN_VALUE)
-			maxResponseTime = 0;
+		double effectiveLoadOperations = 0;
+		double effectiveLoadRequests = 0;
+		double averageRTime = 0;
+
+		// Calculations (per second)
+		if (runDuration > 0) {
+			effectiveLoadOperations = (double) opsSuccessful / toSeconds(runDuration);
+			effectiveLoadRequests = (double) actionsSuccessful / toSeconds(runDuration);
+		} else {
+			logger.warn("run duration <= 0");
+		}
+
+		if (opsSuccessful > 0) {
+			averageRTime = (double) totalResponseTime / (double) opsSuccessful;
+		} else {
+			logger.warn("total ops successfull <= 0");
+		}
 
 		// Results
 		JSONObject operation = new JSONObject();
-		operation.put("samples_collected", responseTimeSampler.getSamplesCollected());
-		operation.put("samples_seen", responseTimeSampler.getSamplesSeen());
+		
 		operation.put("ops_successful", opsSuccessful);
 		operation.put("ops_failed", opsFailed);
-		operation.put("total_response_time", totalResponseTime);
-		operation.put("average_response_time", getAverageResponseTime());
-		operation.put("min_response_time", minResponseTime);
-		operation.put("max_response_time", maxResponseTime);
-		operation.put("50_percentile_response_time", responseTimeSampler.getNthPercentile(50));
-		operation.put("90_percentile_response_time", responseTimeSampler.getNthPercentile(90));
-		operation.put("95_percentile_response_time", responseTimeSampler.getNthPercentile(95));
-		operation.put("99_percentile_response_time", responseTimeSampler.getNthPercentile(99));
-
-		operation.put("p50_rtime_estimation", rtime50th.getPValue());
-		operation.put("p90_rtime_estimation", rtime90th.getPValue());
-		operation.put("p95_rtime_estimation", rtime95th.getPValue());
-		operation.put("p99_rtime_estimation", rtime99th.getPValue());
-
-		operation.put("sample_mean", responseTimeSampler.getSampleMean());
-		operation.put("sample_stdev", responseTimeSampler.getSampleStandardDeviation());
-		operation.put("tvalue_avg_resp_time", responseTimeSampler.getTvalue(getAverageResponseTime()));
+		operation.put("ops_seen", totalOperations);
+		operation.put("actions_successful", actionsSuccessful);
+		operation.put("ops_async", opsAsync);
+		operation.put("ops_sync", opsSync);
+		
+		operation.put("effective_load_ops", effectiveLoadOperations);
+		operation.put("effective_load_req", effectiveLoadRequests);
+		
+		operation.put("rtime_total", totalResponseTime);
+		operation.put("rtime_average", averageRTime);
+		operation.put("rtime_max", maxResponseTime);
+		operation.put("rtime_min", minResponseTime);
+		operation.put("rtime_50th", rtime50th.getPValue());
+		operation.put("rtime_90th", rtime90th.getPValue());
+		operation.put("rtime_95th", rtime95th.getPValue());
+		operation.put("rtime_99th", rtime99th.getPValue());
+		operation.put("rtime_thr_failed", opsFailedRtimeThreshold);
+		
+		operation.put("sampler_samples_collected", responseTimeSampler.getSamplesCollected());
+		operation.put("sampler_samples_seen", responseTimeSampler.getSamplesSeen());
+		operation.put("sampler_rtime_50th", responseTimeSampler.getNthPercentile(50));
+		operation.put("sampler_rtime_90th", responseTimeSampler.getNthPercentile(90));
+		operation.put("sampler_rtime_95th", responseTimeSampler.getNthPercentile(95));
+		operation.put("sampler_rtime_99th", responseTimeSampler.getNthPercentile(99));
+		operation.put("sampler_rtime_mean", responseTimeSampler.getSampleMean());
+		operation.put("sampler_rtime_stdev", responseTimeSampler.getSampleStandardDeviation());
+		operation.put("sampelr_rtime_tvalue", responseTimeSampler.getTvalue(averageRTime));
 
 		return operation;
 	}
 
-	double getAverageResponseTime() {
-		if (opsSuccessful > 0)
-			return (double) totalResponseTime / (double) opsSuccessful;
-		else
-			return 0.0;
-
+	private final double toSeconds(double timestamp) {
+		return timestamp / 1000d;
 	}
-
+	
 	private IMetricSampler getResponseTimeSampler() {
 		return responseTimeSampler;
 	}
 
 	public void merge(OperationSummary from) {
+		
+		// TODO: Merge new fields
+		
 		opsSuccessful += from.opsSuccessful;
 		opsFailed += from.opsFailed;
 		actionsSuccessful += from.actionsSuccessful;
 		totalResponseTime += from.totalResponseTime;
-		asyncInvocations += from.asyncInvocations;
-		syncInvocations += from.syncInvocations;
+		opsAsync += from.opsAsync;
+		opsSync += from.opsSync;
 		minResponseTime = Math.min(minResponseTime, from.minResponseTime);
 		maxResponseTime = Math.max(maxResponseTime, from.maxResponseTime);
 

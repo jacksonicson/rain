@@ -11,7 +11,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import radlab.rain.RainConfig;
 import radlab.rain.operation.OperationExecution;
 
 /**
@@ -32,25 +31,12 @@ public class Scorecard {
 	// Aggregation identifier
 	private String aggregationIdentifier;
 
-	// What goes on the scorecard?
-	private long totalOpsSuccessful = 0;
-	private long totalOpsFailed = 0;
-
-	private long totalActionsSuccessful = 0;
-
-	private long totalOpsAsync = 0;
-	private long totalOpsSync = 0;
-
-	private long totalOpsInitiated = 0;
-	private long totalOpsLate = 0;
-
-	private long totalOpResponseTime = 0;
-	private long opsFailedRtimeThreshold = 0;
-
+	// Duration of the interval for this scorecard
 	private long intervalDuration = 0;
 
-	private long minResponseTime = Long.MAX_VALUE;
-	private long maxResponseTime = 0;
+	// Total operation counters (includes failed operations)
+	private long totalOpsInitiated = 0;
+	private long totalOpsLate = 0;
 
 	// Summary of all operations
 	private OperationSummary summary = new OperationSummary(new NullSamplingStrategy());
@@ -74,105 +60,47 @@ public class Scorecard {
 	}
 
 	void processResult(OperationExecution result) {
-		// Update global counters counters
-		String operationName = result.operationName;
-		totalOpsInitiated++;
-
 		// Do the accounting for the final score card
-		OperationSummary operationSummary = operationSummaryMap.get(operationName);
-
-		// Create operation summary if needed
+		OperationSummary operationSummary = operationSummaryMap.get(result.operationName);
 		if (operationSummary == null) {
 			operationSummary = new OperationSummary(new AllSamplingStrategy());
-			operationSummaryMap.put(operationName, operationSummary);
+			operationSummaryMap.put(result.operationName, operationSummary);
 		}
 
 		// Process result for the operation
 		operationSummary.processResult(result);
+		summary.processResult(result);
 
-		// Process result for this scorecard
-		if (result.failed) {
-			totalOpsFailed++;
-		} else { // Result successful
-			totalOpsSuccessful++;
-
-			totalActionsSuccessful += result.actionsPerformed;
-
-			// Count operations
-			if (result.async)
-				totalOpsAsync++;
-			else
-				totalOpsSync++;
-
-			long responseTime = result.getExecutionTime();
-
-			// Response time
-			totalOpResponseTime += responseTime;
-
-			// Update threshold failes
-			if (responseTime > RainConfig.rtime_T)
-				opsFailedRtimeThreshold++;
-
-			// Update max and min response time
-			maxResponseTime = Math.max(maxResponseTime, responseTime);
-			minResponseTime = Math.min(minResponseTime, responseTime);
-		}
+		// Total operation counter
+		totalOpsInitiated++;
 	}
 
 	JSONObject getStatistics(double runDuration) throws JSONException {
-		// Total operations executed
-		long totalOperations = totalOpsSuccessful + totalOpsFailed;
-
 		double offeredLoadOps = 0;// Operations initiated per second
-		double effectiveLoadOps = 0; // Operations successful per second
-		double effectiveLoadRequests = 0; // Actions successful per second
-		double averageOpResponseTime = 0; // Average response time of an operation in seconds
 
 		// Calculations (per second)
 		if (runDuration > 0) {
-			offeredLoadOps = (double) totalOpsInitiated / toSeconds(runDuration);
-			effectiveLoadOps = (double) totalOpsSuccessful / toSeconds(runDuration);
-			effectiveLoadRequests = (double) totalActionsSuccessful / toSeconds(runDuration);
+			offeredLoadOps = (double) totalOpsInitiated / (runDuration / 1000d);
 		} else {
 			logger.warn("run duration <= 0");
 		}
 
-		if (totalOpsSuccessful > 0) {
-			averageOpResponseTime = (double) totalOpResponseTime / (double) totalOpsSuccessful;
-		} else {
-			logger.warn("total ops successfull <= 0");
-		}
-
 		// Create result object
 		JSONObject result = new JSONObject();
-		result.put("interval_name", aggregationIdentifier);
+		result.put("aggreation_identifier", aggregationIdentifier);
 		result.put("run_duration", runDuration);
 		result.put("interval_duration", intervalDuration);
-		result.put("total_ops_successful", totalOpsSuccessful);
-		result.put("total_operations_failed", totalOpsFailed);
-		result.put("total_actions_successful", totalActionsSuccessful);
-		result.put("total_ops_async", totalOpsAsync);
-		result.put("total_ops_sync", totalOpsSync);
 		result.put("total_ops_initiated", totalOpsInitiated);
 		result.put("total_ops_late", totalOpsLate);
-		result.put("total_op_response_time", totalOpResponseTime);
-		result.put("ops_failed_response_time_threshold", opsFailedRtimeThreshold);
-		result.put("total_operations", totalOperations);
 		result.put("offered_load_ops", offeredLoadOps);
-		result.put("effective_load_ops", effectiveLoadOps);
-		result.put("effective_load_req", effectiveLoadRequests);
-		result.put("max_response_time", maxResponseTime);
-		result.put("min_response_time", minResponseTime);
-		result.put("average_response_time", averageOpResponseTime);
+
+		// Summary statistics
+		result.put("summary", summary.getStatistics(runDuration));
 
 		// Operational statistics
-		result.put("operational", getOperationalStatistics(false));
+		result.put("operational", getOperationalStatistics(runDuration));
 
 		return result;
-	}
-
-	private final double toSeconds(double milliseconds) {
-		return milliseconds / 1000d;
 	}
 
 	public JSONObject getIntervalStatistics() throws JSONException {
@@ -180,46 +108,18 @@ public class Scorecard {
 		return result;
 	}
 
-	private JSONObject getOperationalStatistics(boolean purgePercentileData) throws JSONException {
+	private JSONObject getOperationalStatistics(double runDuration) throws JSONException {
 		JSONObject result = new JSONObject();
 		JSONArray operations = new JSONArray();
 		result.put("operations", operations);
 
 		synchronized (operationSummaryMap) {
 
-			long totalOperations = getTotalSteadyOperations();
-			double totalAvgResponseTime = 0.0;
-			double totalResponseTime = 0.0;
-			long totalSuccesses = 0;
-
 			for (Iterator<String> keys = operationSummaryMap.keySet().iterator(); keys.hasNext();) {
 				String operationName = keys.next();
 				OperationSummary operationSummary = operationSummaryMap.get(operationName);
-
-				// Update global counters
-				totalAvgResponseTime += operationSummary.getAverageResponseTime();
-				totalResponseTime += operationSummary.getTotalResponseTime();
-				totalSuccesses += operationSummary.getOpsSuccessful();
-
-				// Calculations
-				double proportion = (double) (operationSummary.getOpsSuccessful() + operationSummary.getOpsFailed())
-						/ (double) totalOperations;
-
-				// Print out the operation summary.
-				JSONObject operation = operationSummary.getStatistics();
-				operations.put(operation);
-				operation.put("operation_name", operationName);
-				operation.put("proportion", proportion);
-
-				if (purgePercentileData)
-					operationSummary.resetSamples();
+				result.put(operationName, operationSummary.getStatistics(runDuration));
 			}
-
-			// Add totals
-			result.put("total_avg_response_time", totalAvgResponseTime);
-			result.put("total_response_time", totalResponseTime);
-			result.put("total_successes", totalSuccesses);
-			result.put("total_operations", totalOperations);
 		}
 
 		return result;
@@ -227,17 +127,11 @@ public class Scorecard {
 
 	public void merge(Scorecard from) {
 		// Merge another scorecard with this
-		this.totalOpsSuccessful += from.totalOpsSuccessful;
-		this.totalOpsFailed += from.totalOpsFailed;
-		this.totalActionsSuccessful += from.totalActionsSuccessful;
-		this.totalOpsAsync += from.totalOpsAsync;
-		this.totalOpsSync += from.totalOpsSync;
 		this.totalOpsInitiated += from.totalOpsInitiated;
 		this.totalOpsLate += from.totalOpsLate;
-		this.totalOpResponseTime += from.totalOpResponseTime;
-		this.opsFailedRtimeThreshold += from.opsFailedRtimeThreshold;
-		this.maxResponseTime = Math.max(maxResponseTime, from.maxResponseTime);
-		this.minResponseTime = Math.min(minResponseTime, from.minResponseTime);
+
+		// Merge summary
+		this.summary.merge(from.summary);
 
 		// Merge operation maps
 		for (String operationName : from.operationSummaryMap.keySet()) {
@@ -257,24 +151,12 @@ public class Scorecard {
 		}
 	}
 
-	private final long getTotalSteadyOperations() {
-		return totalOpsSuccessful + totalOpsFailed;
-	}
-
 	String getAggregationIdentifier() {
 		return aggregationIdentifier;
 	}
 
 	public Map<String, OperationSummary> getOperationMap() {
 		return Collections.unmodifiableMap(operationSummaryMap);
-	}
-
-	public long getTotalOpResponseTime() {
-		return totalOpResponseTime;
-	}
-
-	public long getTotalOpsSuccessful() {
-		return totalOpsSuccessful;
 	}
 
 	public Type getType() {
@@ -284,4 +166,13 @@ public class Scorecard {
 	public long getTimeActive() {
 		return intervalDuration;
 	}
+
+	public long getTotalOpResponseTime() {
+		return summary.getTotalResponseTime();
+	}
+
+	public long getTotalOpsSuccessful() {
+		return summary.getOpsSuccessful();
+	}
+
 }
