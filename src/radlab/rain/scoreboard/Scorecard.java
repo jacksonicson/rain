@@ -15,7 +15,6 @@ import radlab.rain.RainConfig;
 import radlab.rain.operation.OperationExecution;
 import radlab.rain.util.AllSamplingStrategy;
 import radlab.rain.util.NullSamplingStrategy;
-import radlab.rain.util.PoissonSamplingStrategy;
 
 /**
  * Eventually all stats reporting will be done using Scorecards. There will be per-interval Scorecards as well as a

@@ -46,7 +46,7 @@ public interface IScoreboard {
 	void start();
 
 	// Stop recording data
-	void stop();
+	void dispose();
 
 	// Receives the results of an operation execution.
 	void dropOffOperation(OperationExecution result);

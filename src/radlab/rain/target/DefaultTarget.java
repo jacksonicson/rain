@@ -249,7 +249,7 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 		disposeLoadManager();
 
 		// Stop the scoreboard
-		scoreboard.stop();
+		scoreboard.dispose();
 	}
 
 	public void loadConfiguration(JSONObject config) throws JSONException {
