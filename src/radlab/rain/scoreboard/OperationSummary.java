@@ -164,7 +164,7 @@ public class OperationSummary {
 		operation.put("sampler_rtime_99th", nNaN(responseTimeSampler.getNthPercentile(99)));
 		operation.put("sampler_rtime_mean", nNaN(responseTimeSampler.getSampleMean()));
 		operation.put("sampler_rtime_stdev", nNaN(responseTimeSampler.getSampleStandardDeviation()));
-		operation.put("sampelr_rtime_tvalue", nNaN(responseTimeSampler.getTvalue(averageRTime)));
+		operation.put("sampler_rtime_tvalue", nNaN(responseTimeSampler.getTvalue(averageRTime)));
 
 		return operation;
 	}
