@@ -33,6 +33,8 @@ package radlab.rain.scoreboard;
 
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 
 import org.json.JSONArray;
@@ -46,7 +48,7 @@ import radlab.rain.operation.OperationExecution;
 import radlab.rain.util.AllSamplingStrategy;
 import radlab.rain.util.IMetricSampler;
 
-public class Scoreboard implements Runnable, IScoreboard {
+public class Scoreboard extends Thread implements Runnable, IScoreboard {
 	private static Logger logger = LoggerFactory.getLogger(Scoreboard.class);
 
 	// Target that owns this scoreboard
@@ -73,21 +75,19 @@ public class Scoreboard implements Runnable, IScoreboard {
 	// Basically holds all counters relevant for aggregated result statistics
 	private Scorecard finalCard = null;
 
+	// Threads used to process the queues
+	private MetricWriterThread snapshotThread = null;
+
 	// Summary reports for each operation
-	private TreeMap<String, ErrorSummary> errorMap = new TreeMap<String, ErrorSummary>();
-	private TreeMap<String, WaitTimeSummary> waitTimeMap = new TreeMap<String, WaitTimeSummary>();
+	private Map<String, WaitTimeSummary> waitTimeMap = new TreeMap<String, WaitTimeSummary>();
 
 	// Dropoff and processing queues
-	private LinkedList<OperationExecution> dropOffQ = new LinkedList<OperationExecution>();
-	private LinkedList<OperationExecution> processingQ = new LinkedList<OperationExecution>();
+	private List<OperationExecution> dropOffQ = new LinkedList<OperationExecution>();
+	private List<OperationExecution> processingQ = new LinkedList<OperationExecution>();
 
 	// Lock objects
 	private Object swapDropoffQueueLock = new Object();
 	private Object waitTimeDropOffLock = new Object();
-
-	// Threads used to process the queues
-	private Thread workerThread = null;
-	private MetricWriterThread snapshotThread = null;
 
 	/**
 	 * Creates a new Scoreboard with the track name specified. The Scoreboard returned must be initialized by calling
@@ -177,9 +177,8 @@ public class Scoreboard implements Runnable, IScoreboard {
 			this.done = false;
 
 			// Start worker thread
-			workerThread = new Thread(this);
-			workerThread.setName("Scoreboard-Worker");
-			workerThread.start();
+			setName("Scoreboard-Worker");
+			super.start();
 
 			// Start snapshot thread
 			snapshotThread = new MetricWriterThread();
@@ -188,8 +187,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 		}
 	}
 
-	@Override
-	public void stop() {
+	public void dispose() {
 		if (isRunning()) {
 			this.done = true;
 
@@ -197,12 +195,12 @@ public class Scoreboard implements Runnable, IScoreboard {
 			try {
 				// Join worker thread
 				logger.debug(this + " waiting for worker thread to exit!");
-				workerThread.join(60 * 1000);
+				join(60 * 1000);
 
 				// If its still alive try to interrupt it
-				if (workerThread.isAlive()) {
+				if (isAlive()) {
 					logger.debug(this + " interrupting worker thread.");
-					workerThread.interrupt();
+					interrupt();
 				}
 			} catch (InterruptedException ie) {
 				logger.info(this + " Interrupted waiting on worker thread exit!");
@@ -235,7 +233,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 	 * Check if the worker thread is running and alive
 	 */
 	private boolean isRunning() {
-		return (this.workerThread != null && this.workerThread.isAlive());
+		return isAlive();
 	}
 
 	@Override
@@ -248,14 +246,14 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 				// Queue swap (dropOffQ with processingQ)
 				synchronized (swapDropoffQueueLock) {
-					LinkedList<OperationExecution> temp = processingQ;
+					List<OperationExecution> temp = processingQ;
 					processingQ = dropOffQ;
 					dropOffQ = temp;
 				}
 
 				// Process all entries in the working queue
 				while (!processingQ.isEmpty()) {
-					OperationExecution result = processingQ.remove();
+					OperationExecution result = processingQ.remove(0);
 					TraceLabels traceLabel = result.getTraceLabel();
 
 					// Process this operation by its label
