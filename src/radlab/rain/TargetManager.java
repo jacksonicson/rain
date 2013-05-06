@@ -9,17 +9,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import radlab.rain.target.ITarget;
-import radlab.rain.util.MetricWriter;
-import radlab.rain.util.SonarMetricWriter;
 
 public class TargetManager extends Thread {
 	private static Logger logger = LoggerFactory.getLogger(TargetManager.class);
 
 	// Reference to the target schedule
 	private TargetSchedule schedule;
-
-	// Metric writer configuration
-	private JSONObject metricWriterConf;
 
 	// Timestamp when the whole benchmark (target manager) was started
 	private long startBenchmarkTime;
@@ -33,7 +28,6 @@ public class TargetManager extends Thread {
 	TargetManager(JSONObject config, TargetSchedule schedule) throws JSONException {
 		setName("TargetManager");
 		this.schedule = schedule;
-		metricWriterConf = config.getJSONObject("metricWriterConf");
 	}
 
 	List<ITarget> getAllTargets() {
@@ -47,14 +41,10 @@ public class TargetManager extends Thread {
 
 			// Configure all generated targets
 			for (ITarget target : targets) {
-				// Create a metric writer
-				MetricWriter metricWriter = new SonarMetricWriter(metricWriterConf);
-				target.setMetricWriter(metricWriter);
-				
 				// Set target Id
-				logger.debug("TargetID: " + targetId); 
+				logger.debug("TargetID: " + targetId);
 				target.setId(targetId);
-				targetId += 1; 
+				targetId += 1;
 
 				// Set custom timing
 				Timing timing = new Timing(conf.getRampUp(), conf.getDuration(), conf.getRampDown());

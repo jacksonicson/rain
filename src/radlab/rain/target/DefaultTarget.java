@@ -57,7 +57,6 @@ import radlab.rain.operation.Generator;
 import radlab.rain.operation.IGeneratorFactory;
 import radlab.rain.scoreboard.IScoreboard;
 import radlab.rain.scoreboard.Scoreboard;
-import radlab.rain.util.MetricWriter;
 
 public abstract class DefaultTarget extends Thread implements ITarget {
 	// Logger
@@ -68,9 +67,6 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 
 	// Timings
 	protected Timing timing;
-
-	// Metric writer configuration
-	private MetricWriter metricWriter;
 
 	// Load manager
 	protected LoadManager loadManager;
@@ -309,7 +305,6 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 		// Set the log sampling probability for the scoreboard
 		scoreboard.initialize(timing, loadSchedule.getMaxAgents());
 		scoreboard.setMeanResponseTimeSamplingInterval(meanResponseTimeSamplingInterval);
-		scoreboard.setMetricWriter(metricWriter);
 		scoreboard.start();
 
 		return scoreboard;
@@ -321,10 +316,6 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 
 	public IScoreboard getScoreboard() {
 		return scoreboard;
-	}
-
-	public void setMetricWriter(MetricWriter metricWriter) {
-		this.metricWriter = metricWriter;
 	}
 
 	public void setLoadScheduleFactory(LoadScheduleFactory loadScheduleFactory) {

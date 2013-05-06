@@ -1,13 +1,12 @@
-package radlab.rain.util;
+package radlab.rain.scoreboard;
 
 import org.apache.commons.math3.stat.descriptive.rank.Percentile;
-import org.json.JSONObject;
 
-import radlab.rain.scoreboard.ResponseTimeStat;
+import radlab.rain.util.SonarRecorder;
 import de.tum.in.sonar.collector.Identifier;
 import de.tum.in.sonar.collector.MetricReading;
 
-public class SonarMetricWriter extends MetricWriter {
+public class SonarMetricWriter {
 
 	private SonarRecorder sonarRecorder;
 
@@ -17,18 +16,9 @@ public class SonarMetricWriter extends MetricWriter {
 
 	private long[] thrBuffer = new long[10];
 
-	public SonarMetricWriter(JSONObject config) {
-		super(config);
-
-		System.out.println("Start SonarMetricWriter");
-
+	public SonarMetricWriter() {
 		// Read configuration
 		sonarRecorder = SonarRecorder.getInstance();
-	}
-
-	@Override
-	public String getDetails() {
-		return "SonarMetricWriter";
 	}
 
 	private final int BUFFER = 3000;
@@ -94,7 +84,6 @@ public class SonarMetricWriter extends MetricWriter {
 		sonarRecorder.record(id, reading);
 	}
 
-	@Override
 	public boolean write(ResponseTimeStat rtimeStat) {
 
 		if (lastSnapshotLog == 0) {
@@ -121,22 +110,22 @@ public class SonarMetricWriter extends MetricWriter {
 			double deltaAverageResponseTime = deltaResponseTime / deltaObservations;
 
 			// Total average response time
-			log(timestamp, "rain.avgrtime." + rtimeStat.targetId, (long)totalAveragegResponseTime);
-			
+			log(timestamp, "rain.avgrtime." + rtimeStat.targetId, (long) totalAveragegResponseTime);
+
 			// Delta average response time
-			log(timestamp, "rain.rtime." + rtimeStat.targetId, (long)deltaAverageResponseTime);
-			
+			log(timestamp, "rain.rtime." + rtimeStat.targetId, (long) deltaAverageResponseTime);
+
 			// Total observations
-			log(timestamp, "rain.tobservations." + rtimeStat.targetId, (long)rtimeStat.numObservations);
+			log(timestamp, "rain.tobservations." + rtimeStat.targetId, (long) rtimeStat.numObservations);
 
 			// Delta observations
-			log(timestamp, "rain.dobservations." + rtimeStat.targetId, (long)deltaObservations);
+			log(timestamp, "rain.dobservations." + rtimeStat.targetId, (long) deltaObservations);
 
 			// Total response time
-			log(timestamp, "rain.trtime." + rtimeStat.targetId, (long)rtimeStat.totalResponseTime);
+			log(timestamp, "rain.trtime." + rtimeStat.targetId, (long) rtimeStat.totalResponseTime);
 
 			// Delta response time
-			log(timestamp, "rain.drtime." + rtimeStat.targetId, (long)deltaResponseTime);
+			log(timestamp, "rain.drtime." + rtimeStat.targetId, (long) deltaResponseTime);
 
 			// Log min max and percentile response times
 			long[] minmax = calcMinMaxRTime();
@@ -168,7 +157,6 @@ public class SonarMetricWriter extends MetricWriter {
 		return false;
 	}
 
-	@Override
 	public void close() throws Exception {
 		sonarRecorder.disconnect();
 	}

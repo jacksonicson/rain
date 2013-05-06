@@ -45,13 +45,15 @@ import radlab.rain.Timing;
 import radlab.rain.operation.OperationExecution;
 import radlab.rain.util.AllSamplingStrategy;
 import radlab.rain.util.IMetricSampler;
-import radlab.rain.util.MetricWriter;
 
 public class Scoreboard implements Runnable, IScoreboard {
 	private static Logger logger = LoggerFactory.getLogger(Scoreboard.class);
 
 	// Target that owns this scoreboard
-	private long targetId;
+	private final long targetId;
+
+	// Timings
+	private Timing timing;
 
 	// If true, this scoreboard will refuse any new results.
 	// Indicates the thread status (started or stopped)
@@ -60,18 +62,12 @@ public class Scoreboard implements Runnable, IScoreboard {
 	// Response time sampling interval (wait time and operation summary)
 	private long meanResponseTimeSamplingInterval = 500;
 
-	// Timings
-	private Timing timing;
-
-	// Global counters for dropoffs and dropoff time (time waited for the lock to
+	// Global counters for drop-offs and dropoff time (time waited for the lock to
 	// write a result to a processing queue)
 	// They are only used for internal statistics about the scoreboard behavior
 	private long totalDropoffs = 0;
 	private long totalDropOffWaitTime = 0;
 	private long maxDropOffWaitTime = 0;
-
-	// Write metrics using the snapshotThread with the MetricWriter
-	private MetricWriter metricWriter = null;
 
 	// Final scorecard
 	// Basically holds all counters relevant for aggregated result statistics
@@ -91,7 +87,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 	// Threads used to process the queues
 	private Thread workerThread = null;
-	private SnapshotWriterThread snapshotThread = null;
+	private MetricWriterThread snapshotThread = null;
 
 	/**
 	 * Creates a new Scoreboard with the track name specified. The Scoreboard returned must be initialized by calling
@@ -186,14 +182,9 @@ public class Scoreboard implements Runnable, IScoreboard {
 			workerThread.start();
 
 			// Start snapshot thread
-			if (metricWriter != null) {
-				snapshotThread = new SnapshotWriterThread();
-				snapshotThread.setMetricWriter(metricWriter);
-				snapshotThread.setName("Scoreboard-Snapshot-Writer");
-				snapshotThread.start();
-			} else {
-				logger.warn("Metric writer was not set, not using metric snapshots");
-			}
+			snapshotThread = new MetricWriterThread();
+			snapshotThread.setName("Scoreboard-Snapshot-Writer");
+			snapshotThread.start();
 		}
 	}
 
@@ -378,11 +369,6 @@ public class Scoreboard implements Runnable, IScoreboard {
 	@Override
 	public void setMeanResponseTimeSamplingInterval(long val) {
 		this.meanResponseTimeSamplingInterval = val;
-	}
-
-	@Override
-	public void setMetricWriter(MetricWriter val) {
-		this.metricWriter = val;
 	}
 
 	@Override

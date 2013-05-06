@@ -6,20 +6,19 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import radlab.rain.util.MetricWriter;
 
 /**
  * Receives @see ResponseTimeStat objects. It aggregates all incoming data and writes the aggregated stats using a @see
  * MetricWriter
  */
-class SnapshotWriterThread extends Thread {
-	private static Logger logger = LoggerFactory.getLogger(SnapshotWriterThread.class);
+class MetricWriterThread extends Thread {
+	private static Logger logger = LoggerFactory.getLogger(MetricWriterThread.class);
 
 	// Interrupt metric writer thread
 	private boolean interrupted = false;
 
 	// Reference to the metric writer
-	private MetricWriter metricWriter = null;
+	private SonarMetricWriter metricWriter = new SonarMetricWriter();
 
 	// Queue for processing stats objects
 	private BlockingQueue<ResponseTimeStat> queue = new LinkedBlockingQueue<ResponseTimeStat>();
@@ -68,7 +67,4 @@ class SnapshotWriterThread extends Thread {
 		super.interrupt();
 	}
 
-	void setMetricWriter(MetricWriter metricWriter) {
-		this.metricWriter = metricWriter;
-	}
 }

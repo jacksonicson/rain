@@ -36,15 +36,11 @@ import org.json.JSONObject;
 
 import radlab.rain.Timing;
 import radlab.rain.operation.OperationExecution;
-import radlab.rain.util.MetricWriter;
 
 public interface IScoreboard {
 
 	// Initialize the scoreboard
 	void initialize(Timing timing, long maxUsers);
-
-	// Set reference to a metric writer
-	void setMetricWriter(MetricWriter metricWriter);
 
 	// Start recording data
 	void start();
@@ -57,14 +53,7 @@ public interface IScoreboard {
 
 	void dropOffWaitTime(long time, String opName, long waitTime);
 
-	/**
-	 * Configuration settings
-	 */
 	void setMeanResponseTimeSamplingInterval(long val);
-
-	/**
-	 * Result aggregation
-	 */
 
 	// Returns a scorecard that contains aggregated stats
 	Scorecard getFinalScorecard();
