@@ -105,7 +105,6 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 	protected double meanThinkTime = 0;
 
 	// Sampling
-	protected double logSamplingProbability = 1.0;
 	protected double metricSnapshotInterval = 60.0;
 	protected long meanResponseTimeSamplingInterval = 500;
 
@@ -262,10 +261,6 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 		if (config.has("pOpenLoop"))
 			openLoopProbability = config.getDouble("pOpenLoop");
 
-		// Log Sampling Probability
-		if (config.has("pLogSampling"))
-			logSamplingProbability = config.getDouble("pLogSampling");
-
 		// Mean Cycle Time
 		if (config.has("meanCycleTime"))
 			meanCycleTime = config.getDouble("meanCycleTime");
@@ -313,7 +308,6 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 
 		// Set the log sampling probability for the scoreboard
 		scoreboard.initialize(timing, loadSchedule.getMaxAgents());
-		scoreboard.setLogSamplingProbability(logSamplingProbability);
 		scoreboard.setMeanResponseTimeSamplingInterval(meanResponseTimeSamplingInterval);
 		scoreboard.setMetricWriter(metricWriter);
 		scoreboard.start();

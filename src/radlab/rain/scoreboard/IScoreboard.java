@@ -60,8 +60,6 @@ public interface IScoreboard {
 	/**
 	 * Configuration settings
 	 */
-	void setLogSamplingProbability(double val);
-
 	void setMeanResponseTimeSamplingInterval(long val);
 
 	/**

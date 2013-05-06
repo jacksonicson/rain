@@ -47,25 +47,8 @@ import radlab.rain.util.AllSamplingStrategy;
 import radlab.rain.util.IMetricSampler;
 import radlab.rain.util.MetricWriter;
 
-/**
- * The Scoreboard class implements the IScoreboard interface. Each Scoreboard is specific to a single instantiation of a
- * track (i.e. the statistical results of a a scoreboard pertain to the operations executed by only the. scenario track
- * with which this scoreboard is associated).<br />
- * <br />
- * The graphs we want to show/statistics we want to record:
- * <ol>
- * <li>Offered load timeline (in ops or requests per sec in a bucket of time)</li>
- * <li>Offered load during the run (in ops or requests per sec)</li>
- * <li>Effective load during the run (in ops or requests per sec) (avg number of operations/requests that completed
- * successfully during the run duration</li>
- * <li>Data distribution for each operation type - histogram of id's generated/used</li>
- * </ol>
- */
 public class Scoreboard implements Runnable, IScoreboard {
 	private static Logger logger = LoggerFactory.getLogger(Scoreboard.class);
-
-	// Time in seconds to wait for worker thread to exit before interrupt
-	public static int WORKER_EXIT_TIMEOUT = 60;
 
 	// Target that owns this scoreboard
 	private long targetId;
@@ -76,9 +59,6 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 	// Response time sampling interval (wait time and operation summary)
 	private long meanResponseTimeSamplingInterval = 500;
-
-	// Log (trace) sampling probability
-	private double logSamplingProbability = 1.0;
 
 	// Timings
 	private Timing timing;
@@ -108,7 +88,6 @@ public class Scoreboard implements Runnable, IScoreboard {
 	// Lock objects
 	private Object swapDropoffQueueLock = new Object();
 	private Object waitTimeDropOffLock = new Object();
-	private Object errorSummaryDropOffLock = new Object();
 
 	// Threads used to process the queues
 	private Thread workerThread = null;
@@ -226,8 +205,8 @@ public class Scoreboard implements Runnable, IScoreboard {
 			// Worker thread
 			try {
 				// Join worker thread
-				logger.debug(this + " waiting " + WORKER_EXIT_TIMEOUT + " seconds for worker thread to exit!");
-				workerThread.join(WORKER_EXIT_TIMEOUT * 1000);
+				logger.debug(this + " waiting for worker thread to exit!");
+				workerThread.join(60 * 1000);
 
 				// If its still alive try to interrupt it
 				if (workerThread.isAlive()) {
@@ -247,7 +226,7 @@ public class Scoreboard implements Runnable, IScoreboard {
 
 					// Wait to join
 					logger.debug(this + " waiting metric snapshot writer thread to join");
-					snapshotThread.join(WORKER_EXIT_TIMEOUT * 1000);
+					snapshotThread.join(60 * 1000);
 
 					// If its still alive try to interrupt again
 					if (snapshotThread.isAlive()) {
@@ -399,11 +378,6 @@ public class Scoreboard implements Runnable, IScoreboard {
 	@Override
 	public void setMeanResponseTimeSamplingInterval(long val) {
 		this.meanResponseTimeSamplingInterval = val;
-	}
-
-	@Override
-	public void setLogSamplingProbability(double val) {
-		this.logSamplingProbability = val;
 	}
 
 	@Override
