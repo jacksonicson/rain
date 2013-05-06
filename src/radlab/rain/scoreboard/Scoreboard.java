@@ -73,10 +73,10 @@ public class Scoreboard extends Thread implements Runnable, IScoreboard {
 
 	// Final scorecard
 	// Basically holds all counters relevant for aggregated result statistics
-	private Scorecard finalCard = null;
+	private Scorecard scorecard = null;
 
 	// Threads used to process the queues
-	private MetricWriterThread snapshotThread = null;
+	private MetricWriterThread metricWriter = null;
 
 	// Summary reports for each operation
 	private Map<String, WaitTimeSummary> waitTimeMap = new TreeMap<String, WaitTimeSummary>();
@@ -106,7 +106,7 @@ public class Scoreboard extends Thread implements Runnable, IScoreboard {
 		logger.debug("run duration: " + runDuration);
 
 		// Create a final scorecard
-		finalCard = new Scorecard(Scorecard.Type.FINAL, runDuration, maxUsers);
+		scorecard = new Scorecard(Scorecard.Type.FINAL, runDuration, maxUsers);
 	}
 
 	@Override
@@ -181,9 +181,9 @@ public class Scoreboard extends Thread implements Runnable, IScoreboard {
 			super.start();
 
 			// Start snapshot thread
-			snapshotThread = new MetricWriterThread();
-			snapshotThread.setName("Scoreboard-Snapshot-Writer");
-			snapshotThread.start();
+			metricWriter = new MetricWriterThread();
+			metricWriter.setName("Scoreboard-Snapshot-Writer");
+			metricWriter.start();
 		}
 	}
 
@@ -209,18 +209,18 @@ public class Scoreboard extends Thread implements Runnable, IScoreboard {
 			// Snapshot thread
 			try {
 				// Stop snapshot thread
-				if (snapshotThread != null) {
+				if (metricWriter != null) {
 					// Set stop flag
-					snapshotThread.interrupt();
+					metricWriter.interrupt();
 
 					// Wait to join
 					logger.debug(this + " waiting metric snapshot writer thread to join");
-					snapshotThread.join(60 * 1000);
+					metricWriter.join(60 * 1000);
 
 					// If its still alive try to interrupt again
-					if (snapshotThread.isAlive()) {
+					if (metricWriter.isAlive()) {
 						logger.debug(this + " interrupting snapshot thread.");
-						snapshotThread.interrupt();
+						metricWriter.interrupt();
 					}
 				}
 			} catch (InterruptedException ie) {
@@ -286,12 +286,12 @@ public class Scoreboard extends Thread implements Runnable, IScoreboard {
 	}
 
 	private void processLateStateResult(OperationExecution result) {
-		finalCard.processLateOperation(result);
+		scorecard.processLateOperation(result);
 	}
 
 	private void processSteadyStateResult(OperationExecution result) {
 		// Process statistics
-		finalCard.processResult(result, meanResponseTimeSamplingInterval);
+		scorecard.processResult(result, meanResponseTimeSamplingInterval);
 
 		// If interactive, look at the total response time.
 		if (!result.failed)
@@ -300,18 +300,18 @@ public class Scoreboard extends Thread implements Runnable, IScoreboard {
 
 	private void issueMetricSnapshot(OperationExecution result) {
 		// If snapshot thread doesn't exist
-		if (snapshotThread == null)
+		if (metricWriter == null)
 			return;
 
 		long responseTime = result.getExecutionTime();
 
 		// Transferable stat object
-		ResponseTimeStat responseTimeStat = new ResponseTimeStat(result.timeFinished, responseTime, finalCard
-				.getTotalOpResponseTime(), finalCard.getTotalOpsSuccessful(), result.operationName,
+		ResponseTimeStat responseTimeStat = new ResponseTimeStat(result.timeFinished, responseTime, scorecard
+				.getTotalOpResponseTime(), scorecard.getTotalOpsSuccessful(), result.operationName,
 				result.operationRequest, targetId);
 
 		// Accept stat object
-		snapshotThread.accept(responseTimeStat);
+		metricWriter.accept(responseTimeStat);
 	}
 
 	@Override
@@ -333,7 +333,7 @@ public class Scoreboard extends Thread implements Runnable, IScoreboard {
 		result.put("mean_response_time_sample_interval", meanResponseTimeSamplingInterval);
 
 		// Add final scorecard statistics
-		result.put("final_scorecard", finalCard.getStatistics(timing.steadyStateDuration()));
+		result.put("final_scorecard", scorecard.getStatistics(timing.steadyStateDuration()));
 
 		// Add other statistics
 		result.put("wait_stats", getWaitTimeStatistics());
@@ -344,11 +344,11 @@ public class Scoreboard extends Thread implements Runnable, IScoreboard {
 	private JSONObject getWaitTimeStatistics() throws JSONException {
 		JSONObject result = new JSONObject();
 
-		synchronized (finalCard) {
+		synchronized (scorecard) {
 			JSONArray waits = new JSONArray();
 			result.put("waits", waits);
 
-			for (Iterator<String> keys = finalCard.getOperationMap().keySet().iterator(); keys.hasNext();) {
+			for (Iterator<String> keys = scorecard.getOperationMap().keySet().iterator(); keys.hasNext();) {
 				String operationName = keys.next();
 
 				// Wait time summary for the operation
@@ -371,7 +371,7 @@ public class Scoreboard extends Thread implements Runnable, IScoreboard {
 
 	@Override
 	public Scorecard getFinalScorecard() {
-		return this.finalCard;
+		return this.scorecard;
 	}
 
 	public String toString() {
