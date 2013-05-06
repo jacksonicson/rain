@@ -29,13 +29,14 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package radlab.rain.util;
+package radlab.rain.scoreboard;
 
 import java.util.LinkedList;
 
 import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 import org.apache.commons.math3.stat.descriptive.rank.Percentile;
+
 
 public class NullSamplingStrategy implements IMetricSampler {
 	private final int SIZE = 1000;

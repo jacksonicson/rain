@@ -34,7 +34,6 @@ package radlab.rain.scoreboard;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.util.IMetricSampler;
 
 class WaitTimeSummary {
 	private long count = 0;

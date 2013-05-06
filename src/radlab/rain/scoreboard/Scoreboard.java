@@ -45,8 +45,6 @@ import org.slf4j.LoggerFactory;
 
 import radlab.rain.Timing;
 import radlab.rain.operation.OperationExecution;
-import radlab.rain.util.AllSamplingStrategy;
-import radlab.rain.util.IMetricSampler;
 
 public class Scoreboard extends Thread implements Runnable, IScoreboard {
 	private static Logger logger = LoggerFactory.getLogger(Scoreboard.class);

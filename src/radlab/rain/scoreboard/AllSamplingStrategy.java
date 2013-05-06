@@ -29,80 +29,45 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package radlab.rain.util;
+package radlab.rain.scoreboard;
 
-import java.util.Collections;
 import java.util.LinkedList;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import radlab.rain.Benchmark;
-import de.tum.in.sonar.collector.Identifier;
-import de.tum.in.sonar.collector.MetricReading;
-
-public class PoissonSamplingStrategy implements IMetricSampler {
-
-	private static Logger logger = LoggerFactory.getLogger(Benchmark.class);
-
-	// Sonar recorder
-	private SonarRecorder sonarRecorder;
-	private String operation;
-
+public class AllSamplingStrategy implements IMetricSampler {
 	private LinkedList<Long> _samples = new LinkedList<Long>();
-	private int _nextSampleToAccept = 1;
 	private int _currentSample = 0;
-	private double _meanSamplingInterval = 1.0;
-	private NegativeExponential _expRandom = null;
 	private long _sampleSum = 0;
 
-	public static long getNthPercentile(int pct, LinkedList<Long> samples) {
-		if (samples.size() == 0)
-			return 0;
-		Collections.sort(samples);
-		int index = (int) Math.round((double) (pct * (samples.size() + 1)) / 100.0);
-		if (index < samples.size())
-			return samples.get(index).longValue();
-		else
-			return samples.get(samples.size() - 1); // Return the second last sample
+	public AllSamplingStrategy() {
 	}
 
-	public PoissonSamplingStrategy(String operation, double meanSamplingInterval) {
-		this._meanSamplingInterval = meanSamplingInterval;
-		this._expRandom = new NegativeExponential(this._meanSamplingInterval);
-		this.operation = operation;
-		this.reset();
-
-		this.sonarRecorder = SonarRecorder.getInstance();
+	// accept always keeps each sample seen
+	@Override
+	public boolean accept(long value) {
+		this._currentSample++;
+		this._sampleSum += value;
+		this._samples.add(value);
+		return true;
 	}
 
+	@Override
 	public double getMeanSamplingInterval() {
-		return this._meanSamplingInterval;
+		return 0; // Returns 0 by design, sampling interval irrelevant for NullSamplingStrategy (it accepts every sample
+					// seen)
 	}
 
-	public void setMeanSamplingInterval(double val) {
-		this._meanSamplingInterval = val;
-	}
-
-	public void reset() {
-		this._currentSample = 0;
-		this._nextSampleToAccept = 1;
-		this._samples.clear();
-		this._sampleSum = 0;
-	}
-
-	public int getSamplesCollected() {
-		return this._samples.size();
-	}
-
-	public int getSamplesSeen() {
-		return this._currentSample;
-	}
-
+	@Override
 	public long getNthPercentile(int pct) {
 		return PoissonSamplingStrategy.getNthPercentile(pct, this._samples);
 	}
 
+	@Override
+	public LinkedList<Long> getRawSamples() {
+		return this._samples;
+	}
+
+	@Override
 	public double getSampleMean() {
 		long samples = this.getSamplesCollected();
 		if (samples == 0)
@@ -111,6 +76,7 @@ public class PoissonSamplingStrategy implements IMetricSampler {
 			return (double) this._sampleSum / (double) samples;
 	}
 
+	@Override
 	public double getSampleStandardDeviation() {
 		long samples = this.getSamplesCollected();
 		if (samples == 0 || samples == 1)
@@ -122,13 +88,24 @@ public class PoissonSamplingStrategy implements IMetricSampler {
 		double deviationSqSum = 0.0;
 		for (Long value : this._samples) {
 			// Print out value so we can debug the sd computation
-			// logger.info( value );
+			// System.out.println( value );
 			deviationSqSum += Math.pow((double) (value - sampleMean), 2);
 		}
 		// Divide deviationSqSum by N-1 then return the square root
 		return Math.sqrt(deviationSqSum / (double) (samples - 1));
 	}
 
+	@Override
+	public int getSamplesCollected() {
+		return this._samples.size();
+	}
+
+	@Override
+	public int getSamplesSeen() {
+		return this._currentSample;
+	}
+
+	@Override
 	public double getTvalue(double populationMean) {
 		long samples = this.getSamplesCollected();
 		if (samples == 0 || samples == 1)
@@ -140,38 +117,20 @@ public class PoissonSamplingStrategy implements IMetricSampler {
 			ret = 0;
 		if (Double.isInfinite(ret))
 			ret = 0;
+		
 		return ret;
 	}
 
-	public boolean accept(long value) {
-		this._currentSample++;
-
-		if (this._currentSample == this._nextSampleToAccept) {
-			this._sampleSum += value;
-			this._samples.add(value);
-			// Update the nextSampleToAccept
-			double randExp = this._expRandom.nextDouble();
-			// logger.info( "Random exp: " + randExp );
-			this._nextSampleToAccept = this._currentSample + (int) Math.ceil(randExp);
-			// logger.info("Next sample to accept: " + this._nextSampleToAccept);
-
-			if (sonarRecorder != null) {
-				Identifier id = new Identifier();
-				id.setSensor("rain.rtime.sampler." + this.operation);
-				id.setTimestamp(System.currentTimeMillis() / 1000);
-
-				MetricReading mvalue = new MetricReading();
-				mvalue.setValue(value);
-
-				sonarRecorder.record(id, mvalue);
-			}
-
-			return true;
-		}
-		return false;
+	@Override
+	public void reset() {
+		this._currentSample = 0;
+		this._samples.clear();
+		this._sampleSum = 0;
 	}
 
-	public LinkedList<Long> getRawSamples() {
-		return this._samples;
-	};
+	@Override
+	public void setMeanSamplingInterval(double val) {
+		// Empty by design (sampling intervals are irrelevant for the NullSamplingStrategy: it accepts every sample)
+	}
+
 }

@@ -13,8 +13,6 @@ import org.slf4j.LoggerFactory;
 
 import radlab.rain.RainConfig;
 import radlab.rain.operation.OperationExecution;
-import radlab.rain.util.AllSamplingStrategy;
-import radlab.rain.util.NullSamplingStrategy;
 
 /**
  * Eventually all stats reporting will be done using Scorecards. There will be per-interval Scorecards as well as a

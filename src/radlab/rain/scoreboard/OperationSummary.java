@@ -37,7 +37,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import radlab.rain.operation.OperationExecution;
-import radlab.rain.util.IMetricSampler;
 import de.tum.in.dss.psquare.PSquared;
 
 public class OperationSummary {
