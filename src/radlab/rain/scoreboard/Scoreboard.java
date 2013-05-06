@@ -161,10 +161,9 @@ public class Scoreboard extends Thread implements Runnable, IScoreboard {
 		}
 	}
 
-	@Override
 	public void start() {
 		// Thread is running
-		running = false;
+		running = true;
 
 		// Start snapshot thread
 		metricWriter = new MetricWriterThread();
@@ -219,7 +218,7 @@ public class Scoreboard extends Thread implements Runnable, IScoreboard {
 
 	@Override
 	public void run() {
-		logger.debug(this + " starting worker thread...");
+		logger.info(this + " starting scoreboard worker thread...");
 
 		// Run as long as the scoreboard is not done or the dropoff queue still contains entries
 		while (running || !dropOffQ.isEmpty()) {
@@ -346,7 +345,7 @@ public class Scoreboard extends Thread implements Runnable, IScoreboard {
 
 	@Override
 	public Scorecard getFinalScorecard() {
-		return this.scorecard;
+		return scorecard;
 	}
 
 	public String toString() {

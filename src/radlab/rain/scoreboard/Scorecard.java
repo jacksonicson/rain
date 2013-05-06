@@ -38,7 +38,7 @@ public class Scorecard {
 	private long totalOpsInitiated = 0;
 	private long totalOpsLate = 0;
 
-	// Summary of all operations
+	// Summary for all operations
 	private OperationSummary summary = new OperationSummary(new NullSamplingStrategy());
 
 	// A mapping of each operation with its summary

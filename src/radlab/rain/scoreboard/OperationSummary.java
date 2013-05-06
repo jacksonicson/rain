@@ -44,7 +44,7 @@ import de.tum.in.dss.psquare.PSquared;
 
 public class OperationSummary {
 	private static Logger logger = LoggerFactory.getLogger(OperationSummary.class);
-	
+
 	// Information recorded about one operation type
 	private long opsSuccessful = 0;
 	private long opsFailed = 0;
@@ -135,65 +135,82 @@ public class OperationSummary {
 
 		// Results
 		JSONObject operation = new JSONObject();
-		
+
 		operation.put("ops_successful", opsSuccessful);
 		operation.put("ops_failed", opsFailed);
 		operation.put("ops_seen", totalOperations);
 		operation.put("actions_successful", actionsSuccessful);
 		operation.put("ops_async", opsAsync);
 		operation.put("ops_sync", opsSync);
-		
+
 		operation.put("effective_load_ops", effectiveLoadOperations);
 		operation.put("effective_load_req", effectiveLoadRequests);
-		
+
 		operation.put("rtime_total", totalResponseTime);
-		operation.put("rtime_average", averageRTime);
+		operation.put("rtime_average", nNaN(averageRTime));
 		operation.put("rtime_max", maxResponseTime);
 		operation.put("rtime_min", minResponseTime);
-		operation.put("rtime_50th", rtime50th.getPValue());
-		operation.put("rtime_90th", rtime90th.getPValue());
-		operation.put("rtime_95th", rtime95th.getPValue());
-		operation.put("rtime_99th", rtime99th.getPValue());
+		operation.put("rtime_50th", nNaN(rtime50th.getPValue()));
+		operation.put("rtime_90th", nNaN(rtime90th.getPValue()));
+		operation.put("rtime_95th", nNaN(rtime95th.getPValue()));
+		operation.put("rtime_99th", nNaN(rtime99th.getPValue()));
 		operation.put("rtime_thr_failed", opsFailedRtimeThreshold);
-		
+
 		operation.put("sampler_samples_collected", responseTimeSampler.getSamplesCollected());
 		operation.put("sampler_samples_seen", responseTimeSampler.getSamplesSeen());
-		operation.put("sampler_rtime_50th", responseTimeSampler.getNthPercentile(50));
-		operation.put("sampler_rtime_90th", responseTimeSampler.getNthPercentile(90));
-		operation.put("sampler_rtime_95th", responseTimeSampler.getNthPercentile(95));
-		operation.put("sampler_rtime_99th", responseTimeSampler.getNthPercentile(99));
-		operation.put("sampler_rtime_mean", responseTimeSampler.getSampleMean());
-		operation.put("sampler_rtime_stdev", responseTimeSampler.getSampleStandardDeviation());
-		operation.put("sampelr_rtime_tvalue", responseTimeSampler.getTvalue(averageRTime));
+		operation.put("sampler_rtime_50th", nNaN(responseTimeSampler.getNthPercentile(50)));
+		operation.put("sampler_rtime_90th", nNaN(responseTimeSampler.getNthPercentile(90)));
+		operation.put("sampler_rtime_95th", nNaN(responseTimeSampler.getNthPercentile(95)));
+		operation.put("sampler_rtime_99th", nNaN(responseTimeSampler.getNthPercentile(99)));
+		operation.put("sampler_rtime_mean", nNaN(responseTimeSampler.getSampleMean()));
+		operation.put("sampler_rtime_stdev", nNaN(responseTimeSampler.getSampleStandardDeviation()));
+		operation.put("sampelr_rtime_tvalue", nNaN(responseTimeSampler.getTvalue(averageRTime)));
 
 		return operation;
+	}
+
+	private double nNaN(double val) {
+		if (Double.isNaN(val))
+			return 0;
+		else if (Double.isInfinite(val))
+			return 0;
+
+		return val;
 	}
 
 	private final double toSeconds(double timestamp) {
 		return timestamp / 1000d;
 	}
-	
+
 	private IMetricSampler getResponseTimeSampler() {
 		return responseTimeSampler;
 	}
 
 	public void merge(OperationSummary from) {
-		
-		// TODO: Merge new fields
-		
 		opsSuccessful += from.opsSuccessful;
 		opsFailed += from.opsFailed;
 		actionsSuccessful += from.actionsSuccessful;
-		totalResponseTime += from.totalResponseTime;
+
 		opsAsync += from.opsAsync;
 		opsSync += from.opsSync;
+
 		minResponseTime = Math.min(minResponseTime, from.minResponseTime);
 		maxResponseTime = Math.max(maxResponseTime, from.maxResponseTime);
 
+		totalResponseTime += from.totalResponseTime;
+		opsFailedRtimeThreshold += from.opsFailedRtimeThreshold;
+
+		// TODO: How to combine two separate percentiles?
+		rtime99th.accept(from.rtime99th.getPValue());
+		rtime95th.accept(from.rtime95th.getPValue());
+		rtime90th.accept(from.rtime90th.getPValue());
+		rtime50th.accept(from.rtime50th.getPValue());
+
+		// Accept all response time samples
 		LinkedList<Long> rhsRawSamples = from.getResponseTimeSampler().getRawSamples();
-		for (Long obs : rhsRawSamples) {
+		for (Long obs : rhsRawSamples)
 			responseTimeSampler.accept(obs);
-		}
+
 	}
 
 	public long getOpsSuccessful() {

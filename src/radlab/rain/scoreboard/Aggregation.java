@@ -15,11 +15,11 @@ public class Aggregation {
 	private static Logger logger = LoggerFactory.getLogger(Scenario.class);
 
 	private long calculateSteadyStateDuration(List<ITarget> targets) {
-		long totalSteadyState = 0; 
+		long totalSteadyState = 0;
 		for (ITarget target : targets) {
-			totalSteadyState += target.getScoreboard().getFinalScorecard().getTimeActive(); 
+			totalSteadyState += target.getScoreboard().getFinalScorecard().getTimeActive();
 		}
-		return totalSteadyState; 
+		return totalSteadyState;
 	}
 
 	public void aggregateScoreboards(List<ITarget> targets) throws JSONException {
@@ -61,10 +61,11 @@ public class Aggregation {
 			globalCard.merge(finalScorecard);
 		}
 
-		// Aggregate stats
-		if (aggStats.size() > 0)
-			logger.info("# aggregated stats: " + aggStats.size());
+		// Merged scorecard
+		logger.info("Merged scorecard: " + globalCard.getIntervalStatistics().toString());
 
+		// Aggregate stats by aggregation key
+		logger.info("# aggregated stats: " + aggStats.size());
 		for (String aggregationKey : aggStats.keySet()) {
 			Scorecard card = aggStats.get(aggregationKey);
 
@@ -74,7 +75,5 @@ public class Aggregation {
 			logger.info("Aggregated scorecard for - " + aggregationKey + ": " + strStats);
 		}
 
-		// Dump global card
-		logger.info("Global scorecard: " + globalCard.getIntervalStatistics().toString());
 	}
 }

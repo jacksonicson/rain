@@ -300,7 +300,6 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 
 		// Set the log sampling probability for the scoreboard
 		scoreboard.initialize(timing, loadSchedule.getMaxAgents());
-		scoreboard.start();
 
 		return scoreboard;
 	}
