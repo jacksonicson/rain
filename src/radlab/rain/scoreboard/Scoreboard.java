@@ -52,12 +52,11 @@ public class Scoreboard extends Thread implements Runnable, IScoreboard {
 	// Target that owns this scoreboard
 	private final long targetId;
 
-	// Timings
+	// Target timings
 	private Timing timing;
 
-	// If true, this scoreboard will refuse any new results.
-	// Indicates the thread status (started or stopped)
-	private boolean done = false;
+	// Set to terminate the thread
+	private boolean running = false;
 
 	// Global counters for drop-offs and dropoff time (time waited for the lock to
 	// write a result to a processing queue)
@@ -107,7 +106,7 @@ public class Scoreboard extends Thread implements Runnable, IScoreboard {
 	@Override
 	public void dropOffWaitTime(long time, String operationName, long waitTime) {
 		// Scoreboard closed?
-		if (isDone())
+		if (!running)
 			return;
 
 		// In steady state
@@ -133,7 +132,7 @@ public class Scoreboard extends Thread implements Runnable, IScoreboard {
 	@Override
 	public void dropOffOperation(OperationExecution result) {
 		// Scoreboard closed?
-		if (isDone())
+		if (!running)
 			return;
 
 		// Assign label to the operation execution
@@ -162,73 +161,60 @@ public class Scoreboard extends Thread implements Runnable, IScoreboard {
 		}
 	}
 
-	private final boolean isDone() {
-		return done;
-	}
-
 	@Override
 	public void start() {
-		if (!isRunning()) {
-			this.done = false;
+		// Thread is running
+		running = false;
 
-			// Start worker thread
-			setName("Scoreboard-Worker");
-			super.start();
+		// Start snapshot thread
+		metricWriter = new MetricWriterThread();
+		metricWriter.setName("Scoreboard-Snapshot-Writer");
+		metricWriter.start();
 
-			// Start snapshot thread
-			metricWriter = new MetricWriterThread();
-			metricWriter.setName("Scoreboard-Snapshot-Writer");
-			metricWriter.start();
-		}
+		// Start worker thread
+		setName("Scoreboard-Worker");
+		super.start();
 	}
 
 	public void dispose() {
-		if (isRunning()) {
-			this.done = true;
+		// Disable running flag
+		running = false;
 
-			// Worker thread
-			try {
-				// Join worker thread
-				logger.debug(this + " waiting for worker thread to exit!");
-				join(60 * 1000);
+		// Worker thread
+		try {
+			// Join worker thread
+			logger.debug(this + " waiting for worker thread to exit!");
+			join(60 * 1000);
 
-				// If its still alive try to interrupt it
-				if (isAlive()) {
-					logger.debug(this + " interrupting worker thread.");
-					interrupt();
-				}
-			} catch (InterruptedException ie) {
-				logger.info(this + " Interrupted waiting on worker thread exit!");
+			// If its still alive try to interrupt it
+			if (isAlive()) {
+				logger.debug(this + " interrupting worker thread.");
+				interrupt();
 			}
-
-			// Snapshot thread
-			try {
-				// Stop snapshot thread
-				if (metricWriter != null) {
-					// Set stop flag
-					metricWriter.interrupt();
-
-					// Wait to join
-					logger.debug(this + " waiting metric snapshot writer thread to join");
-					metricWriter.join(60 * 1000);
-
-					// If its still alive try to interrupt again
-					if (metricWriter.isAlive()) {
-						logger.debug(this + " interrupting snapshot thread.");
-						metricWriter.interrupt();
-					}
-				}
-			} catch (InterruptedException ie) {
-				logger.info(this + " Interrupted waiting on snapshot thread exit!");
-			}
+		} catch (InterruptedException ie) {
+			logger.info(this + " Interrupted waiting on worker thread exit!");
 		}
-	}
 
-	/**
-	 * Check if the worker thread is running and alive
-	 */
-	private boolean isRunning() {
-		return isAlive();
+		// Snapshot thread
+		try {
+			// Stop snapshot thread
+			if (metricWriter != null) {
+				// Set stop flag
+				metricWriter.interrupt();
+
+				// Wait to join
+				logger.debug(this + " waiting metric snapshot writer thread to join");
+				metricWriter.join(60 * 1000);
+
+				// If its still alive try to interrupt again
+				if (metricWriter.isAlive()) {
+					logger.debug(this + " interrupting snapshot thread.");
+					metricWriter.interrupt();
+				}
+			}
+		} catch (InterruptedException ie) {
+			logger.info(this + " Interrupted waiting on snapshot thread exit!");
+		}
 	}
 
 	@Override
@@ -236,7 +222,7 @@ public class Scoreboard extends Thread implements Runnable, IScoreboard {
 		logger.debug(this + " starting worker thread...");
 
 		// Run as long as the scoreboard is not done or the dropoff queue still contains entries
-		while (!isDone() || !dropOffQ.isEmpty()) {
+		while (running || !dropOffQ.isEmpty()) {
 			if (!dropOffQ.isEmpty()) {
 
 				// Queue swap (dropOffQ with processingQ)
@@ -364,6 +350,6 @@ public class Scoreboard extends Thread implements Runnable, IScoreboard {
 	}
 
 	public String toString() {
-		return "target-" + targetId + ": ";
+		return "scoreboard of target-" + targetId + ": ";
 	}
 }
