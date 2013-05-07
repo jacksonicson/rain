@@ -35,7 +35,7 @@ public class Scorecard {
 	private long totalOpsLate = 0;
 
 	// Summary for all operations
-	private OperationSummary summary = new OperationSummary(new DummySamplingStrategy());
+	private OperationSummary summary;
 
 	// A mapping of each operation with its summary
 	private TreeMap<String, OperationSummary> operationSummaryMap = new TreeMap<String, OperationSummary>();
@@ -44,12 +44,20 @@ public class Scorecard {
 		this.targetId = targetId;
 		this.intervalDuration = timeActive;
 		this.aggregationIdentifier = null;
+		init();
 	}
 
 	Scorecard(long targetId, long timeActive, String aggregationIdentifier) {
 		this.targetId = targetId;
 		this.intervalDuration = timeActive;
 		this.aggregationIdentifier = aggregationIdentifier;
+		init(); 
+	}
+	
+	private void init()
+	{
+		// Create operation summary with sampling strategy
+		this.summary = new OperationSummary(new PoissonSamplingStrategy(targetId, "all"));
 	}
 
 	void processLateOperation(OperationExecution result) {
@@ -127,8 +135,6 @@ public class Scorecard {
 		// Merge another scorecard with this
 		this.totalOpsInitiated += from.totalOpsInitiated;
 		this.totalOpsLate += from.totalOpsLate;
-
-		// Merge summary
 		this.summary.merge(from.summary);
 
 		// Merge operation maps
