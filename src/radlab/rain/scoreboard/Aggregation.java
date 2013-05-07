@@ -22,56 +22,52 @@ public class Aggregation {
 		return totalSteadyState;
 	}
 
+	private void dumpTarget(ITarget target) throws JSONException {
+		// Write detailed statistics to sonar
+		JSONObject stats = target.getScoreboard().getStatistics();
+
+		// Log summary of the target
+		String strStats = stats.toString();
+		logger.info("Target scoreboard statistics - " + target.getId() + ": " + strStats);
+	}
+
 	public void aggregateScoreboards(List<ITarget> targets) throws JSONException {
 		TreeMap<String, Scorecard> aggStats = new TreeMap<String, Scorecard>();
-		Scorecard mergedCard = new Scorecard(calculateSteadyStateDuration(targets));
+		Scorecard globalScorecard = new Scorecard(calculateSteadyStateDuration(targets));
 
 		// Aggregate all targets
 		for (ITarget target : targets) {
-			// Get scoreboard for the target
+			// 0. Dump target statistics to Sonar
+			dumpTarget(target);
+
+			// 1. Merge everything into global scorecard
 			IScoreboard scoreboard = target.getScoreboard();
+			Scorecard summary = scoreboard.getScorecard();
+			globalScorecard.merge(summary);
 
-			// Get generator class
+			// 2. Merge on operation level into global scorecards
 			String aggregationIdentifier = target.getAggregationIdentifier();
-
-			// Write detailed statistics to sonar
-			JSONObject stats = scoreboard.getStatistics();
-
-			// Log summary of the target
-			String strStats = stats.toString();
-			logger.info("Target scoreboard statistics - " + target.getId() + ": " + strStats);
-
-			// Get the final scorecard for this track
-			Scorecard finalScorecard = scoreboard.getScorecard();
 			if (!aggStats.containsKey(aggregationIdentifier)) {
-				Scorecard aggCard = new Scorecard(finalScorecard.getTimeActive(), aggregationIdentifier);
+				Scorecard aggCard = new Scorecard(summary.getTimeActive(), aggregationIdentifier);
 				aggStats.put(aggregationIdentifier, aggCard);
 			}
+
 			// Get the current aggregated scorecard for this generator
 			Scorecard aggCard = aggStats.get(aggregationIdentifier);
-			// Merge the final card for this track with the current per-driver
-			// aggregated scorecard
-			aggCard.merge(finalScorecard);
-			aggStats.put(aggregationIdentifier, aggCard);
-			// Collect scoreboard results
-			// Collect object pool results
-
-			// Merge global card
-			mergedCard.merge(finalScorecard);
+			aggCard.merge(summary);
 		}
 
-		// Merged scorecard
-		logger.info("Merged scorecard: " + mergedCard.getSummarizedStatistics().toString());
+		// Dump global scorecard
+		logger.info("Global scorecard: " + globalScorecard.getSummarizedStatistics().toString());
 
-		// Aggregate stats by aggregation key
+		// Dump merged scorecards on a operational level
 		logger.info("# aggregated stats: " + aggStats.size());
 		for (String aggregationKey : aggStats.keySet()) {
 			Scorecard card = aggStats.get(aggregationKey);
 
 			// Sonar output
-			JSONObject stats = card.getSummarizedStatistics();
-			String strStats = stats.toString();
-			logger.info("Aggregated scorecard for - " + aggregationKey + ": " + strStats);
+			String stats = card.getSummarizedStatistics().toString();
+			logger.info("Aggregated scorecard for - " + aggregationKey + ": " + stats);
 		}
 
 	}
