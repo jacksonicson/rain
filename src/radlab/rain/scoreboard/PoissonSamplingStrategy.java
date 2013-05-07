@@ -42,6 +42,7 @@ import de.tum.in.sonar.collector.MetricReading;
 public class PoissonSamplingStrategy implements IMetricSampler {
 	// All sampled values are stored in Sonar
 	private SonarRecorder sonarRecorder;
+	private long targetId;
 	private String operation;
 
 	// Settings
@@ -55,7 +56,8 @@ public class PoissonSamplingStrategy implements IMetricSampler {
 	private int samplesSeen = 0;
 	private NegativeExponential random = null;
 
-	public PoissonSamplingStrategy(String operation) {
+	public PoissonSamplingStrategy(long targetId, String operation) {
+		this.targetId = targetId;
 		this.operation = operation;
 
 		// Initialize random number generator
@@ -124,8 +126,11 @@ public class PoissonSamplingStrategy implements IMetricSampler {
 		if (sonarRecorder == null)
 			return;
 
+		if (targetId < 0)
+			return;
+
 		Identifier id = new Identifier();
-		id.setSensor("rain.rtime.sampler." + this.operation);
+		id.setSensor("rain.rtime.sampler." + targetId + "." + operation);
 		id.setTimestamp(System.currentTimeMillis() / 1000);
 
 		MetricReading mvalue = new MetricReading();

@@ -33,7 +33,7 @@ public class Aggregation {
 
 	public void aggregateScoreboards(List<ITarget> targets) throws JSONException {
 		TreeMap<String, Scorecard> aggStats = new TreeMap<String, Scorecard>();
-		Scorecard globalScorecard = new Scorecard(calculateSteadyStateDuration(targets));
+		Scorecard globalScorecard = new Scorecard(-1, calculateSteadyStateDuration(targets));
 
 		// Aggregate all targets
 		for (ITarget target : targets) {
@@ -48,7 +48,7 @@ public class Aggregation {
 			// 2. Merge on operation level into global scorecards
 			String aggregationIdentifier = target.getAggregationIdentifier();
 			if (!aggStats.containsKey(aggregationIdentifier)) {
-				Scorecard aggCard = new Scorecard(summary.getTimeActive(), aggregationIdentifier);
+				Scorecard aggCard = new Scorecard(-1, summary.getTimeActive(), aggregationIdentifier);
 				aggStats.put(aggregationIdentifier, aggCard);
 			}
 

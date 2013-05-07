@@ -24,6 +24,9 @@ public class Scorecard {
 	// Aggregation identifier
 	private final String aggregationIdentifier;
 
+	// Target ID
+	private final long targetId;
+
 	// Duration of the interval for this scorecard
 	private final long intervalDuration;
 
@@ -37,12 +40,14 @@ public class Scorecard {
 	// A mapping of each operation with its summary
 	private TreeMap<String, OperationSummary> operationSummaryMap = new TreeMap<String, OperationSummary>();
 
-	Scorecard(long timeActive) {
+	Scorecard(long targetId, long timeActive) {
+		this.targetId = targetId;
 		this.intervalDuration = timeActive;
 		this.aggregationIdentifier = null;
 	}
 
-	Scorecard(long timeActive, String aggregationIdentifier) {
+	Scorecard(long targetId, long timeActive, String aggregationIdentifier) {
+		this.targetId = targetId;
 		this.intervalDuration = timeActive;
 		this.aggregationIdentifier = aggregationIdentifier;
 	}
@@ -56,7 +61,7 @@ public class Scorecard {
 		// Do the accounting for the final score card
 		OperationSummary operationSummary = operationSummaryMap.get(result.operationName);
 		if (operationSummary == null) {
-			operationSummary = new OperationSummary(new PoissonSamplingStrategy(result.operationName));
+			operationSummary = new OperationSummary(new PoissonSamplingStrategy(targetId, result.operationName));
 			operationSummaryMap.put(result.operationName, operationSummary);
 		}
 

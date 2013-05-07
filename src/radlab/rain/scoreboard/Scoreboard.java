@@ -96,7 +96,7 @@ public class Scoreboard extends Thread implements Runnable, IScoreboard {
 		logger.debug("run duration: " + runDuration);
 
 		// Create a final scorecard
-		scorecard = new Scorecard(runDuration);
+		scorecard = new Scorecard(targetId, runDuration);
 	}
 
 	@Override
