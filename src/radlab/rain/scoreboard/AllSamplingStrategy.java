@@ -67,11 +67,6 @@ public class AllSamplingStrategy implements IMetricSampler {
 		return true;
 	}
 
-	@Override
-	public double getMeanSamplingInterval() {
-		return 0;
-	}
-
 	private void updateBuffer() {
 		if (!invalidBuffer)
 			return;
@@ -142,11 +137,6 @@ public class AllSamplingStrategy implements IMetricSampler {
 		samples.clear();
 		index = 0;
 		newBucket();
-	}
-
-	@Override
-	public void setMeanSamplingInterval(double val) {
-		// unused
 	}
 
 	@Override

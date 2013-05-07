@@ -34,10 +34,6 @@ package radlab.rain.scoreboard;
 import java.util.List;
 
 public interface IMetricSampler {
-	double getMeanSamplingInterval();
-
-	void setMeanSamplingInterval(double val);
-
 	void reset();
 
 	int getSamplesSeen();

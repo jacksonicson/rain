@@ -59,6 +59,8 @@ public class RainConfig {
 	public String sonarHost = "monitor0";
 	public String iaasHost = "192.168.96.6";
 
+	public int meanResponseTimeSamplingInterval = 100; 
+	
 	private static Object singletonLock = new Object();
 	private static RainConfig config = null;
 
@@ -89,4 +91,5 @@ public class RainConfig {
 	private RainConfig() {
 		// No one is allowed to create a instance
 	}
+
 }

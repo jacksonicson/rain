@@ -31,148 +31,115 @@
 
 package radlab.rain.scoreboard;
 
-import java.util.Collections;
 import java.util.LinkedList;
 
+import radlab.rain.RainConfig;
 import radlab.rain.util.NegativeExponential;
 import radlab.rain.util.SonarRecorder;
 import de.tum.in.sonar.collector.Identifier;
 import de.tum.in.sonar.collector.MetricReading;
 
 public class PoissonSamplingStrategy implements IMetricSampler {
-	// Sonar recorder
+	// All sampled values are stored in Sonar
 	private SonarRecorder sonarRecorder;
 	private String operation;
 
-	private LinkedList<Long> _samples = new LinkedList<Long>();
-	private int _nextSampleToAccept = 1;
-	private int _currentSample = 0;
-	private double _meanSamplingInterval = 50.0;
-	private NegativeExponential _expRandom = null;
-	private long _sampleSum = 0;
+	// Settings
+	private final double meanSamplingInterval = RainConfig.getInstance().meanResponseTimeSamplingInterval;
+
+	// Buffer with all values
+	private AllSamplingStrategy sampling = new AllSamplingStrategy();
+
+	// Sampling variables
+	private int nextSampleToAccept = 1;
+	private int samplesSeen = 0;
+	private NegativeExponential random = null;
 
 	public PoissonSamplingStrategy(String operation) {
-		this._expRandom = new NegativeExponential(this._meanSamplingInterval);
 		this.operation = operation;
-		this.reset();
 
-		this.sonarRecorder = SonarRecorder.getInstance();
-	}
+		// Initialize random number generator
+		this.random = new NegativeExponential(this.meanSamplingInterval);
 
-	public static long getNthPercentile(int pct, LinkedList<Long> samples) {
-		if (samples.size() == 0)
-			return 0;
-		Collections.sort(samples);
-		int index = (int) Math.round((double) (pct * (samples.size() + 1)) / 100.0);
-		if (index < samples.size())
-			return samples.get(index).longValue();
-		else
-			return samples.get(samples.size() - 1); // Return the second last sample
-	}
+		// Rest this sampler
+		reset();
 
-	public double getMeanSamplingInterval() {
-		return this._meanSamplingInterval;
-	}
-
-	public void setMeanSamplingInterval(double val) {
-		this._meanSamplingInterval = val;
+		// Get a Sonar recorder instance
+		sonarRecorder = SonarRecorder.getInstance();
 	}
 
 	public void reset() {
-		this._currentSample = 0;
-		this._nextSampleToAccept = 1;
-		this._samples.clear();
-		this._sampleSum = 0;
+		this.sampling.reset();
+
+		this.samplesSeen = 0;
+		this.nextSampleToAccept = 1;
 	}
 
 	public int getSamplesCollected() {
-		return this._samples.size();
+		return sampling.getSamplesCollected();
 	}
 
+	@Override
 	public int getSamplesSeen() {
-		return this._currentSample;
+		return samplesSeen;
 	}
 
+	@Override
 	public long getNthPercentile(int pct) {
-		return PoissonSamplingStrategy.getNthPercentile(pct, this._samples);
+		return sampling.getNthPercentile(pct);
 	}
 
 	public double getSampleMean() {
-		long samples = this.getSamplesCollected();
-		if (samples == 0)
-			return 0.0;
-		else
-			return (double) this._sampleSum / (double) samples;
+		return sampling.getSampleMean();
 	}
 
 	public double getSampleStandardDeviation() {
-		long samples = this.getSamplesCollected();
-		if (samples == 0 || samples == 1)
-			return 0.0;
-
-		double sampleMean = this.getSampleMean();
-
-		// Sum the deviations from the mean for all items
-		double deviationSqSum = 0.0;
-		for (Long value : this._samples) {
-			// Print out value so we can debug the sd computation
-			// logger.info( value );
-			deviationSqSum += Math.pow((double) (value - sampleMean), 2);
-		}
-		// Divide deviationSqSum by N-1 then return the square root
-		return Math.sqrt(deviationSqSum / (double) (samples - 1));
+		return sampling.getSampleStandardDeviation();
 	}
 
 	public double getTvalue(double populationMean) {
-		long samples = this.getSamplesCollected();
-		if (samples == 0 || samples == 1)
-			return 0.0;
-
-		double ret = (this.getSampleMean() - populationMean)
-				/ (this.getSampleStandardDeviation() / Math.sqrt(this.getSamplesCollected()));
-		if (Double.isNaN(ret))
-			ret = 0;
-		if (Double.isInfinite(ret))
-			ret = 0;
-		return ret;
+		return sampling.getTvalue(populationMean);
 	}
 
 	public boolean accept(long value) {
-		this._currentSample++;
+		samplesSeen++;
 
-		if (this._currentSample == this._nextSampleToAccept) {
-			this._sampleSum += value;
-			this._samples.add(value);
-			// Update the nextSampleToAccept
-			double randExp = this._expRandom.nextDouble();
-			// logger.info( "Random exp: " + randExp );
-			this._nextSampleToAccept = this._currentSample + (int) Math.ceil(randExp);
-			// logger.info("Next sample to accept: " + this._nextSampleToAccept);
+		if (samplesSeen == nextSampleToAccept) {
+			sampling.accept(value);
 
-			if (sonarRecorder != null) {
-				Identifier id = new Identifier();
-				id.setSensor("rain.rtime.sampler." + this.operation);
-				id.setTimestamp(System.currentTimeMillis() / 1000);
+			// Calculate next sampling index
+			double randExp = this.random.nextDouble();
+			nextSampleToAccept = this.samplesSeen + (int) Math.ceil(randExp);
 
-				MetricReading mvalue = new MetricReading();
-				mvalue.setValue(value);
-
-				sonarRecorder.record(id, mvalue);
-			}
+			// Write the value to Sonar
+			sonarRecord(value);
 
 			return true;
 		}
+
 		return false;
+	}
+
+	private void sonarRecord(long value) {
+		if (sonarRecorder == null)
+			return;
+
+		Identifier id = new Identifier();
+		id.setSensor("rain.rtime.sampler." + this.operation);
+		id.setTimestamp(System.currentTimeMillis() / 1000);
+
+		MetricReading mvalue = new MetricReading();
+		mvalue.setValue(value);
+
+		sonarRecorder.record(id, mvalue);
 	}
 
 	@Override
 	public void merge(IMetricSampler responseTimeSampler) {
-		_samples.addAll(responseTimeSampler.getRawSamples());
-		for (long sample : responseTimeSampler.getRawSamples())
-			_sampleSum += sample;
+		sampling.merge(responseTimeSampler);
 	}
 
 	public LinkedList<Long> getRawSamples() {
-		return this._samples;
-	};
+		return sampling.getRawSamples();
+	}
 }

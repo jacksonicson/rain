@@ -44,11 +44,6 @@ public class DummySamplingStrategy implements IMetricSampler {
 	}
 
 	@Override
-	public double getMeanSamplingInterval() {
-		return 0;
-	}
-
-	@Override
 	public long getNthPercentile(int pct) {
 		return 0;
 	}
@@ -86,10 +81,6 @@ public class DummySamplingStrategy implements IMetricSampler {
 
 	@Override
 	public void reset() {
-	}
-
-	@Override
-	public void setMeanSamplingInterval(double val) {
 	}
 
 	@Override
