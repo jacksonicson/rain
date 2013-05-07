@@ -17,14 +17,14 @@ public class Aggregation {
 	private long calculateSteadyStateDuration(List<ITarget> targets) {
 		long totalSteadyState = 0;
 		for (ITarget target : targets) {
-			totalSteadyState += target.getScoreboard().getFinalScorecard().getTimeActive();
+			totalSteadyState += target.getScoreboard().getScorecard().getTimeActive();
 		}
 		return totalSteadyState;
 	}
 
 	public void aggregateScoreboards(List<ITarget> targets) throws JSONException {
 		TreeMap<String, Scorecard> aggStats = new TreeMap<String, Scorecard>();
-		Scorecard globalCard = new Scorecard(Scorecard.Type.GLOBAL, calculateSteadyStateDuration(targets));
+		Scorecard mergedCard = new Scorecard(calculateSteadyStateDuration(targets));
 
 		// Aggregate all targets
 		for (ITarget target : targets) {
@@ -42,10 +42,9 @@ public class Aggregation {
 			logger.info("Target scoreboard statistics - " + target.getId() + ": " + strStats);
 
 			// Get the final scorecard for this track
-			Scorecard finalScorecard = scoreboard.getFinalScorecard();
+			Scorecard finalScorecard = scoreboard.getScorecard();
 			if (!aggStats.containsKey(aggregationIdentifier)) {
-				Scorecard aggCard = new Scorecard(Scorecard.Type.AGGREGATED, finalScorecard.getTimeActive(),
-						aggregationIdentifier);
+				Scorecard aggCard = new Scorecard(finalScorecard.getTimeActive(), aggregationIdentifier);
 				aggStats.put(aggregationIdentifier, aggCard);
 			}
 			// Get the current aggregated scorecard for this generator
@@ -58,11 +57,11 @@ public class Aggregation {
 			// Collect object pool results
 
 			// Merge global card
-			globalCard.merge(finalScorecard);
+			mergedCard.merge(finalScorecard);
 		}
 
 		// Merged scorecard
-		logger.info("Merged scorecard: " + globalCard.getIntervalStatistics().toString());
+		logger.info("Merged scorecard: " + mergedCard.getSummarizedStatistics().toString());
 
 		// Aggregate stats by aggregation key
 		logger.info("# aggregated stats: " + aggStats.size());
@@ -70,7 +69,7 @@ public class Aggregation {
 			Scorecard card = aggStats.get(aggregationKey);
 
 			// Sonar output
-			JSONObject stats = card.getIntervalStatistics();
+			JSONObject stats = card.getSummarizedStatistics();
 			String strStats = stats.toString();
 			logger.info("Aggregated scorecard for - " + aggregationKey + ": " + strStats);
 		}

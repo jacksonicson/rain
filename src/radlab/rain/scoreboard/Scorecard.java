@@ -22,35 +22,35 @@ public class Scorecard {
 	private static Logger logger = LoggerFactory.getLogger(Scorecard.class);
 
 	enum Type {
-		GLOBAL, AGGREGATED, TARGET
+		DEFAULT, MERGED
 	}
 
 	// Scorecard type
-	private Type type = Type.TARGET;
+	private Type type = Type.DEFAULT;
 
 	// Aggregation identifier
-	private String aggregationIdentifier;
+	private final String aggregationIdentifier;
 
 	// Duration of the interval for this scorecard
-	private long intervalDuration = 0;
+	private final long intervalDuration;
 
 	// Total operation counters (includes failed operations)
 	private long totalOpsInitiated = 0;
 	private long totalOpsLate = 0;
 
 	// Summary for all operations
-	private OperationSummary summary = new OperationSummary(new NullSamplingStrategy());
+	private OperationSummary summary = new OperationSummary(new DummySamplingStrategy());
 
 	// A mapping of each operation with its summary
 	private TreeMap<String, OperationSummary> operationSummaryMap = new TreeMap<String, OperationSummary>();
 
-	Scorecard(Type type, long timeActive) {
-		this.type = type;
+	Scorecard(long timeActive) {
 		this.intervalDuration = timeActive;
+		this.aggregationIdentifier = null;
 	}
 
-	Scorecard(Type type, long timeActive, String aggregationIdentifier) {
-		this(type, timeActive);
+	Scorecard(long timeActive, String aggregationIdentifier) {
+		this.intervalDuration = timeActive;
 		this.aggregationIdentifier = aggregationIdentifier;
 	}
 
@@ -63,7 +63,7 @@ public class Scorecard {
 		// Do the accounting for the final score card
 		OperationSummary operationSummary = operationSummaryMap.get(result.operationName);
 		if (operationSummary == null) {
-			operationSummary = new OperationSummary(new AllSamplingStrategy());
+			operationSummary = new OperationSummary(new PoissonSamplingStrategy(result.operationName));
 			operationSummaryMap.put(result.operationName, operationSummary);
 		}
 
@@ -75,7 +75,12 @@ public class Scorecard {
 		totalOpsInitiated++;
 	}
 
-	JSONObject getStatistics(double runDuration) throws JSONException {
+	public JSONObject getSummarizedStatistics() throws JSONException {
+		JSONObject result = getSummarizedStatistics(intervalDuration);
+		return result;
+	}
+
+	JSONObject getSummarizedStatistics(double runDuration) throws JSONException {
 		double offeredLoadOps = 0;// Operations initiated per second
 
 		// Calculations (per second)
@@ -94,21 +99,16 @@ public class Scorecard {
 		result.put("total_ops_late", totalOpsLate);
 		result.put("offered_load_ops", offeredLoadOps);
 
-		// Summary statistics
-		result.put("summary", summary.getStatistics(runDuration));
+		// Embed summary statistics
+		result.put("summary", summary.getStatistics(runDuration, type == Type.MERGED));
 
-		// Operational statistics
-		result.put("operational", getOperationalStatistics(runDuration));
+		// Embed operational statistics
+		result.put("operational", getOperationStatistics(runDuration));
 
 		return result;
 	}
 
-	public JSONObject getIntervalStatistics() throws JSONException {
-		JSONObject result = getStatistics(intervalDuration);
-		return result;
-	}
-
-	private JSONObject getOperationalStatistics(double runDuration) throws JSONException {
+	private JSONObject getOperationStatistics(double runDuration) throws JSONException {
 		JSONObject result = new JSONObject();
 		JSONArray operations = new JSONArray();
 		result.put("operations", operations);
@@ -118,7 +118,7 @@ public class Scorecard {
 			for (Iterator<String> keys = operationSummaryMap.keySet().iterator(); keys.hasNext();) {
 				String operationName = keys.next();
 				OperationSummary operationSummary = operationSummaryMap.get(operationName);
-				result.put(operationName, operationSummary.getStatistics(runDuration));
+				result.put(operationName, operationSummary.getStatistics(runDuration, type == Type.MERGED));
 			}
 		}
 
@@ -126,6 +126,9 @@ public class Scorecard {
 	}
 
 	public void merge(Scorecard from) {
+		// This scorecard becomes a merged
+		this.type = Type.MERGED;
+
 		// Merge another scorecard with this
 		this.totalOpsInitiated += from.totalOpsInitiated;
 		this.totalOpsLate += from.totalOpsLate;
@@ -144,7 +147,7 @@ public class Scorecard {
 			if (this.operationSummaryMap.containsKey(operationName))
 				mySummary = this.operationSummaryMap.get(operationName);
 			else
-				mySummary = new OperationSummary(new NullSamplingStrategy());
+				mySummary = new OperationSummary(new AllSamplingStrategy());
 
 			mySummary.merge(fromSummary);
 			this.operationSummaryMap.put(operationName, mySummary);
@@ -157,10 +160,6 @@ public class Scorecard {
 
 	public Map<String, OperationSummary> getOperationMap() {
 		return Collections.unmodifiableMap(operationSummaryMap);
-	}
-
-	public Type getType() {
-		return type;
 	}
 
 	public long getTimeActive() {

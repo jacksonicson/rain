@@ -54,7 +54,7 @@ public interface IScoreboard {
 	void dropOffWaitTime(long time, String opName, long waitTime);
 
 	// Returns a scorecard that contains aggregated stats
-	Scorecard getFinalScorecard();
+	Scorecard getScorecard();
 
 	// JSON serialized object that contains aggregated stats
 	JSONObject getStatistics() throws JSONException;

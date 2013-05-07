@@ -100,7 +100,7 @@ public class Scoreboard extends Thread implements Runnable, IScoreboard {
 		logger.debug("run duration: " + runDuration);
 
 		// Create a final scorecard
-		scorecard = new Scorecard(Scorecard.Type.TARGET, runDuration);
+		scorecard = new Scorecard(runDuration);
 	}
 
 	@Override
@@ -119,7 +119,7 @@ public class Scoreboard extends Thread implements Runnable, IScoreboard {
 
 			// Create wait time summary if necessary
 			if (waitTimeSummary == null) {
-				IMetricSampler sampler = new AllSamplingStrategy();
+				IMetricSampler sampler = new DummySamplingStrategy();
 				waitTimeSummary = new WaitTimeSummary(sampler);
 				waitTimeMap.put(operationName, waitTimeSummary);
 			}
@@ -312,7 +312,7 @@ public class Scoreboard extends Thread implements Runnable, IScoreboard {
 		result.put("max_drop_off_q_time", maxDropOffWaitTime);
 
 		// Add final scorecard statistics
-		result.put("final_scorecard", scorecard.getStatistics(timing.steadyStateDuration()));
+		result.put("final_scorecard", scorecard.getSummarizedStatistics(timing.steadyStateDuration()));
 
 		// Add other statistics
 		result.put("wait_stats", getWaitTimeStatistics());
@@ -344,7 +344,7 @@ public class Scoreboard extends Thread implements Runnable, IScoreboard {
 	}
 
 	@Override
-	public Scorecard getFinalScorecard() {
+	public Scorecard getScorecard() {
 		return scorecard;
 	}
 

@@ -31,40 +31,16 @@
 
 package radlab.rain.scoreboard;
 
-import java.util.LinkedList;
+import java.util.Collections;
+import java.util.List;
 
-import org.apache.commons.math3.stat.descriptive.moment.Mean;
-import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
-import org.apache.commons.math3.stat.descriptive.rank.Percentile;
-
-
-public class NullSamplingStrategy implements IMetricSampler {
-	private final int SIZE = 1000;
-	private int index;
-	private LinkedList<double[]> samples = new LinkedList<double[]>();
-
-	private boolean invalidBuffer = true;
-	private double[] buffer;
-
-	public NullSamplingStrategy() {
-		reset();
+public class DummySamplingStrategy implements IMetricSampler {
+	public DummySamplingStrategy() {
 	}
 
-	private void newBucket() {
-		double[] bucket = new double[SIZE];
-		samples.add(0, bucket);
-		index = 0;
-	}
-
-	// accept always keeps each sample seen
 	@Override
 	public boolean accept(long value) {
-		double[] bucket = samples.peek();
-		bucket[index++] = value;
-		invalidBuffer = true;
-		if (index >= SIZE)
-			newBucket();
-		return true;
+		return false;
 	}
 
 	@Override
@@ -72,80 +48,51 @@ public class NullSamplingStrategy implements IMetricSampler {
 		return 0;
 	}
 
-	private void updateBuffer() {
-		if (!invalidBuffer)
-			return;
-
-		buffer = new double[SIZE * samples.size()];
-		for (int i = 0; i < samples.size(); i++) {
-			double[] bucket = samples.get(i);
-			System.arraycopy(bucket, 0, buffer, i * SIZE, SIZE);
-		}
-	}
-
 	@Override
 	public long getNthPercentile(int pct) {
-		updateBuffer();
-		Percentile percentile = new Percentile(pct);
-		return (long) percentile.evaluate(buffer, 0, getSamplesCollected());
+		return 0;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public LinkedList<Long> getRawSamples() {
-		LinkedList<Long> data = new LinkedList<Long>();
-		for (int i = 0; i < samples.size(); i++) {
-			double[] bucket = samples.get(i);
-
-			int max = SIZE;
-			if (i == (samples.size() - 1))
-				max = index;
-
-			for (int j = 0; j < max; j++) {
-				data.add((long) bucket[j]);
-			}
-		}
-		return data;
+	public List<Long> getRawSamples() {
+		return Collections.EMPTY_LIST;
 	}
 
 	@Override
 	public double getSampleMean() {
-		updateBuffer();
-		Mean mean = new Mean();
-		return mean.evaluate(buffer, 0, getSamplesCollected());
+		return 0;
 	}
 
 	@Override
 	public double getSampleStandardDeviation() {
-		updateBuffer();
-		StandardDeviation sd = new StandardDeviation();
-		return sd.evaluate(buffer, 0, getSamplesCollected());
+		return 0;
 	}
 
 	@Override
 	public int getSamplesCollected() {
-		return (samples.size() - 1) * SIZE + index;
+		return 0;
 	}
 
 	@Override
 	public int getSamplesSeen() {
-		return getSamplesCollected();
+		return 0;
 	}
 
 	@Override
 	public double getTvalue(double populationMean) {
-		return 0.0;
+		return 0;
 	}
 
 	@Override
 	public void reset() {
-		invalidBuffer = true;
-		samples.clear();
-		index = 0;
-		newBucket();
 	}
 
 	@Override
 	public void setMeanSamplingInterval(double val) {
-		// unused
+	}
+
+	@Override
+	public void merge(IMetricSampler responseTimeSampler) {
 	}
 }

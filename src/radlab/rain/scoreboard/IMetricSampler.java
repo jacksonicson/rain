@@ -31,19 +31,30 @@
 
 package radlab.rain.scoreboard;
 
-import java.util.LinkedList;
+import java.util.List;
 
-public interface IMetricSampler 
-{
+public interface IMetricSampler {
 	double getMeanSamplingInterval();
-	void setMeanSamplingInterval( double val );
+
+	void setMeanSamplingInterval(double val);
+
 	void reset();
+
 	int getSamplesSeen();
+
 	int getSamplesCollected();
-	boolean accept( long observation );
-	long getNthPercentile( int pct );
+
+	boolean accept(long observation);
+
+	long getNthPercentile(int pct);
+
 	double getSampleMean();
+
 	double getSampleStandardDeviation();
-	double getTvalue( double populationMean );
-	LinkedList<Long> getRawSamples();
+
+	double getTvalue(double populationMean);
+
+	List<Long> getRawSamples();
+
+	void merge(IMetricSampler responseTimeSampler);
 }

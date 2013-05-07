@@ -34,19 +34,12 @@ package radlab.rain.scoreboard;
 import java.util.Collections;
 import java.util.LinkedList;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import radlab.rain.Benchmark;
 import radlab.rain.util.NegativeExponential;
 import radlab.rain.util.SonarRecorder;
 import de.tum.in.sonar.collector.Identifier;
 import de.tum.in.sonar.collector.MetricReading;
 
 public class PoissonSamplingStrategy implements IMetricSampler {
-
-	private static Logger logger = LoggerFactory.getLogger(Benchmark.class);
-
 	// Sonar recorder
 	private SonarRecorder sonarRecorder;
 	private String operation;
@@ -54,9 +47,17 @@ public class PoissonSamplingStrategy implements IMetricSampler {
 	private LinkedList<Long> _samples = new LinkedList<Long>();
 	private int _nextSampleToAccept = 1;
 	private int _currentSample = 0;
-	private double _meanSamplingInterval = 1.0;
+	private double _meanSamplingInterval = 50.0;
 	private NegativeExponential _expRandom = null;
 	private long _sampleSum = 0;
+
+	public PoissonSamplingStrategy(String operation) {
+		this._expRandom = new NegativeExponential(this._meanSamplingInterval);
+		this.operation = operation;
+		this.reset();
+
+		this.sonarRecorder = SonarRecorder.getInstance();
+	}
 
 	public static long getNthPercentile(int pct, LinkedList<Long> samples) {
 		if (samples.size() == 0)
@@ -67,15 +68,6 @@ public class PoissonSamplingStrategy implements IMetricSampler {
 			return samples.get(index).longValue();
 		else
 			return samples.get(samples.size() - 1); // Return the second last sample
-	}
-
-	public PoissonSamplingStrategy(String operation, double meanSamplingInterval) {
-		this._meanSamplingInterval = meanSamplingInterval;
-		this._expRandom = new NegativeExponential(this._meanSamplingInterval);
-		this.operation = operation;
-		this.reset();
-
-		this.sonarRecorder = SonarRecorder.getInstance();
 	}
 
 	public double getMeanSamplingInterval() {
@@ -171,6 +163,13 @@ public class PoissonSamplingStrategy implements IMetricSampler {
 			return true;
 		}
 		return false;
+	}
+
+	@Override
+	public void merge(IMetricSampler responseTimeSampler) {
+		_samples.addAll(responseTimeSampler.getRawSamples());
+		for (long sample : responseTimeSampler.getRawSamples())
+			_sampleSum += sample;
 	}
 
 	public LinkedList<Long> getRawSamples() {

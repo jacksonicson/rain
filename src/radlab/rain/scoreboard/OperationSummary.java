@@ -111,7 +111,7 @@ public class OperationSummary {
 		}
 	}
 
-	JSONObject getStatistics(double runDuration) throws JSONException {
+	JSONObject getStatistics(double runDuration, boolean merged) throws JSONException {
 		// Total operations executed
 		long totalOperations = opsSuccessful + opsFailed;
 
@@ -150,11 +150,14 @@ public class OperationSummary {
 		operation.put("rtime_average", nNaN(averageRTime));
 		operation.put("rtime_max", maxResponseTime);
 		operation.put("rtime_min", minResponseTime);
-		operation.put("rtime_50th", nNaN(rtime50th.getPValue()));
-		operation.put("rtime_90th", nNaN(rtime90th.getPValue()));
-		operation.put("rtime_95th", nNaN(rtime95th.getPValue()));
-		operation.put("rtime_99th", nNaN(rtime99th.getPValue()));
-		operation.put("rtime_thr_failed", opsFailedRtimeThreshold);
+
+		if (!merged) {
+			operation.put("rtime_50th", nNaN(rtime50th.getPValue()));
+			operation.put("rtime_90th", nNaN(rtime90th.getPValue()));
+			operation.put("rtime_95th", nNaN(rtime95th.getPValue()));
+			operation.put("rtime_99th", nNaN(rtime99th.getPValue()));
+			operation.put("rtime_thr_failed", opsFailedRtimeThreshold);
+		}
 
 		operation.put("sampler_samples_collected", responseTimeSampler.getSamplesCollected());
 		operation.put("sampler_samples_seen", responseTimeSampler.getSamplesSeen());
@@ -200,17 +203,8 @@ public class OperationSummary {
 		totalResponseTime += from.totalResponseTime;
 		opsFailedRtimeThreshold += from.opsFailedRtimeThreshold;
 
-		// TODO: How to combine two separate percentiles?
-		rtime99th.accept(from.rtime99th.getPValue());
-		rtime95th.accept(from.rtime95th.getPValue());
-		rtime90th.accept(from.rtime90th.getPValue());
-		rtime50th.accept(from.rtime50th.getPValue());
-
-		// Accept all response time samples
-		LinkedList<Long> rhsRawSamples = from.getResponseTimeSampler().getRawSamples();
-		for (Long obs : rhsRawSamples)
-			responseTimeSampler.accept(obs);
-
+		// Merge response time sampler
+		responseTimeSampler.merge(from.getResponseTimeSampler());
 	}
 
 	public long getOpsSuccessful() {
