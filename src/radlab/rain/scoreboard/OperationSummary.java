@@ -148,6 +148,7 @@ public class OperationSummary {
 		operation.put("effective_load_req", effectiveLoadRequests);
 
 		operation.put("rtime_total", totalResponseTime);
+		operation.put("rtime_thr_failed", opsFailedRtimeThreshold);
 		operation.put("rtime_average", nNaN(averageRTime));
 		operation.put("rtime_max", maxResponseTime);
 		operation.put("rtime_min", minResponseTime);
@@ -157,7 +158,6 @@ public class OperationSummary {
 			operation.put("rtime_90th", nNaN(rtime90th.getPValue()));
 			operation.put("rtime_95th", nNaN(rtime95th.getPValue()));
 			operation.put("rtime_99th", nNaN(rtime99th.getPValue()));
-			operation.put("rtime_thr_failed", opsFailedRtimeThreshold);
 		}
 
 		operation.put("sampler_samples_collected", responseTimeSampler.getSamplesCollected());
