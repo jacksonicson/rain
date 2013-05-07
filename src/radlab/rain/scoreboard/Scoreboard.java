@@ -58,34 +58,30 @@ public class Scoreboard extends Thread implements Runnable, IScoreboard {
 	// Set to terminate the thread
 	private boolean running = false;
 
-	// Global counters for drop-offs and dropoff time (time waited for the lock to
-	// write a result to a processing queue)
-	// They are only used for internal statistics about the scoreboard behavior
+	// Technical statistics
 	private long totalDropoffs = 0;
 	private long totalDropOffWaitTime = 0;
 	private long maxDropOffWaitTime = 0;
 
-	// Final scorecard
-	// Basically holds all counters relevant for aggregated result statistics
-	private Scorecard scorecard = null;
-
-	// Threads used to process the queues
-	private MetricWriterThread metricWriter = null;
-
-	// Summary reports for each operation
+	// Technical statistics of wait time for each operation
 	private Map<String, WaitTimeSummary> waitTimeMap = new TreeMap<String, WaitTimeSummary>();
 
-	// Dropoff and processing queues
+	// Metric writer thread
+	private MetricWriterThread metricWriter = null;
+
+	// Dropoff queues
 	private List<OperationExecution> dropOffQ = new LinkedList<OperationExecution>();
 	private List<OperationExecution> processingQ = new LinkedList<OperationExecution>();
 
-	// Lock objects
+	// Dropoff queue locks
 	private Object swapDropoffQueueLock = new Object();
 	private Object waitTimeDropOffLock = new Object();
 
+	// All relevant counters are stored in this scorecard
+	private Scorecard scorecard = null;
+
 	/**
-	 * Creates a new Scoreboard with the track name specified. The Scoreboard returned must be initialized by calling
-	 * <code>initialize</code>.
+	 * Each scoreboard is attached to one target
 	 */
 	public Scoreboard(long targetId) {
 		this.targetId = targetId;

@@ -31,8 +31,6 @@
 
 package radlab.rain.scoreboard;
 
-import java.util.LinkedList;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -44,6 +42,9 @@ import de.tum.in.dss.psquare.PSquared;
 
 public class OperationSummary {
 	private static Logger logger = LoggerFactory.getLogger(OperationSummary.class);
+
+	// Operation summary was merged
+	private boolean merged = false;
 
 	// Information recorded about one operation type
 	private long opsSuccessful = 0;
@@ -111,7 +112,7 @@ public class OperationSummary {
 		}
 	}
 
-	JSONObject getStatistics(double runDuration, boolean merged) throws JSONException {
+	JSONObject getStatistics(double runDuration) throws JSONException {
 		// Total operations executed
 		long totalOperations = opsSuccessful + opsFailed;
 
@@ -190,6 +191,10 @@ public class OperationSummary {
 	}
 
 	public void merge(OperationSummary from) {
+		// Active merged status
+		merged = true;
+
+		// Merge everything
 		opsSuccessful += from.opsSuccessful;
 		opsFailed += from.opsFailed;
 		actionsSuccessful += from.actionsSuccessful;

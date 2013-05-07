@@ -21,13 +21,6 @@ import radlab.rain.operation.OperationExecution;
 public class Scorecard {
 	private static Logger logger = LoggerFactory.getLogger(Scorecard.class);
 
-	enum Type {
-		DEFAULT, MERGED
-	}
-
-	// Scorecard type
-	private Type type = Type.DEFAULT;
-
 	// Aggregation identifier
 	private final String aggregationIdentifier;
 
@@ -100,7 +93,7 @@ public class Scorecard {
 		result.put("offered_load_ops", offeredLoadOps);
 
 		// Embed summary statistics
-		result.put("summary", summary.getStatistics(runDuration, type == Type.MERGED));
+		result.put("summary", summary.getStatistics(runDuration));
 
 		// Embed operational statistics
 		result.put("operational", getOperationStatistics(runDuration));
@@ -118,7 +111,7 @@ public class Scorecard {
 			for (Iterator<String> keys = operationSummaryMap.keySet().iterator(); keys.hasNext();) {
 				String operationName = keys.next();
 				OperationSummary operationSummary = operationSummaryMap.get(operationName);
-				result.put(operationName, operationSummary.getStatistics(runDuration, type == Type.MERGED));
+				result.put(operationName, operationSummary.getStatistics(runDuration));
 			}
 		}
 
@@ -126,9 +119,6 @@ public class Scorecard {
 	}
 
 	public void merge(Scorecard from) {
-		// This scorecard becomes a merged
-		this.type = Type.MERGED;
-
 		// Merge another scorecard with this
 		this.totalOpsInitiated += from.totalOpsInitiated;
 		this.totalOpsLate += from.totalOpsLate;
