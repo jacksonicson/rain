@@ -97,8 +97,14 @@ public class Benchmark {
 
 		// Response time threshold
 		if (jsonConfig.has("rtime_T")) {
-			double rtime = jsonConfig.getDouble("rtime_T"); 
-			RainConfig.getInstance().rtime_T = rtime;  
+			double rtime = jsonConfig.getDouble("rtime_T");
+			RainConfig.getInstance().rtime_T = rtime;
+		}
+
+		// Mean sampling interval poisson sampling process
+		if (jsonConfig.has("poisson_sampling_mean")) {
+			int interval = jsonConfig.getInt("poisson_sampling_mean");
+			RainConfig.getInstance().meanResponseTimeSamplingInterval = interval;
 		}
 
 		// Check if thrift remote management is used

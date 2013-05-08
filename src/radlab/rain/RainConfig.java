@@ -59,14 +59,17 @@ public class RainConfig {
 	public String sonarHost = "monitor0";
 	public String iaasHost = "192.168.96.6";
 
-	public int meanResponseTimeSamplingInterval = 100; 
-	
+	// Mean response time sampling interval for the poisson process
+	public int meanResponseTimeSamplingInterval = 30;
+
+	// Threshold for the operation response time
+	public double rtime_T = 3000;
+
+	// Instance locks
 	private static Object singletonLock = new Object();
 	private static RainConfig config = null;
 
-	// Threshold for the operation response time
-	public static double rtime_T;
-
+	// List of shutdown hooks
 	private List<IShutdown> shutdownHooks = new ArrayList<IShutdown>();
 
 	public static RainConfig getInstance() {
