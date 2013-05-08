@@ -19,7 +19,6 @@ public class TargetSchedule {
 	private Queue<TargetConfiguration> targetsToLaunch = new LinkedList<TargetConfiguration>();
 
 	// Global timing
-	private long rampUp;
 	private long duration;
 
 	public TargetSchedule(JSONObject config) throws JSONException, BenchmarkFailedException {
@@ -83,13 +82,6 @@ public class TargetSchedule {
 					+ targetConf.getRampDown();
 			duration = Math.max(finishTime, duration);
 		}
-
-		// Read global timing
-		rampUp = config.getJSONObject("timing").getLong("rampUp");
-	}
-
-	public long getRampUp() {
-		return rampUp;
 	}
 
 	public long duration() {

@@ -3,10 +3,6 @@
     "useThrift": true,
     "sonarHost" : "monitor0",
     
-    "timing" : {
-    	"rampUp" : 0,
-    },
-    
     "targetFactories" : {
 		"f1" : {
 			"targetFactoryClass": "radlab.rain.workload.http.TestBenchmark",    

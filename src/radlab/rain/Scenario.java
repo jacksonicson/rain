@@ -73,7 +73,7 @@ public class Scenario {
 
 	public void statAggregation() throws JSONException {
 		Aggregation aggregation = new Aggregation();
-		aggregation.aggregateScoreboards(targetManager.getAllTargets());
+		aggregation.aggregateScoreboards(targetManager.getAllTargets(), targetSchedule.duration());
 	}
 
 	public List<String> getTargetNames() {

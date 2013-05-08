@@ -40,11 +40,6 @@ public class AsyncRainServiceImpl implements RainService.Iface {
 	}
 
 	@Override
-	public long getRampUpTime() throws TException {
-		return scenario.getTargetSchedule().getRampUp();
-	}
-
-	@Override
 	public long getDurationTime() throws TException {
 		return scenario.getTargetSchedule().duration();
 	}

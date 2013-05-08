@@ -14,14 +14,6 @@ import radlab.rain.target.ITarget;
 public class Aggregation {
 	private static Logger logger = LoggerFactory.getLogger(Scenario.class);
 
-	private long calculateSteadyStateDuration(List<ITarget> targets) {
-		long totalSteadyState = 0;
-		for (ITarget target : targets) {
-			totalSteadyState += target.getScoreboard().getScorecard().getTimeActive();
-		}
-		return totalSteadyState;
-	}
-
 	private void dumpTarget(ITarget target) throws JSONException {
 		// Write detailed statistics to sonar
 		JSONObject stats = target.getScoreboard().getStatistics();
@@ -31,9 +23,9 @@ public class Aggregation {
 		logger.info("Target scoreboard statistics - " + target.getId() + ": " + strStats);
 	}
 
-	public void aggregateScoreboards(List<ITarget> targets) throws JSONException {
+	public void aggregateScoreboards(List<ITarget> targets, long benchmarkDuration) throws JSONException {
 		TreeMap<String, Scorecard> aggStats = new TreeMap<String, Scorecard>();
-		Scorecard globalScorecard = new Scorecard(-1, calculateSteadyStateDuration(targets));
+		Scorecard globalScorecard = new Scorecard(-1, benchmarkDuration);
 
 		// Aggregate all targets
 		for (ITarget target : targets) {
