@@ -97,7 +97,7 @@ public class OperationSummary {
 			long responseTime = result.getExecutionTime();
 			responseTimeSampler.accept(responseTime);
 			totalResponseTime += responseTime;
-			if (responseTime > RainConfig.rtime_T)
+			if (responseTime > RainConfig.getInstance().rtime_T)
 				opsFailedRtimeThreshold++;
 
 			// Update response time percentile estimations
