@@ -10,6 +10,7 @@ public class TargetConfiguration {
 	private long rampDown;
 	private ITargetFactory factory;
 	private int workloadProfile;
+	private String workloadProfileName;
 
 	public long getDelay() {
 		return delay;
@@ -57,6 +58,14 @@ public class TargetConfiguration {
 
 	public void setWorkloadProfile(int workloadProfile) {
 		this.workloadProfile = workloadProfile;
+	}
+
+	public void setWorkloadProfileName(String workloadProfileName) {
+		this.workloadProfileName = workloadProfileName;
+	}
+
+	public String getWorkloadProfileName() {
+		return this.workloadProfileName;
 	}
 
 }

@@ -71,6 +71,7 @@ public class TargetSchedule {
 			targetConf.setDuration(jsonConf.getLong("duration") * 1000); // to milliseconds
 			targetConf.setRampDown(jsonConf.getLong("rampDown") * 1000); // to milliseconds
 			targetConf.setWorkloadProfile(jsonConf.getInt("workloadProfile")); // workload profile index
+			targetConf.setWorkloadProfileName(jsonConf.getString("workloadProfileName")); // workload profile name
 
 			// Create factory instance
 			JSONObject jsonFactoryConfig = factoryConfigurations.get(jsonConf.getString("targetFactory"));
@@ -96,4 +97,3 @@ public class TargetSchedule {
 		return targetsToLaunch.isEmpty() == false;
 	}
 }
-

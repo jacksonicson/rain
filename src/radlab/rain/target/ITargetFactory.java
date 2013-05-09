@@ -10,5 +10,5 @@ public interface ITargetFactory {
 	public abstract void configure(JSONObject params) throws JSONException;
 
 	// Called to create all targets
-	public abstract List<ITarget> createTargets(int workloadProfile) throws JSONException;
+	public abstract List<ITarget> createTargets(int loadProfileIndex, String loadProfileName) throws JSONException;
 }
