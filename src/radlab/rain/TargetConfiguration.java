@@ -9,8 +9,10 @@ public class TargetConfiguration {
 	private long duration;
 	private long rampDown;
 	private ITargetFactory factory;
+
 	private int workloadProfile;
 	private String workloadProfileName;
+	private long workloadProfileOffset;
 
 	public long getDelay() {
 		return delay;
@@ -66,6 +68,14 @@ public class TargetConfiguration {
 
 	public String getWorkloadProfileName() {
 		return this.workloadProfileName;
+	}
+
+	public long getWorkloadProfileOffset() {
+		return workloadProfileOffset;
+	}
+
+	public void setWorkloadProfileOffset(long workloadProfileOffset) {
+		this.workloadProfileOffset = workloadProfileOffset;
 	}
 
 }

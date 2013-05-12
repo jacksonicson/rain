@@ -23,6 +23,7 @@
         "rampDown": 5,
 		"targetFactory": "f1",
 		"workloadProfile" : 1,
+		"workloadProfileOffset" : 0,
 		},
 	],
 }

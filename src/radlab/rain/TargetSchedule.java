@@ -72,6 +72,7 @@ public class TargetSchedule {
 			targetConf.setRampDown(jsonConf.getLong("rampDown") * 1000); // to milliseconds
 			targetConf.setWorkloadProfile(jsonConf.getInt("workloadProfile")); // workload profile index
 			targetConf.setWorkloadProfileName(jsonConf.getString("workloadProfileName")); // workload profile name
+			targetConf.setWorkloadProfileName(jsonConf.getString("workloadProfileOffset")); // workload profile offset
 
 			// Create factory instance
 			JSONObject jsonFactoryConfig = factoryConfigurations.get(jsonConf.getString("targetFactory"));
