@@ -22,7 +22,7 @@ public class TestTarget extends DefaultTarget {
 	public void setup() {
 		try {
 			// Get a new domain
-			targetDomain = iaas.getClient().allocateDomain(2);
+			targetDomain = iaas.getClient().allocateDomain(2, 1);
 
 			// Wait until the domain is available
 			while (!iaas.getClient().isDomainReady(targetDomain)) {
