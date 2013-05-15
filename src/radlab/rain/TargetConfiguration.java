@@ -4,14 +4,22 @@ import radlab.rain.target.ITargetFactory;
 
 public class TargetConfiguration {
 
-	private long offset;
+	// Target factory
+	private ITargetFactory factory;
+
+	// Timings
 	private long rampUp;
 	private long duration;
 	private long rampDown;
-	private ITargetFactory factory;
 
+	// Start offset (beginning at time 0)
+	private long offset;
+
+	// Workload profile
 	private int workloadProfile;
 	private String workloadProfileName;
+
+	// Timing offset within the workload profile TS
 	private long workloadProfileOffset;
 
 	public long getOffset() {
