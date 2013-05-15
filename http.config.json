@@ -17,11 +17,16 @@
     
     "targetSchedule" : [
 		{
-		"delay": 0,
+		"targetFactory": "f1",
+		
+		"offset": 0,
+		
+		"domainSIze" : "MEDIUM",
+		
 		"rampUp": 5,
         "duration": 5,
         "rampDown": 5,
-		"targetFactory": "f1",
+
 		"workloadProfile" : 1,
 		"workloadProfileOffset" : 0,
 		},
