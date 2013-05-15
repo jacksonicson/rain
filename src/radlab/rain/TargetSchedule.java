@@ -66,7 +66,7 @@ public class TargetSchedule {
 			targetsToLaunch.add(targetConf);
 
 			JSONObject jsonConf = scheduleConf.getJSONObject(i);
-			targetConf.setDelay(jsonConf.getLong("delay") * 1000); // to milliseconds
+			targetConf.setOffset(jsonConf.getLong("delay") * 1000); // to milliseconds
 			targetConf.setRampUp(jsonConf.getLong("rampUp") * 1000); // to milliseconds
 			targetConf.setDuration(jsonConf.getLong("duration") * 1000); // to milliseconds
 			targetConf.setRampDown(jsonConf.getLong("rampDown") * 1000); // to milliseconds
@@ -80,7 +80,7 @@ public class TargetSchedule {
 			targetConf.setFactory(factory);
 
 			// Update duration
-			long finishTime = targetConf.getDelay() + targetConf.getRampUp() + targetConf.getDuration()
+			long finishTime = targetConf.getOffset() + targetConf.getRampUp() + targetConf.getDuration()
 					+ targetConf.getRampDown();
 			duration = Math.max(finishTime, duration);
 		}

@@ -96,7 +96,7 @@ public class TargetManager extends Thread {
 
 			// How long to wait for the next target
 			long relativeTime = System.currentTimeMillis() - startBenchmarkTime;
-			long toWait = conf.getDelay() - relativeTime;
+			long toWait = conf.getOffset() - relativeTime;
 
 			// Wait for target to start
 			delay(toWait);

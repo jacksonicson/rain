@@ -4,7 +4,7 @@ import radlab.rain.target.ITargetFactory;
 
 public class TargetConfiguration {
 
-	private long delay;
+	private long offset;
 	private long rampUp;
 	private long duration;
 	private long rampDown;
@@ -14,12 +14,12 @@ public class TargetConfiguration {
 	private String workloadProfileName;
 	private long workloadProfileOffset;
 
-	public long getDelay() {
-		return delay;
+	public long getOffset() {
+		return offset;
 	}
 
-	public void setDelay(long delay) {
-		this.delay = delay;
+	public void setOffset(long offset) {
+		this.offset = offset;
 	}
 
 	public long getRampUp() {
