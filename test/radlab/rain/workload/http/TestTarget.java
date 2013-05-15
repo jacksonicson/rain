@@ -3,6 +3,7 @@ package radlab.rain.workload.http;
 import org.apache.log4j.Logger;
 import org.apache.thrift.TException;
 
+import radlab.rain.TargetConfiguration.DomainSize;
 import radlab.rain.target.DefaultTarget;
 import radlab.rain.util.InfrastructureControl;
 
@@ -13,16 +14,29 @@ public class TestTarget extends DefaultTarget {
 
 	private InfrastructureControl iaas;
 
-	public TestTarget() {
+	private DomainSize size;
+
+	public TestTarget(DomainSize size) {
 		super();
-		iaas = new InfrastructureControl();
+		this.iaas = new InfrastructureControl();
+		this.size = size;
 	}
 
 	@Override
 	public void setup() {
 		try {
 			// Get a new domain
-			targetDomain = iaas.getClient().allocateDomain(2, iaas.SIZE_LARGE);
+			switch (size) {
+			case LARGE:
+				targetDomain = iaas.getClient().allocateDomain(2, iaas.SIZE_LARGE);
+				break;
+			case MEDIUM:
+				targetDomain = iaas.getClient().allocateDomain(2, iaas.SIZE_MEDIUM);
+				break;
+			case SMALL:
+				targetDomain = iaas.getClient().allocateDomain(2, iaas.SIZE_SMALL);
+				break;
+			}
 
 			// Wait until the domain is available
 			while (!iaas.getClient().isDomainReady(targetDomain)) {

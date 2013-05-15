@@ -21,7 +21,7 @@
 		
 		"offset": 0,
 		
-		"domainSize" : "LARGE",		
+		"domainSize" : "SMALL",		
 		"rampUp": 5,
         "duration": 5,
         "rampDown": 5,
