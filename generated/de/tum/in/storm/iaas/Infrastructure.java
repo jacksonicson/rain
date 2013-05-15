@@ -31,7 +31,7 @@ public class Infrastructure {
 
   public interface Iface {
 
-    public String allocateDomain(int workloadProfile, int type) throws org.apache.thrift.TException;
+    public String allocateDomain(int workloadProfile, type domain_type) throws org.apache.thrift.TException;
 
     public boolean isDomainReady(String hostname) throws org.apache.thrift.TException;
 
@@ -43,7 +43,7 @@ public class Infrastructure {
 
   public interface AsyncIface {
 
-    public void allocateDomain(int workloadProfile, int type, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.allocateDomain_call> resultHandler) throws org.apache.thrift.TException;
+    public void allocateDomain(int workloadProfile, type domain_type, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.allocateDomain_call> resultHandler) throws org.apache.thrift.TException;
 
     public void isDomainReady(String hostname, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.isDomainReady_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -73,17 +73,17 @@ public class Infrastructure {
       super(iprot, oprot);
     }
 
-    public String allocateDomain(int workloadProfile, int type) throws org.apache.thrift.TException
+    public String allocateDomain(int workloadProfile, type domain_type) throws org.apache.thrift.TException
     {
-      send_allocateDomain(workloadProfile, type);
+      send_allocateDomain(workloadProfile, domain_type);
       return recv_allocateDomain();
     }
 
-    public void send_allocateDomain(int workloadProfile, int type) throws org.apache.thrift.TException
+    public void send_allocateDomain(int workloadProfile, type domain_type) throws org.apache.thrift.TException
     {
       allocateDomain_args args = new allocateDomain_args();
       args.setWorkloadProfile(workloadProfile);
-      args.setType(type);
+      args.setDomain_type(domain_type);
       sendBase("allocateDomain", args);
     }
 
@@ -185,27 +185,27 @@ public class Infrastructure {
       super(protocolFactory, clientManager, transport);
     }
 
-    public void allocateDomain(int workloadProfile, int type, org.apache.thrift.async.AsyncMethodCallback<allocateDomain_call> resultHandler) throws org.apache.thrift.TException {
+    public void allocateDomain(int workloadProfile, type domain_type, org.apache.thrift.async.AsyncMethodCallback<allocateDomain_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      allocateDomain_call method_call = new allocateDomain_call(workloadProfile, type, resultHandler, this, ___protocolFactory, ___transport);
+      allocateDomain_call method_call = new allocateDomain_call(workloadProfile, domain_type, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class allocateDomain_call extends org.apache.thrift.async.TAsyncMethodCall {
       private int workloadProfile;
-      private int type;
-      public allocateDomain_call(int workloadProfile, int type, org.apache.thrift.async.AsyncMethodCallback<allocateDomain_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private type domain_type;
+      public allocateDomain_call(int workloadProfile, type domain_type, org.apache.thrift.async.AsyncMethodCallback<allocateDomain_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.workloadProfile = workloadProfile;
-        this.type = type;
+        this.domain_type = domain_type;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("allocateDomain", org.apache.thrift.protocol.TMessageType.CALL, 0));
         allocateDomain_args args = new allocateDomain_args();
         args.setWorkloadProfile(workloadProfile);
-        args.setType(type);
+        args.setDomain_type(domain_type);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -350,7 +350,7 @@ public class Infrastructure {
 
       protected allocateDomain_result getResult(I iface, allocateDomain_args args) throws org.apache.thrift.TException {
         allocateDomain_result result = new allocateDomain_result();
-        result.success = iface.allocateDomain(args.workloadProfile, args.type);
+        result.success = iface.allocateDomain(args.workloadProfile, args.domain_type);
         return result;
       }
     }
@@ -412,7 +412,7 @@ public class Infrastructure {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("allocateDomain_args");
 
     private static final org.apache.thrift.protocol.TField WORKLOAD_PROFILE_FIELD_DESC = new org.apache.thrift.protocol.TField("workloadProfile", org.apache.thrift.protocol.TType.I32, (short)1);
-    private static final org.apache.thrift.protocol.TField TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("type", org.apache.thrift.protocol.TType.I32, (short)2);
+    private static final org.apache.thrift.protocol.TField DOMAIN_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("domain_type", org.apache.thrift.protocol.TType.I32, (short)2);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -421,12 +421,20 @@ public class Infrastructure {
     }
 
     public int workloadProfile; // required
-    public int type; // required
+    /**
+     * 
+     * @see type
+     */
+    public type domain_type; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
       WORKLOAD_PROFILE((short)1, "workloadProfile"),
-      TYPE((short)2, "type");
+      /**
+       * 
+       * @see type
+       */
+      DOMAIN_TYPE((short)2, "domain_type");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -443,8 +451,8 @@ public class Infrastructure {
         switch(fieldId) {
           case 1: // WORKLOAD_PROFILE
             return WORKLOAD_PROFILE;
-          case 2: // TYPE
-            return TYPE;
+          case 2: // DOMAIN_TYPE
+            return DOMAIN_TYPE;
           default:
             return null;
         }
@@ -486,15 +494,14 @@ public class Infrastructure {
 
     // isset id assignments
     private static final int __WORKLOADPROFILE_ISSET_ID = 0;
-    private static final int __TYPE_ISSET_ID = 1;
-    private BitSet __isset_bit_vector = new BitSet(2);
+    private BitSet __isset_bit_vector = new BitSet(1);
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.WORKLOAD_PROFILE, new org.apache.thrift.meta_data.FieldMetaData("workloadProfile", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32          , "int")));
-      tmpMap.put(_Fields.TYPE, new org.apache.thrift.meta_data.FieldMetaData("type", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32          , "int")));
+      tmpMap.put(_Fields.DOMAIN_TYPE, new org.apache.thrift.meta_data.FieldMetaData("domain_type", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, type.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(allocateDomain_args.class, metaDataMap);
     }
@@ -504,13 +511,12 @@ public class Infrastructure {
 
     public allocateDomain_args(
       int workloadProfile,
-      int type)
+      type domain_type)
     {
       this();
       this.workloadProfile = workloadProfile;
       setWorkloadProfileIsSet(true);
-      this.type = type;
-      setTypeIsSet(true);
+      this.domain_type = domain_type;
     }
 
     /**
@@ -520,7 +526,9 @@ public class Infrastructure {
       __isset_bit_vector.clear();
       __isset_bit_vector.or(other.__isset_bit_vector);
       this.workloadProfile = other.workloadProfile;
-      this.type = other.type;
+      if (other.isSetDomain_type()) {
+        this.domain_type = other.domain_type;
+      }
     }
 
     public allocateDomain_args deepCopy() {
@@ -531,8 +539,7 @@ public class Infrastructure {
     public void clear() {
       setWorkloadProfileIsSet(false);
       this.workloadProfile = 0;
-      setTypeIsSet(false);
-      this.type = 0;
+      this.domain_type = null;
     }
 
     public int getWorkloadProfile() {
@@ -558,27 +565,36 @@ public class Infrastructure {
       __isset_bit_vector.set(__WORKLOADPROFILE_ISSET_ID, value);
     }
 
-    public int getType() {
-      return this.type;
+    /**
+     * 
+     * @see type
+     */
+    public type getDomain_type() {
+      return this.domain_type;
     }
 
-    public allocateDomain_args setType(int type) {
-      this.type = type;
-      setTypeIsSet(true);
+    /**
+     * 
+     * @see type
+     */
+    public allocateDomain_args setDomain_type(type domain_type) {
+      this.domain_type = domain_type;
       return this;
     }
 
-    public void unsetType() {
-      __isset_bit_vector.clear(__TYPE_ISSET_ID);
+    public void unsetDomain_type() {
+      this.domain_type = null;
     }
 
-    /** Returns true if field type is set (has been assigned a value) and false otherwise */
-    public boolean isSetType() {
-      return __isset_bit_vector.get(__TYPE_ISSET_ID);
+    /** Returns true if field domain_type is set (has been assigned a value) and false otherwise */
+    public boolean isSetDomain_type() {
+      return this.domain_type != null;
     }
 
-    public void setTypeIsSet(boolean value) {
-      __isset_bit_vector.set(__TYPE_ISSET_ID, value);
+    public void setDomain_typeIsSet(boolean value) {
+      if (!value) {
+        this.domain_type = null;
+      }
     }
 
     public void setFieldValue(_Fields field, Object value) {
@@ -591,11 +607,11 @@ public class Infrastructure {
         }
         break;
 
-      case TYPE:
+      case DOMAIN_TYPE:
         if (value == null) {
-          unsetType();
+          unsetDomain_type();
         } else {
-          setType((Integer)value);
+          setDomain_type((type)value);
         }
         break;
 
@@ -607,8 +623,8 @@ public class Infrastructure {
       case WORKLOAD_PROFILE:
         return Integer.valueOf(getWorkloadProfile());
 
-      case TYPE:
-        return Integer.valueOf(getType());
+      case DOMAIN_TYPE:
+        return getDomain_type();
 
       }
       throw new IllegalStateException();
@@ -623,8 +639,8 @@ public class Infrastructure {
       switch (field) {
       case WORKLOAD_PROFILE:
         return isSetWorkloadProfile();
-      case TYPE:
-        return isSetType();
+      case DOMAIN_TYPE:
+        return isSetDomain_type();
       }
       throw new IllegalStateException();
     }
@@ -651,12 +667,12 @@ public class Infrastructure {
           return false;
       }
 
-      boolean this_present_type = true;
-      boolean that_present_type = true;
-      if (this_present_type || that_present_type) {
-        if (!(this_present_type && that_present_type))
+      boolean this_present_domain_type = true && this.isSetDomain_type();
+      boolean that_present_domain_type = true && that.isSetDomain_type();
+      if (this_present_domain_type || that_present_domain_type) {
+        if (!(this_present_domain_type && that_present_domain_type))
           return false;
-        if (this.type != that.type)
+        if (!this.domain_type.equals(that.domain_type))
           return false;
       }
 
@@ -686,12 +702,12 @@ public class Infrastructure {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetType()).compareTo(typedOther.isSetType());
+      lastComparison = Boolean.valueOf(isSetDomain_type()).compareTo(typedOther.isSetDomain_type());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetType()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.type, typedOther.type);
+      if (isSetDomain_type()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.domain_type, typedOther.domain_type);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -720,8 +736,12 @@ public class Infrastructure {
       sb.append(this.workloadProfile);
       first = false;
       if (!first) sb.append(", ");
-      sb.append("type:");
-      sb.append(this.type);
+      sb.append("domain_type:");
+      if (this.domain_type == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.domain_type);
+      }
       first = false;
       sb.append(")");
       return sb.toString();
@@ -775,10 +795,10 @@ public class Infrastructure {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 2: // TYPE
+            case 2: // DOMAIN_TYPE
               if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-                struct.type = iprot.readI32();
-                struct.setTypeIsSet(true);
+                struct.domain_type = type.findByValue(iprot.readI32());
+                struct.setDomain_typeIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
@@ -801,9 +821,11 @@ public class Infrastructure {
         oprot.writeFieldBegin(WORKLOAD_PROFILE_FIELD_DESC);
         oprot.writeI32(struct.workloadProfile);
         oprot.writeFieldEnd();
-        oprot.writeFieldBegin(TYPE_FIELD_DESC);
-        oprot.writeI32(struct.type);
-        oprot.writeFieldEnd();
+        if (struct.domain_type != null) {
+          oprot.writeFieldBegin(DOMAIN_TYPE_FIELD_DESC);
+          oprot.writeI32(struct.domain_type.getValue());
+          oprot.writeFieldEnd();
+        }
         oprot.writeFieldStop();
         oprot.writeStructEnd();
       }
@@ -825,15 +847,15 @@ public class Infrastructure {
         if (struct.isSetWorkloadProfile()) {
           optionals.set(0);
         }
-        if (struct.isSetType()) {
+        if (struct.isSetDomain_type()) {
           optionals.set(1);
         }
         oprot.writeBitSet(optionals, 2);
         if (struct.isSetWorkloadProfile()) {
           oprot.writeI32(struct.workloadProfile);
         }
-        if (struct.isSetType()) {
-          oprot.writeI32(struct.type);
+        if (struct.isSetDomain_type()) {
+          oprot.writeI32(struct.domain_type.getValue());
         }
       }
 
@@ -846,8 +868,8 @@ public class Infrastructure {
           struct.setWorkloadProfileIsSet(true);
         }
         if (incoming.get(1)) {
-          struct.type = iprot.readI32();
-          struct.setTypeIsSet(true);
+          struct.domain_type = type.findByValue(iprot.readI32());
+          struct.setDomain_typeIsSet(true);
         }
       }
     }

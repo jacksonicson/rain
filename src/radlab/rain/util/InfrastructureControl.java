@@ -13,6 +13,7 @@ import org.apache.thrift.transport.TTransportException;
 
 import radlab.rain.RainConfig;
 import de.tum.in.storm.iaas.Infrastructure;
+import de.tum.in.storm.iaas.type;
 
 public class InfrastructureControl {
 
@@ -20,6 +21,10 @@ public class InfrastructureControl {
 
 	private TTransport transport;
 	private Infrastructure.Client client;
+
+	public final type SIZE_SMALL = type.SMALL;
+	public final type SIZE_MEDIUM = type.MEDIUM;
+	public final type SIZE_LARGE = type.LARGE;
 
 	public InfrastructureControl() {
 		try {
@@ -46,17 +51,17 @@ public class InfrastructureControl {
 		// Get Sonar connection
 		transport = new TSocket(iaasHost, 9877);
 		transport.open();
-		
-		TFramedTransport tt = new TFramedTransport(transport); 
+
+		TFramedTransport tt = new TFramedTransport(transport);
 
 		TProtocol protocol = new TBinaryProtocol(tt);
 
 		// Create new client
 		client = new Infrastructure.Client(protocol);
 	}
-	
+
 	public void disconnect() {
-		transport.close(); 
+		transport.close();
 	}
 
 }
