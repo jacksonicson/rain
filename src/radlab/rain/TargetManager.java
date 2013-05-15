@@ -38,7 +38,7 @@ public class TargetManager extends Thread {
 		try {
 			// Create targets
 			List<ITarget> targets = conf.getFactory().createTargets(conf.getWorkloadProfile(),
-					conf.getWorkloadProfileName(), conf.getWorkloadProfileOffset());
+					conf.getWorkloadProfileName(), conf.getWorkloadProfileOffset(), conf.getDomainSize());
 
 			// Configure all generated targets
 			for (ITarget target : targets) {

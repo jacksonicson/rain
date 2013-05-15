@@ -6,6 +6,7 @@ import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import radlab.rain.TargetConfiguration.DomainSize;
 import radlab.rain.agent.AgentPOL;
 import radlab.rain.agent.IAgent;
 import radlab.rain.agent.IAgentFactory;
@@ -29,8 +30,8 @@ public class TestBenchmark implements ITargetFactory, IGeneratorFactory, IAgentF
 	}
 
 	@Override
-	public List<ITarget> createTargets(int workloadProfile, String workloadProfileName, long loadProfileOffset)
-			throws JSONException {
+	public List<ITarget> createTargets(int workloadProfile, String workloadProfileName, long loadProfileOffset,
+			DomainSize domainType) throws JSONException {
 
 		List<ITarget> tracks = new LinkedList<ITarget>();
 		for (int i = 0; i < targetCount; i++) {

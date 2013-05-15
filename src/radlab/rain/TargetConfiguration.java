@@ -4,7 +4,7 @@ import radlab.rain.target.ITargetFactory;
 
 public class TargetConfiguration {
 
-	enum DomainSize {
+	public enum DomainSize {
 		SMALL, MEDIUM, LARGE
 	}
 
