@@ -3,9 +3,9 @@ package radlab.rain.workload.http;
 import org.apache.log4j.Logger;
 import org.apache.thrift.TException;
 
-import radlab.rain.TargetConfiguration.DomainSize;
 import radlab.rain.target.DefaultTarget;
 import radlab.rain.util.InfrastructureControl;
+import de.tum.in.storm.iaas.DomainSize;
 
 public class TestTarget extends DefaultTarget {
 	private static final Logger logger = Logger.getLogger(TestTarget.class);

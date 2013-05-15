@@ -11,8 +11,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.TargetConfiguration.DomainSize;
 import radlab.rain.target.ITargetFactory;
+import de.tum.in.storm.iaas.DomainSize;
 
 public class TargetSchedule {
 

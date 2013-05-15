@@ -5,7 +5,7 @@ import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.TargetConfiguration.DomainSize;
+import de.tum.in.storm.iaas.DomainSize;
 
 public interface ITargetFactory {
 	// Is called after creating the factory

@@ -11,14 +11,14 @@ import java.util.Map;
 import java.util.HashMap;
 import org.apache.thrift.TEnum;
 
-public enum type implements org.apache.thrift.TEnum {
+public enum DomainSize implements org.apache.thrift.TEnum {
   SMALL(0),
   MEDIUM(1),
   LARGE(2);
 
   private final int value;
 
-  private type(int value) {
+  private DomainSize(int value) {
     this.value = value;
   }
 
@@ -33,7 +33,7 @@ public enum type implements org.apache.thrift.TEnum {
    * Find a the enum type by its integer value, as defined in the Thrift IDL.
    * @return null if the value is not found.
    */
-  public static type findByValue(int value) { 
+  public static DomainSize findByValue(int value) { 
     switch (value) {
       case 0:
         return SMALL;

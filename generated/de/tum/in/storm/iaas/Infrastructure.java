@@ -31,7 +31,7 @@ public class Infrastructure {
 
   public interface Iface {
 
-    public String allocateDomain(int workloadProfile, type domain_type) throws org.apache.thrift.TException;
+    public String allocateDomain(int workloadProfileIndex, DomainSize domainSize) throws org.apache.thrift.TException;
 
     public boolean isDomainReady(String hostname) throws org.apache.thrift.TException;
 
@@ -43,7 +43,7 @@ public class Infrastructure {
 
   public interface AsyncIface {
 
-    public void allocateDomain(int workloadProfile, type domain_type, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.allocateDomain_call> resultHandler) throws org.apache.thrift.TException;
+    public void allocateDomain(int workloadProfileIndex, DomainSize domainSize, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.allocateDomain_call> resultHandler) throws org.apache.thrift.TException;
 
     public void isDomainReady(String hostname, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.isDomainReady_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -73,17 +73,17 @@ public class Infrastructure {
       super(iprot, oprot);
     }
 
-    public String allocateDomain(int workloadProfile, type domain_type) throws org.apache.thrift.TException
+    public String allocateDomain(int workloadProfileIndex, DomainSize domainSize) throws org.apache.thrift.TException
     {
-      send_allocateDomain(workloadProfile, domain_type);
+      send_allocateDomain(workloadProfileIndex, domainSize);
       return recv_allocateDomain();
     }
 
-    public void send_allocateDomain(int workloadProfile, type domain_type) throws org.apache.thrift.TException
+    public void send_allocateDomain(int workloadProfileIndex, DomainSize domainSize) throws org.apache.thrift.TException
     {
       allocateDomain_args args = new allocateDomain_args();
-      args.setWorkloadProfile(workloadProfile);
-      args.setDomain_type(domain_type);
+      args.setWorkloadProfileIndex(workloadProfileIndex);
+      args.setDomainSize(domainSize);
       sendBase("allocateDomain", args);
     }
 
@@ -185,27 +185,27 @@ public class Infrastructure {
       super(protocolFactory, clientManager, transport);
     }
 
-    public void allocateDomain(int workloadProfile, type domain_type, org.apache.thrift.async.AsyncMethodCallback<allocateDomain_call> resultHandler) throws org.apache.thrift.TException {
+    public void allocateDomain(int workloadProfileIndex, DomainSize domainSize, org.apache.thrift.async.AsyncMethodCallback<allocateDomain_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      allocateDomain_call method_call = new allocateDomain_call(workloadProfile, domain_type, resultHandler, this, ___protocolFactory, ___transport);
+      allocateDomain_call method_call = new allocateDomain_call(workloadProfileIndex, domainSize, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class allocateDomain_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private int workloadProfile;
-      private type domain_type;
-      public allocateDomain_call(int workloadProfile, type domain_type, org.apache.thrift.async.AsyncMethodCallback<allocateDomain_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private int workloadProfileIndex;
+      private DomainSize domainSize;
+      public allocateDomain_call(int workloadProfileIndex, DomainSize domainSize, org.apache.thrift.async.AsyncMethodCallback<allocateDomain_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.workloadProfile = workloadProfile;
-        this.domain_type = domain_type;
+        this.workloadProfileIndex = workloadProfileIndex;
+        this.domainSize = domainSize;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("allocateDomain", org.apache.thrift.protocol.TMessageType.CALL, 0));
         allocateDomain_args args = new allocateDomain_args();
-        args.setWorkloadProfile(workloadProfile);
-        args.setDomain_type(domain_type);
+        args.setWorkloadProfileIndex(workloadProfileIndex);
+        args.setDomainSize(domainSize);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -350,7 +350,7 @@ public class Infrastructure {
 
       protected allocateDomain_result getResult(I iface, allocateDomain_args args) throws org.apache.thrift.TException {
         allocateDomain_result result = new allocateDomain_result();
-        result.success = iface.allocateDomain(args.workloadProfile, args.domain_type);
+        result.success = iface.allocateDomain(args.workloadProfileIndex, args.domainSize);
         return result;
       }
     }
@@ -411,8 +411,8 @@ public class Infrastructure {
   public static class allocateDomain_args implements org.apache.thrift.TBase<allocateDomain_args, allocateDomain_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("allocateDomain_args");
 
-    private static final org.apache.thrift.protocol.TField WORKLOAD_PROFILE_FIELD_DESC = new org.apache.thrift.protocol.TField("workloadProfile", org.apache.thrift.protocol.TType.I32, (short)1);
-    private static final org.apache.thrift.protocol.TField DOMAIN_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("domain_type", org.apache.thrift.protocol.TType.I32, (short)2);
+    private static final org.apache.thrift.protocol.TField WORKLOAD_PROFILE_INDEX_FIELD_DESC = new org.apache.thrift.protocol.TField("workloadProfileIndex", org.apache.thrift.protocol.TType.I32, (short)1);
+    private static final org.apache.thrift.protocol.TField DOMAIN_SIZE_FIELD_DESC = new org.apache.thrift.protocol.TField("domainSize", org.apache.thrift.protocol.TType.I32, (short)2);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -420,21 +420,21 @@ public class Infrastructure {
       schemes.put(TupleScheme.class, new allocateDomain_argsTupleSchemeFactory());
     }
 
-    public int workloadProfile; // required
+    public int workloadProfileIndex; // required
     /**
      * 
-     * @see type
+     * @see DomainSize
      */
-    public type domain_type; // required
+    public DomainSize domainSize; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      WORKLOAD_PROFILE((short)1, "workloadProfile"),
+      WORKLOAD_PROFILE_INDEX((short)1, "workloadProfileIndex"),
       /**
        * 
-       * @see type
+       * @see DomainSize
        */
-      DOMAIN_TYPE((short)2, "domain_type");
+      DOMAIN_SIZE((short)2, "domainSize");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -449,10 +449,10 @@ public class Infrastructure {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // WORKLOAD_PROFILE
-            return WORKLOAD_PROFILE;
-          case 2: // DOMAIN_TYPE
-            return DOMAIN_TYPE;
+          case 1: // WORKLOAD_PROFILE_INDEX
+            return WORKLOAD_PROFILE_INDEX;
+          case 2: // DOMAIN_SIZE
+            return DOMAIN_SIZE;
           default:
             return null;
         }
@@ -493,15 +493,15 @@ public class Infrastructure {
     }
 
     // isset id assignments
-    private static final int __WORKLOADPROFILE_ISSET_ID = 0;
+    private static final int __WORKLOADPROFILEINDEX_ISSET_ID = 0;
     private BitSet __isset_bit_vector = new BitSet(1);
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.WORKLOAD_PROFILE, new org.apache.thrift.meta_data.FieldMetaData("workloadProfile", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.WORKLOAD_PROFILE_INDEX, new org.apache.thrift.meta_data.FieldMetaData("workloadProfileIndex", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32          , "int")));
-      tmpMap.put(_Fields.DOMAIN_TYPE, new org.apache.thrift.meta_data.FieldMetaData("domain_type", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, type.class)));
+      tmpMap.put(_Fields.DOMAIN_SIZE, new org.apache.thrift.meta_data.FieldMetaData("domainSize", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, DomainSize.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(allocateDomain_args.class, metaDataMap);
     }
@@ -510,13 +510,13 @@ public class Infrastructure {
     }
 
     public allocateDomain_args(
-      int workloadProfile,
-      type domain_type)
+      int workloadProfileIndex,
+      DomainSize domainSize)
     {
       this();
-      this.workloadProfile = workloadProfile;
-      setWorkloadProfileIsSet(true);
-      this.domain_type = domain_type;
+      this.workloadProfileIndex = workloadProfileIndex;
+      setWorkloadProfileIndexIsSet(true);
+      this.domainSize = domainSize;
     }
 
     /**
@@ -525,9 +525,9 @@ public class Infrastructure {
     public allocateDomain_args(allocateDomain_args other) {
       __isset_bit_vector.clear();
       __isset_bit_vector.or(other.__isset_bit_vector);
-      this.workloadProfile = other.workloadProfile;
-      if (other.isSetDomain_type()) {
-        this.domain_type = other.domain_type;
+      this.workloadProfileIndex = other.workloadProfileIndex;
+      if (other.isSetDomainSize()) {
+        this.domainSize = other.domainSize;
       }
     }
 
@@ -537,81 +537,81 @@ public class Infrastructure {
 
     @Override
     public void clear() {
-      setWorkloadProfileIsSet(false);
-      this.workloadProfile = 0;
-      this.domain_type = null;
+      setWorkloadProfileIndexIsSet(false);
+      this.workloadProfileIndex = 0;
+      this.domainSize = null;
     }
 
-    public int getWorkloadProfile() {
-      return this.workloadProfile;
+    public int getWorkloadProfileIndex() {
+      return this.workloadProfileIndex;
     }
 
-    public allocateDomain_args setWorkloadProfile(int workloadProfile) {
-      this.workloadProfile = workloadProfile;
-      setWorkloadProfileIsSet(true);
+    public allocateDomain_args setWorkloadProfileIndex(int workloadProfileIndex) {
+      this.workloadProfileIndex = workloadProfileIndex;
+      setWorkloadProfileIndexIsSet(true);
       return this;
     }
 
-    public void unsetWorkloadProfile() {
-      __isset_bit_vector.clear(__WORKLOADPROFILE_ISSET_ID);
+    public void unsetWorkloadProfileIndex() {
+      __isset_bit_vector.clear(__WORKLOADPROFILEINDEX_ISSET_ID);
     }
 
-    /** Returns true if field workloadProfile is set (has been assigned a value) and false otherwise */
-    public boolean isSetWorkloadProfile() {
-      return __isset_bit_vector.get(__WORKLOADPROFILE_ISSET_ID);
+    /** Returns true if field workloadProfileIndex is set (has been assigned a value) and false otherwise */
+    public boolean isSetWorkloadProfileIndex() {
+      return __isset_bit_vector.get(__WORKLOADPROFILEINDEX_ISSET_ID);
     }
 
-    public void setWorkloadProfileIsSet(boolean value) {
-      __isset_bit_vector.set(__WORKLOADPROFILE_ISSET_ID, value);
+    public void setWorkloadProfileIndexIsSet(boolean value) {
+      __isset_bit_vector.set(__WORKLOADPROFILEINDEX_ISSET_ID, value);
     }
 
     /**
      * 
-     * @see type
+     * @see DomainSize
      */
-    public type getDomain_type() {
-      return this.domain_type;
+    public DomainSize getDomainSize() {
+      return this.domainSize;
     }
 
     /**
      * 
-     * @see type
+     * @see DomainSize
      */
-    public allocateDomain_args setDomain_type(type domain_type) {
-      this.domain_type = domain_type;
+    public allocateDomain_args setDomainSize(DomainSize domainSize) {
+      this.domainSize = domainSize;
       return this;
     }
 
-    public void unsetDomain_type() {
-      this.domain_type = null;
+    public void unsetDomainSize() {
+      this.domainSize = null;
     }
 
-    /** Returns true if field domain_type is set (has been assigned a value) and false otherwise */
-    public boolean isSetDomain_type() {
-      return this.domain_type != null;
+    /** Returns true if field domainSize is set (has been assigned a value) and false otherwise */
+    public boolean isSetDomainSize() {
+      return this.domainSize != null;
     }
 
-    public void setDomain_typeIsSet(boolean value) {
+    public void setDomainSizeIsSet(boolean value) {
       if (!value) {
-        this.domain_type = null;
+        this.domainSize = null;
       }
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case WORKLOAD_PROFILE:
+      case WORKLOAD_PROFILE_INDEX:
         if (value == null) {
-          unsetWorkloadProfile();
+          unsetWorkloadProfileIndex();
         } else {
-          setWorkloadProfile((Integer)value);
+          setWorkloadProfileIndex((Integer)value);
         }
         break;
 
-      case DOMAIN_TYPE:
+      case DOMAIN_SIZE:
         if (value == null) {
-          unsetDomain_type();
+          unsetDomainSize();
         } else {
-          setDomain_type((type)value);
+          setDomainSize((DomainSize)value);
         }
         break;
 
@@ -620,11 +620,11 @@ public class Infrastructure {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case WORKLOAD_PROFILE:
-        return Integer.valueOf(getWorkloadProfile());
+      case WORKLOAD_PROFILE_INDEX:
+        return Integer.valueOf(getWorkloadProfileIndex());
 
-      case DOMAIN_TYPE:
-        return getDomain_type();
+      case DOMAIN_SIZE:
+        return getDomainSize();
 
       }
       throw new IllegalStateException();
@@ -637,10 +637,10 @@ public class Infrastructure {
       }
 
       switch (field) {
-      case WORKLOAD_PROFILE:
-        return isSetWorkloadProfile();
-      case DOMAIN_TYPE:
-        return isSetDomain_type();
+      case WORKLOAD_PROFILE_INDEX:
+        return isSetWorkloadProfileIndex();
+      case DOMAIN_SIZE:
+        return isSetDomainSize();
       }
       throw new IllegalStateException();
     }
@@ -658,21 +658,21 @@ public class Infrastructure {
       if (that == null)
         return false;
 
-      boolean this_present_workloadProfile = true;
-      boolean that_present_workloadProfile = true;
-      if (this_present_workloadProfile || that_present_workloadProfile) {
-        if (!(this_present_workloadProfile && that_present_workloadProfile))
+      boolean this_present_workloadProfileIndex = true;
+      boolean that_present_workloadProfileIndex = true;
+      if (this_present_workloadProfileIndex || that_present_workloadProfileIndex) {
+        if (!(this_present_workloadProfileIndex && that_present_workloadProfileIndex))
           return false;
-        if (this.workloadProfile != that.workloadProfile)
+        if (this.workloadProfileIndex != that.workloadProfileIndex)
           return false;
       }
 
-      boolean this_present_domain_type = true && this.isSetDomain_type();
-      boolean that_present_domain_type = true && that.isSetDomain_type();
-      if (this_present_domain_type || that_present_domain_type) {
-        if (!(this_present_domain_type && that_present_domain_type))
+      boolean this_present_domainSize = true && this.isSetDomainSize();
+      boolean that_present_domainSize = true && that.isSetDomainSize();
+      if (this_present_domainSize || that_present_domainSize) {
+        if (!(this_present_domainSize && that_present_domainSize))
           return false;
-        if (!this.domain_type.equals(that.domain_type))
+        if (!this.domainSize.equals(that.domainSize))
           return false;
       }
 
@@ -692,22 +692,22 @@ public class Infrastructure {
       int lastComparison = 0;
       allocateDomain_args typedOther = (allocateDomain_args)other;
 
-      lastComparison = Boolean.valueOf(isSetWorkloadProfile()).compareTo(typedOther.isSetWorkloadProfile());
+      lastComparison = Boolean.valueOf(isSetWorkloadProfileIndex()).compareTo(typedOther.isSetWorkloadProfileIndex());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetWorkloadProfile()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.workloadProfile, typedOther.workloadProfile);
+      if (isSetWorkloadProfileIndex()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.workloadProfileIndex, typedOther.workloadProfileIndex);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetDomain_type()).compareTo(typedOther.isSetDomain_type());
+      lastComparison = Boolean.valueOf(isSetDomainSize()).compareTo(typedOther.isSetDomainSize());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetDomain_type()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.domain_type, typedOther.domain_type);
+      if (isSetDomainSize()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.domainSize, typedOther.domainSize);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -732,15 +732,15 @@ public class Infrastructure {
       StringBuilder sb = new StringBuilder("allocateDomain_args(");
       boolean first = true;
 
-      sb.append("workloadProfile:");
-      sb.append(this.workloadProfile);
+      sb.append("workloadProfileIndex:");
+      sb.append(this.workloadProfileIndex);
       first = false;
       if (!first) sb.append(", ");
-      sb.append("domain_type:");
-      if (this.domain_type == null) {
+      sb.append("domainSize:");
+      if (this.domainSize == null) {
         sb.append("null");
       } else {
-        sb.append(this.domain_type);
+        sb.append(this.domainSize);
       }
       first = false;
       sb.append(")");
@@ -787,18 +787,18 @@ public class Infrastructure {
             break;
           }
           switch (schemeField.id) {
-            case 1: // WORKLOAD_PROFILE
+            case 1: // WORKLOAD_PROFILE_INDEX
               if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-                struct.workloadProfile = iprot.readI32();
-                struct.setWorkloadProfileIsSet(true);
+                struct.workloadProfileIndex = iprot.readI32();
+                struct.setWorkloadProfileIndexIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 2: // DOMAIN_TYPE
+            case 2: // DOMAIN_SIZE
               if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-                struct.domain_type = type.findByValue(iprot.readI32());
-                struct.setDomain_typeIsSet(true);
+                struct.domainSize = DomainSize.findByValue(iprot.readI32());
+                struct.setDomainSizeIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
@@ -818,12 +818,12 @@ public class Infrastructure {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
-        oprot.writeFieldBegin(WORKLOAD_PROFILE_FIELD_DESC);
-        oprot.writeI32(struct.workloadProfile);
+        oprot.writeFieldBegin(WORKLOAD_PROFILE_INDEX_FIELD_DESC);
+        oprot.writeI32(struct.workloadProfileIndex);
         oprot.writeFieldEnd();
-        if (struct.domain_type != null) {
-          oprot.writeFieldBegin(DOMAIN_TYPE_FIELD_DESC);
-          oprot.writeI32(struct.domain_type.getValue());
+        if (struct.domainSize != null) {
+          oprot.writeFieldBegin(DOMAIN_SIZE_FIELD_DESC);
+          oprot.writeI32(struct.domainSize.getValue());
           oprot.writeFieldEnd();
         }
         oprot.writeFieldStop();
@@ -844,18 +844,18 @@ public class Infrastructure {
       public void write(org.apache.thrift.protocol.TProtocol prot, allocateDomain_args struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
-        if (struct.isSetWorkloadProfile()) {
+        if (struct.isSetWorkloadProfileIndex()) {
           optionals.set(0);
         }
-        if (struct.isSetDomain_type()) {
+        if (struct.isSetDomainSize()) {
           optionals.set(1);
         }
         oprot.writeBitSet(optionals, 2);
-        if (struct.isSetWorkloadProfile()) {
-          oprot.writeI32(struct.workloadProfile);
+        if (struct.isSetWorkloadProfileIndex()) {
+          oprot.writeI32(struct.workloadProfileIndex);
         }
-        if (struct.isSetDomain_type()) {
-          oprot.writeI32(struct.domain_type.getValue());
+        if (struct.isSetDomainSize()) {
+          oprot.writeI32(struct.domainSize.getValue());
         }
       }
 
@@ -864,12 +864,12 @@ public class Infrastructure {
         TTupleProtocol iprot = (TTupleProtocol) prot;
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
-          struct.workloadProfile = iprot.readI32();
-          struct.setWorkloadProfileIsSet(true);
+          struct.workloadProfileIndex = iprot.readI32();
+          struct.setWorkloadProfileIndexIsSet(true);
         }
         if (incoming.get(1)) {
-          struct.domain_type = type.findByValue(iprot.readI32());
-          struct.setDomain_typeIsSet(true);
+          struct.domainSize = DomainSize.findByValue(iprot.readI32());
+          struct.setDomainSizeIsSet(true);
         }
       }
     }

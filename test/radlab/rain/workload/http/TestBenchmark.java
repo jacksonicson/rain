@@ -6,7 +6,6 @@ import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import radlab.rain.TargetConfiguration.DomainSize;
 import radlab.rain.agent.AgentPOL;
 import radlab.rain.agent.IAgent;
 import radlab.rain.agent.IAgentFactory;
@@ -14,6 +13,7 @@ import radlab.rain.operation.Generator;
 import radlab.rain.operation.IGeneratorFactory;
 import radlab.rain.target.ITarget;
 import radlab.rain.target.ITargetFactory;
+import de.tum.in.storm.iaas.DomainSize;
 
 public class TestBenchmark implements ITargetFactory, IGeneratorFactory, IAgentFactory {
 

@@ -1,12 +1,9 @@
 package radlab.rain;
 
 import radlab.rain.target.ITargetFactory;
+import de.tum.in.storm.iaas.DomainSize;
 
 public class TargetConfiguration {
-
-	public enum DomainSize {
-		SMALL, MEDIUM, LARGE
-	}
 
 	// Target factory
 	private ITargetFactory factory;
