@@ -11,6 +11,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import radlab.rain.TargetConfiguration.DomainSize;
 import radlab.rain.target.ITargetFactory;
 
 public class TargetSchedule {
@@ -65,14 +66,30 @@ public class TargetSchedule {
 			TargetConfiguration targetConf = new TargetConfiguration();
 			targetsToLaunch.add(targetConf);
 
+			// JSON configuration
 			JSONObject jsonConf = scheduleConf.getJSONObject(i);
-			targetConf.setOffset(jsonConf.getLong("delay") * 1000); // to milliseconds
+
+			// Offset
+			targetConf.setOffset(jsonConf.getLong("offset") * 1000); // to milliseconds
+
+			// Timing
 			targetConf.setRampUp(jsonConf.getLong("rampUp") * 1000); // to milliseconds
 			targetConf.setDuration(jsonConf.getLong("duration") * 1000); // to milliseconds
 			targetConf.setRampDown(jsonConf.getLong("rampDown") * 1000); // to milliseconds
+
+			// Workload profile
 			targetConf.setWorkloadProfile(jsonConf.getInt("workloadProfile")); // workload profile index
 			targetConf.setWorkloadProfileName(jsonConf.getString("workloadProfileName")); // workload profile name
 			targetConf.setWorkloadProfileName(jsonConf.getString("workloadProfileOffset")); // workload profile offset
+
+			// Set domain size
+			String domainSize = jsonConf.getString("domainSize");
+			if (domainSize.equals(DomainSize.SMALL.toString()))
+				targetConf.setDomainSize(DomainSize.SMALL);
+			else if (domainSize.equals(DomainSize.MEDIUM.toString()))
+				targetConf.setDomainSize(DomainSize.MEDIUM);
+			else if (domainSize.equals(DomainSize.LARGE.toString()))
+				targetConf.setDomainSize(DomainSize.LARGE);
 
 			// Create factory instance
 			JSONObject jsonFactoryConfig = factoryConfigurations.get(jsonConf.getString("targetFactory"));

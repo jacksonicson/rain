@@ -4,8 +4,15 @@ import radlab.rain.target.ITargetFactory;
 
 public class TargetConfiguration {
 
+	enum DomainSize {
+		SMALL, MEDIUM, LARGE
+	}
+
 	// Target factory
 	private ITargetFactory factory;
+
+	// Domain size
+	private DomainSize domainSize = DomainSize.MEDIUM;
 
 	// Timings
 	private long rampUp;
@@ -86,4 +93,11 @@ public class TargetConfiguration {
 		this.workloadProfileOffset = workloadProfileOffset;
 	}
 
+	public DomainSize getDomainSize() {
+		return domainSize;
+	}
+
+	public void setDomainSize(DomainSize domainSize) {
+		this.domainSize = domainSize;
+	}
 }
