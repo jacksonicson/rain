@@ -21,7 +21,7 @@
 		
 		"offset": 0,
 		
-		"domainSIze" : "MEDIUM",
+		"domainSize" : "MEDIUM",
 		
 		"rampUp": 5,
         "duration": 5,
@@ -29,6 +29,7 @@
 
 		"workloadProfile" : 1,
 		"workloadProfileOffset" : 0,
+		"workloadProfileName" : "O2_business_ADDORDER_profile_user",
 		},
 	],
 }
