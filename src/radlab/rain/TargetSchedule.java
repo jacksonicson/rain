@@ -78,9 +78,9 @@ public class TargetSchedule {
 			targetConf.setRampDown(jsonConf.getLong("rampDown") * 1000); // to milliseconds
 
 			// Workload profile
-			targetConf.setWorkloadProfile(jsonConf.getInt("workloadProfile")); // workload profile index
+			targetConf.setWorkloadProfileIndex(jsonConf.getInt("workloadProfileIndex")); // workload profile index
 			targetConf.setWorkloadProfileName(jsonConf.getString("workloadProfileName")); // workload profile name
-			targetConf.setWorkloadProfileName(jsonConf.getString("workloadProfileOffset")); // workload profile offset
+			targetConf.setWorkloadProfileOffset(jsonConf.getLong("workloadProfileOffset")); // workload profile offset
 
 			// Set domain size
 			String domainSize = jsonConf.getString("domainSize");

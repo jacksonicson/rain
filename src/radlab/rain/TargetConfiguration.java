@@ -20,10 +20,8 @@ public class TargetConfiguration {
 	private long offset;
 
 	// Workload profile
-	private int workloadProfile;
+	private int workloadProfileIndex;
 	private String workloadProfileName;
-
-	// Timing offset within the workload profile TS
 	private long workloadProfileOffset;
 
 	public long getOffset() {
@@ -66,12 +64,12 @@ public class TargetConfiguration {
 		this.factory = factory;
 	}
 
-	public int getWorkloadProfile() {
-		return workloadProfile;
+	public int getWorkloadProfileIndex() {
+		return workloadProfileIndex;
 	}
 
-	public void setWorkloadProfile(int workloadProfile) {
-		this.workloadProfile = workloadProfile;
+	public void setWorkloadProfileIndex(int workloadProfile) {
+		this.workloadProfileIndex = workloadProfile;
 	}
 
 	public void setWorkloadProfileName(String workloadProfileName) {
