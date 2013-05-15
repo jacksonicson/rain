@@ -12,9 +12,9 @@ import java.util.HashMap;
 import org.apache.thrift.TEnum;
 
 public enum type implements org.apache.thrift.TEnum {
-  SMALL(1),
-  MEDIUM(2),
-  LARGE(3);
+  SMALL(0),
+  MEDIUM(1),
+  LARGE(2);
 
   private final int value;
 
@@ -35,11 +35,11 @@ public enum type implements org.apache.thrift.TEnum {
    */
   public static type findByValue(int value) { 
     switch (value) {
-      case 1:
+      case 0:
         return SMALL;
-      case 2:
+      case 1:
         return MEDIUM;
-      case 3:
+      case 2:
         return LARGE;
       default:
         return null;
