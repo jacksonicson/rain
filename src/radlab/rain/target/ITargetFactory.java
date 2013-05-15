@@ -13,5 +13,5 @@ public interface ITargetFactory {
 
 	// Called to create all targets
 	public abstract List<ITarget> createTargets(int loadProfileIndex, String loadProfileName, long loadProfileOffset,
-			DomainSize daomainType) throws JSONException;
+			DomainSize domainSize) throws JSONException;
 }
