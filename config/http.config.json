@@ -1,71 +1,34 @@
 {
-    "timing": {
-        "rampUp": 600,
-        "duration": 3600,
-        "rampDown": 300,
-    },
-    
-    "aggregateStats": true,
     "waitForStartSignal": false,
-    
-    "usePipe": false,
     "useThrift": true,
     "sonarHost" : "monitor0",
     
-    "### Track generators #########":"##",
-    
-    "profilesCreatorClass": "de.tum.in.dss.specj.generator.SpecjProfileCreator",
-    "profilesCreatorClassParams": {
-    	"meanResponseTimeSamplingInterval" : 60,
-    
-    	"behavior" : {
-    		"default" : [
-        		[0.0,  0.0],
-        		[0.0,  0.0],
-        	],
-    	},
-    	
-    	"specj" : {
-    	 	"### SpecJ: users = scale (=txrate) * THREADS_PER_SCALE_FACTOR (=10)":"####",
-		    "### scale and txrate is the same for SpecJ":"###",
-		    "### default value for scale factor is 10":"###",
-		    "### -> Rain users are calculated by: txrate * 10":"###",
-    		"txRate":60,
-		    "maxItemsPerLoc":75000,
-		    "itemsPerTxRate":100,
-		    "parallelism":10,
-		    "audit": true,
-    	},
-    	    
-    	"tracks": [
-    	
-	    	{
-    			type:"dealer",
-    			
-		        "target": {
-		          "hostname": "vmt",
-		          "port": 8080
-		        },
-		        "loadScheduleCreatorParameters" : {
-			        "host": "monitor0",
-		        	"mix": "default",
-		        	"profile" : "O2_business_ADDORDER_profile_user",
-		        }
-    		},
-    		{
-	    		type:"mfg",
-	    		
-		        "target": {
-		          "hostname": "vmt",
-		          "port": 8080,
-		        },
-		        "loadScheduleCreatorParameters" : {
-			        "host": "monitor0",
-		        	"mix": "default",
-		        	"profile" : "O2_business_ADDORDER_profile_user",
-		        }
-	    	},
-	    	
-    	],
+    "targetFactories" : {
+		"f1" : {
+			"targetFactoryClass": "radlab.rain.workload.http.TestBenchmark",    
+		    "targetFactoryParams": {
+		    	"targetCount" : 1,
+		    	"targetConfig" : {
+		    		"baseUrl" : "dss.in.tum.de",
+		    	},
+		    },
+		}    	
     },
+    
+    "targetSchedule" : [
+		{
+		"targetFactory": "f1",
+		
+		"offset": 0,
+		
+		"domainSize" : "SMALL",		
+		"rampUp": 5,
+        "duration": 5,
+        "rampDown": 5,
+
+		"workloadProfile" : 1,
+		"workloadProfileOffset" : 0,
+		"workloadProfileName" : "O2_business_ADDORDER_profile_user",
+		},
+	],
 }
