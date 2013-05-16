@@ -9,7 +9,7 @@ public class TargetConfiguration {
 	private ITargetFactory factory;
 
 	// Domain size
-	private DomainSize domainSize = DomainSize.MEDIUM;
+	private DomainSize domainSize;
 
 	// Timings
 	private long rampUp;

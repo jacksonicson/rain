@@ -84,13 +84,8 @@ public class TargetSchedule {
 
 			// Set domain size
 			String domainSize = jsonConf.getString("domainSize");
-			if (domainSize.equals(DomainSize.SMALL.toString()))
-				targetConf.setDomainSize(DomainSize.SMALL);
-			else if (domainSize.equals(DomainSize.MEDIUM.toString()))
-				targetConf.setDomainSize(DomainSize.MEDIUM);
-			else if (domainSize.equals(DomainSize.LARGE.toString()))
-				targetConf.setDomainSize(DomainSize.LARGE);
-
+			targetConf.setDomainSize(DomainSize.valueOf(domainSize));
+			
 			// Create factory instance
 			JSONObject jsonFactoryConfig = factoryConfigurations.get(jsonConf.getString("targetFactory"));
 			ITargetFactory factory = buildTargetFactory(jsonFactoryConfig);
