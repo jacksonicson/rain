@@ -37,8 +37,7 @@ public class TargetManager extends Thread {
 	private void createTarget(TargetConfiguration conf) throws BenchmarkFailedException {
 		try {
 			// Create targets
-			List<ITarget> targets = conf.getFactory().createTargets(conf.getWorkloadProfileIndex(),
-					conf.getWorkloadProfileName(), conf.getWorkloadProfileOffset(), conf.getDomainSize());
+			List<ITarget> targets = conf.getFactory().createTargets(conf);
 
 			// Configure all generated targets
 			for (ITarget target : targets) {
