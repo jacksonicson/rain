@@ -10,11 +10,14 @@ import java.util.Queue;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import radlab.rain.target.ITargetFactory;
 import de.tum.in.storm.iaas.DomainSize;
 
 public class TargetSchedule {
+	private static Logger logger = LoggerFactory.getLogger(TargetSchedule.class);
 
 	// Target queue
 	private Queue<TargetConfiguration> targetsToLaunch = new LinkedList<TargetConfiguration>();
@@ -85,7 +88,7 @@ public class TargetSchedule {
 			// Set domain size
 			String domainSize = jsonConf.getString("domainSize");
 			targetConf.setDomainSize(DomainSize.valueOf(domainSize));
-			
+
 			// Create factory instance
 			JSONObject jsonFactoryConfig = factoryConfigurations.get(jsonConf.getString("targetFactory"));
 			ITargetFactory factory = buildTargetFactory(jsonFactoryConfig);
@@ -96,6 +99,9 @@ public class TargetSchedule {
 					+ targetConf.getRampDown();
 			duration = Math.max(finishTime, duration);
 		}
+
+		// Log scheduler configuration
+		logger.info("Scheduler entries: " + targetsToLaunch.size());
 	}
 
 	public long duration() {
@@ -103,7 +109,9 @@ public class TargetSchedule {
 	}
 
 	TargetConfiguration next() {
-		return targetsToLaunch.poll();
+		TargetConfiguration next = targetsToLaunch.poll();
+		logger.info("Schedule entries left: " + targetsToLaunch.size());
+		return next;
 	}
 
 	boolean hasNext() {

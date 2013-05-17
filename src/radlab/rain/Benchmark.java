@@ -150,9 +150,18 @@ public class Benchmark {
 				service.start();
 			}
 
+			
+
 			// Wait for start signal
 			if (RainConfig.getInstance().waitForStartSignal)
+			{
+				// Wait until service is available
+				Thread.sleep(2000);
+				
 				logger.info("Waiting for start signal...");
+			}
+			
+			// Wait for start signal
 			while (RainConfig.getInstance().waitForStartSignal) {
 				logger.trace("Sleeping for 1sec...");
 				Thread.sleep(1000);

@@ -103,6 +103,8 @@ public class TargetManager extends Thread {
 			// Create and start target with its agents
 			createTarget(conf);
 		}
+
+		logger.info("Schedule processing complete");
 	}
 
 	public void run() {
@@ -115,6 +117,7 @@ public class TargetManager extends Thread {
 		}
 
 		// Wait for shutdown
+		logger.info("Shutting down target manager");
 		waitForShutdown();
 	}
 
