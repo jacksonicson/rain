@@ -49,7 +49,7 @@ public class InfrastructureControl {
 		InetAddress addr = InetAddress.getLocalHost();
 
 		// Get Sonar connection
-		transport = new TSocket(iaasHost, 9877);
+		transport = new TSocket(iaasHost, 9877, 300000);
 		transport.open();
 
 		TFramedTransport tt = new TFramedTransport(transport);
