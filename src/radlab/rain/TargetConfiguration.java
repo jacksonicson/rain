@@ -7,6 +7,7 @@ public class TargetConfiguration {
 
 	// Target factory
 	private ITargetFactory factory;
+	private ClassLoader cl;
 
 	// Domain size
 	private DomainSize domainSize;
@@ -60,8 +61,13 @@ public class TargetConfiguration {
 		return factory;
 	}
 
-	public void setFactory(ITargetFactory factory) {
+	public ClassLoader getClassLoader() {
+		return cl;
+	}
+
+	public void setFactory(ITargetFactory factory, ClassLoader cl) {
 		this.factory = factory;
+		this.cl = cl;
 	}
 
 	public int getWorkloadProfileIndex() {

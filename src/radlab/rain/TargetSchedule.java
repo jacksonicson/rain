@@ -1,9 +1,16 @@
 package radlab.rain;
 
-import java.lang.reflect.Constructor;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
@@ -29,7 +36,21 @@ public class TargetSchedule {
 		loadConfigurations(config);
 	}
 
-	private ITargetFactory buildTargetFactory(JSONObject config) throws BenchmarkFailedException {
+	private void scan(List<URL> urls, String folder) throws MalformedURLException {
+		System.out.println("going in folder: " + folder);
+		File curr = new File(folder);
+		for (File element : curr.listFiles()) {
+			if (element.isDirectory())
+				scan(urls, element.getAbsolutePath());
+			else {
+				if (element.getAbsolutePath().endsWith(".jar"))
+					urls.add(element.toURL());
+
+			}
+		}
+	}
+
+	private Object[] buildTargetFactory(JSONObject config) throws BenchmarkFailedException {
 		try {
 			// Factory class
 			String className = config.getString("targetFactoryClass");
@@ -37,15 +58,37 @@ public class TargetSchedule {
 			// Parameters
 			JSONObject factoryConfig = config.getJSONObject("targetFactoryParams");
 
+			// Create a new classloader
+			List<URL> urls = new ArrayList<URL>();
+			BufferedReader in = new BufferedReader(new FileReader("D:/work/specDriver/classpath.txt"));
+			String buffer = null;
+			while ((buffer = in.readLine()) != null) {
+				if (buffer.startsWith(".")) {
+					buffer = buffer.replaceFirst(".", "D:/work/specDriver");
+				}
+
+				File f = new File(buffer);
+				urls.add(f.toURL());
+				System.out.println("File: " + f.toURL());
+			}
+			//scan(urls, "C:/temp/glassfishv3");
+
+			System.out.println(urls.toArray(new URL[] {}).length + "elmenets");
+
+			ClassLoader spe = new URLClassLoader(urls.toArray(new URL[] {}), ClassLoader.getSystemClassLoader());
+
+			Class cFactory = spe.loadClass(className);
+			ITargetFactory creator = (ITargetFactory) cFactory.newInstance();
+
 			// Create class instance
-			Class<ITargetFactory> creatorClass = (Class<ITargetFactory>) Class.forName(className);
-			Constructor<ITargetFactory> creatorCtor = creatorClass.getConstructor(new Class[] {});
-			ITargetFactory creator = (ITargetFactory) creatorCtor.newInstance((Object[]) null);
+			// Class<ITargetFactory> creatorClass = (Class<ITargetFactory>) Class.forName(className);
+			// Constructor<ITargetFactory> creatorCtor = creatorClass.getConstructor(new Class[] {});
+			// ITargetFactory creator = (ITargetFactory) creatorCtor.newInstance((Object[]) null);
 
 			// Configure factory
 			creator.configure(factoryConfig);
 
-			return creator;
+			return new Object[] { creator, spe };
 		} catch (Exception e) {
 			throw new BenchmarkFailedException("Unable to instantiate track", e);
 		}
@@ -91,8 +134,10 @@ public class TargetSchedule {
 
 			// Create factory instance
 			JSONObject jsonFactoryConfig = factoryConfigurations.get(jsonConf.getString("targetFactory"));
-			ITargetFactory factory = buildTargetFactory(jsonFactoryConfig);
-			targetConf.setFactory(factory);
+			Object[] re = buildTargetFactory(jsonFactoryConfig);
+			ITargetFactory factory = (ITargetFactory) re[0];
+			ClassLoader cl = (ClassLoader) re[1];
+			targetConf.setFactory(factory, cl);
 
 			// Update duration
 			long finishTime = targetConf.getOffset() + targetConf.getRampUp() + targetConf.getDuration()

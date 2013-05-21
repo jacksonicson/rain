@@ -110,6 +110,8 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 	// Executer thread pool
 	protected ExecutorService executor;
 
+	private ClassLoader cl; 
+	
 	/*
 	 * Abstract methods
 	 */
@@ -117,6 +119,10 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 
 	protected abstract void teardown();
 
+	public DefaultTarget(ClassLoader cl) {
+		this.cl = cl; 
+	}
+	
 	protected void init() throws BenchmarkFailedException {
 		// Recalculate timing based on current timestamp
 		timing = new Timing(timing);
@@ -188,6 +194,9 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 	}
 
 	public void run() {
+		
+		setContextClassLoader(cl); 
+		
 		// Setup target
 		logger.info("Running target setup...");
 		setup();

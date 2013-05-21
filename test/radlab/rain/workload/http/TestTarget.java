@@ -16,8 +16,8 @@ public class TestTarget extends DefaultTarget {
 
 	private DomainSize size;
 
-	public TestTarget(DomainSize size) {
-		super();
+	public TestTarget(DomainSize size, ClassLoader cl) {
+		super(cl);
 		this.iaas = new InfrastructureControl();
 		this.size = size;
 	}
