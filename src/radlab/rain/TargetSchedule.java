@@ -46,17 +46,13 @@ public class TargetSchedule {
 
 			// Create a new classpath as a URL list
 			String classPathFile = config.getString("targetClasspathFile");
-			String rootFolder = config.getString("rootFolder");
-			
+
 			List<URL> urls = new ArrayList<URL>();
 			BufferedReader reader = null;
 			try {
 				reader = new BufferedReader(new FileReader(classPathFile));
 				String buffer = null;
 				while ((buffer = reader.readLine()) != null) {
-					if (buffer.startsWith(".")) {
-						buffer = buffer.replaceFirst(".", rootFolder);
-					}
 					File f = new File(buffer);
 					URL url = f.toURI().toURL();
 					urls.add(url);
