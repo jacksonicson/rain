@@ -3,7 +3,7 @@ package radlab.rain;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -36,20 +36,6 @@ public class TargetSchedule {
 		loadConfigurations(config);
 	}
 
-	private void scan(List<URL> urls, String folder) throws MalformedURLException {
-		System.out.println("going in folder: " + folder);
-		File curr = new File(folder);
-		for (File element : curr.listFiles()) {
-			if (element.isDirectory())
-				scan(urls, element.getAbsolutePath());
-			else {
-				if (element.getAbsolutePath().endsWith(".jar"))
-					urls.add(element.toURL());
-
-			}
-		}
-	}
-
 	private Object[] buildTargetFactory(JSONObject config) throws BenchmarkFailedException {
 		try {
 			// Factory class
@@ -58,37 +44,40 @@ public class TargetSchedule {
 			// Parameters
 			JSONObject factoryConfig = config.getJSONObject("targetFactoryParams");
 
-			// Create a new classloader
+			// Create a new classpath as a URL list
+			String classPathFile = config.getString("targetClasspathFile");
+			String rootFolder = config.getString("rootFolder");
+			
 			List<URL> urls = new ArrayList<URL>();
-			BufferedReader in = new BufferedReader(new FileReader("D:/work/specDriver/classpath.txt"));
-			String buffer = null;
-			while ((buffer = in.readLine()) != null) {
-				if (buffer.startsWith(".")) {
-					buffer = buffer.replaceFirst(".", "D:/work/specDriver");
+			BufferedReader reader = null;
+			try {
+				reader = new BufferedReader(new FileReader(classPathFile));
+				String buffer = null;
+				while ((buffer = reader.readLine()) != null) {
+					if (buffer.startsWith(".")) {
+						buffer = buffer.replaceFirst(".", rootFolder);
+					}
+					File f = new File(buffer);
+					URL url = f.toURI().toURL();
+					urls.add(url);
+					logger.info("URL: " + url);
 				}
-
-				File f = new File(buffer);
-				urls.add(f.toURL());
-				System.out.println("File: " + f.toURL());
+			} catch (IOException e) {
+				logger.error("Could not read classpath of target", e);
+			} finally {
+				if (reader != null)
+					reader.close();
 			}
-			//scan(urls, "C:/temp/glassfishv3");
 
-			System.out.println(urls.toArray(new URL[] {}).length + "elmenets");
-
-			ClassLoader spe = new URLClassLoader(urls.toArray(new URL[] {}), ClassLoader.getSystemClassLoader());
-
-			Class cFactory = spe.loadClass(className);
-			ITargetFactory creator = (ITargetFactory) cFactory.newInstance();
-
-			// Create class instance
-			// Class<ITargetFactory> creatorClass = (Class<ITargetFactory>) Class.forName(className);
-			// Constructor<ITargetFactory> creatorCtor = creatorClass.getConstructor(new Class[] {});
-			// ITargetFactory creator = (ITargetFactory) creatorCtor.newInstance((Object[]) null);
+			// Setup new class loader
+			ClassLoader classLoader = new URLClassLoader(urls.toArray(new URL[] {}), ClassLoader.getSystemClassLoader());
+			Class<?> classFactory = classLoader.loadClass(className);
+			ITargetFactory creator = (ITargetFactory) classFactory.newInstance();
 
 			// Configure factory
 			creator.configure(factoryConfig);
 
-			return new Object[] { creator, spe };
+			return new Object[] { creator, classLoader };
 		} catch (Exception e) {
 			throw new BenchmarkFailedException("Unable to instantiate track", e);
 		}

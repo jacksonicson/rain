@@ -110,8 +110,8 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 	// Executer thread pool
 	protected ExecutorService executor;
 
-	private ClassLoader cl; 
-	
+	private ClassLoader cl;
+
 	/*
 	 * Abstract methods
 	 */
@@ -120,9 +120,9 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 	protected abstract void teardown();
 
 	public DefaultTarget(ClassLoader cl) {
-		this.cl = cl; 
+		this.cl = cl;
 	}
-	
+
 	protected void init() throws BenchmarkFailedException {
 		// Recalculate timing based on current timestamp
 		timing = new Timing(timing);
@@ -190,13 +190,18 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 			} catch (InterruptedException e) {
 				logger.error("Could not join agent", e);
 			}
+
+			if (System.currentTimeMillis() < (timing.endSteadyState + 30000)) {
+				logger.error("Agent joined before stead state end");
+			}
+
 		}
 	}
 
 	public void run() {
-		
-		setContextClassLoader(cl); 
-		
+
+		setContextClassLoader(cl);
+
 		// Setup target
 		logger.info("Running target setup...");
 		setup();
