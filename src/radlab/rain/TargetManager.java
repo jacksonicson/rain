@@ -42,7 +42,6 @@ public class TargetManager extends Thread {
 			// Configure all generated targets
 			for (ITarget target : targets) {
 				// Set target Id
-				logger.debug("TargetID: " + targetId);
 				target.setId(targetId);
 				targetId += 1;
 
@@ -65,22 +64,37 @@ public class TargetManager extends Thread {
 
 	private void waitForShutdown() {
 		// Wait for all targets to finish
-		logger.info("Waiting for all targets to stop...");
+		logger.info("Waiting for all targets to join...");
 		for (ITarget target : targetsToJoin) {
-			try {
-				// Join agents on the target
-				target.join();
-
-				// Dispose target
-				target.dispose();
-
-				// Log
-				logger.info("Target joined: " + target.getId());
-			} catch (InterruptedException e) {
-				// Doesn't matter, resume shutting down next target
-				logger.debug("Interrupted while joining target", e);
-				continue;
+			for (int i = 0; i < 10; i++) {
+				try {
+					if (target.joinTarget(30000))
+						break;
+				} catch (InterruptedException e) {
+					logger.warn("Interrupted while joining target " + target.getId());
+				}
+				logger.info("Retrying to join target ... " + i + "th try");
 			}
+
+			try {
+				if (!target.joinTarget(10000)) {
+					logger.error("Unabel to join target " + target.getId());
+					continue;
+				}
+			} catch (InterruptedException e) {
+				logger.error("Interrupted while joining target " + target.getId());
+			}
+
+			// Target was joined
+			logger.info("Target joined: " + target.getId());
+
+			// Dispose target
+			logger.info("Dispose target: " + target.getId());
+			target.dispose();
+			logger.info("Target disposed: " + target.getId());
+
+			// Log
+			logger.info("Target finished: " + target.getId());
 		}
 	}
 

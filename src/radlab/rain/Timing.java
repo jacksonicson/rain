@@ -31,7 +31,7 @@ public final class Timing {
 			log();
 		} catch (JSONException e) {
 			logger.error("Could not log timings", e);
-			throw new BenchmarkFailedException("COuld not log timings", e);
+			throw new BenchmarkFailedException("Could not log timings", e);
 		}
 	}
 

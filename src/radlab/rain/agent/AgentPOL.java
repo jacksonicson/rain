@@ -83,14 +83,20 @@ public class AgentPOL extends Agent {
 		return (id < loadProfile.getNumberOfUsers());
 	}
 
-	public void interrupt() {
+	public void setInterrupt() {
 		interrupted = true;
+		interrupt();
 	}
 
 	@Override
 	public void dispose() {
 		this.interrupt();
 		this.generator.dispose();
+	}
+
+	public boolean agentJoin(long wait) throws InterruptedException {
+		join(wait);
+		return isAlive() == false;
 	}
 
 	private void triggerNextOperation(int lastOperationIndex) throws InterruptedException {
@@ -143,7 +149,12 @@ public class AgentPOL extends Agent {
 				} else { // Generator is active
 
 					// IMPORTANT: Next operation is triggered here
-					triggerNextOperation(lastOperationIndex);
+					try {
+						triggerNextOperation(lastOperationIndex);
+					} catch (Exception e) {
+						logger.warn("Exception while triggering next operation", e);
+						continue;
+					}
 				}
 			}
 

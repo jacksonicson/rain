@@ -14,7 +14,7 @@ public interface ITarget extends Runnable {
 	void start();
 
 	// Wait for target to finish
-	void join() throws InterruptedException;
+	boolean joinTarget(long time) throws InterruptedException;
 
 	// Stops all agents and helper threads (is called after join)
 	void dispose();

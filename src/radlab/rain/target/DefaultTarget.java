@@ -178,11 +178,31 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 	}
 
 	private void joinAgents() {
-		for (IAgent agent : agents) {
-			try {
-				agent.join();
-			} catch (InterruptedException e) {
-				logger.error("Could not join agent", e);
+		// Sleep until end of run plus some buffer
+		try {
+			sleep(timing.endRun - System.currentTimeMillis() + 30000);
+		} catch (InterruptedException e) {
+			logger.warn("Target interrupted while waiting for end time", e);
+		}
+
+		// Join agents
+		for (int i = 0; i < agents.size(); i++) {
+			IAgent agent = agents.get(i);
+			logger.info("Joining agent " + i + " of " + agents.size());
+
+			// Try joining the agent
+			while (true) {
+				try {
+					// Join and wait max 3 seconds for the agent
+					if (!agent.agentJoin(3000)) {
+						logger.info("Waiting for agent to join: " + agent.getName());
+						agent.setInterrupt();
+					} else {
+						break;
+					}
+				} catch (InterruptedException e) {
+					logger.error("Could not join agent", e);
+				}
 			}
 		}
 	}
@@ -239,6 +259,11 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 		} catch (InterruptedException e) {
 			// ignore
 		}
+	}
+
+	public boolean joinTarget(long wait) throws InterruptedException {
+		super.join(wait);
+		return isAlive() == false;
 	}
 
 	public void dispose() {

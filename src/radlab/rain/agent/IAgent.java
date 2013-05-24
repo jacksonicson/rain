@@ -15,15 +15,18 @@ public interface IAgent {
 
 	void setGenerator(Generator generator);
 
-	// Start agent
+	// Agent name
+	String getName();
+	
+	// Start agent (usually Thread.start) 
 	void start();
 
 	// Wait for join
-	void join() throws InterruptedException;
+	boolean agentJoin(long wait) throws InterruptedException;
 
+	// Interrupt the agent thread and set the interrupted flag
+	public void setInterrupt(); 
+	
 	// Clean up after stopping the agent
 	void dispose();
-
-	// Agent name
-	String getName();
 }
