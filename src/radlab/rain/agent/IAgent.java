@@ -17,16 +17,16 @@ public interface IAgent {
 
 	// Agent name
 	String getName();
-	
-	// Start agent (usually Thread.start) 
+
+	// Start agent (usually Thread.start)
 	void start();
 
 	// Wait for join
 	boolean agentJoin(long wait) throws InterruptedException;
 
 	// Interrupt the agent thread and set the interrupted flag
-	public void setInterrupt(); 
-	
+	public void setInterrupt();
+
 	// Clean up after stopping the agent
 	void dispose();
 }

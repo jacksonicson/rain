@@ -201,14 +201,14 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 						break;
 					}
 				} catch (InterruptedException e) {
-					logger.error("Could not join agent", e);
+					logger.error("Interrupted while joining agent");
 				}
 			}
 		}
 	}
 
 	public void run() {
-		// Setup target
+		// Setup target (starting domains)
 		logger.info("Running target setup...");
 		setup();
 
@@ -218,6 +218,8 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 		} catch (BenchmarkFailedException e) {
 			logger.error("Benchmark failed because target initialization failed", e);
 			System.exit(1);
+		} catch (Exception e) {
+			logger.warn("Error in initialization (preprocessing) code", e);
 		}
 
 		// Starting load manager
@@ -237,9 +239,13 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 		// Wait for all agents to finish
 		joinAgents();
 
-		// Run shutdown code
+		// Run shutdown code (stopping domains)
 		logger.info("Running target teardown ...");
-		teardown();
+		try {
+			teardown();
+		} catch (Exception e) {
+			logger.warn("Exception in teardown checks", e);
+		}
 	}
 
 	private void disposeAgents() {
