@@ -123,7 +123,7 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 		this.cl = cl;
 	}
 
-	protected void init() throws BenchmarkFailedException {
+	private void initReferences() throws BenchmarkFailedException {
 		// Recalculate timing based on current timestamp
 		timing = new Timing(timing);
 
@@ -142,6 +142,10 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 
 		// Create a new thread pool
 		executor = Executors.newCachedThreadPool();
+	}
+
+	protected void init() throws BenchmarkFailedException {
+		// Do nothing
 	}
 
 	private void createAgents(ExecutorService executor) throws Exception {
@@ -195,7 +199,6 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 		// Join agents
 		for (int i = 0; i < agents.size(); i++) {
 			IAgent agent = agents.get(i);
-			logger.info("Joining agent " + i + " of " + agents.size());
 
 			// Try joining the agent forever
 			while (true) {
@@ -214,9 +217,8 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 			}
 		}
 
-		logger.info("All agents joined");
+		logger.info("All agents joined for target " + getId());
 	}
-
 
 	public void run() {
 		// Setup target (starting domains)
@@ -228,12 +230,13 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 
 		// Initialize (timing)
 		try {
+			initReferences();
 			init();
 		} catch (BenchmarkFailedException e) {
 			logger.error("Benchmark failed because target initialization failed", e);
 			System.exit(1);
 		} catch (Exception e) {
-			logger.warn("Error in initialization (preprocessing) code", e);
+			logger.warn("Error in initialization code", e);
 		}
 
 		// Starting load manager
@@ -283,7 +286,7 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 	}
 
 	public boolean joinTarget(long wait) throws InterruptedException {
-		super.join(wait);
+		join(wait);
 		return isAlive() == false;
 	}
 

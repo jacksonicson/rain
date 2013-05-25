@@ -26,7 +26,10 @@ public class TargetManager extends Thread {
 	private int targetId;
 
 	TargetManager(JSONObject config, TargetSchedule schedule) throws JSONException {
+		// Set thread name
 		setName("TargetManager");
+
+		// Set scheduler
 		this.schedule = schedule;
 	}
 
@@ -34,7 +37,7 @@ public class TargetManager extends Thread {
 		return targetsToJoin;
 	}
 
-	private void createTarget(TargetConfiguration conf) throws BenchmarkFailedException {
+	private void createAndStartTargets(TargetConfiguration conf) throws BenchmarkFailedException {
 		try {
 			// Create targets
 			List<ITarget> targets = conf.getFactory().createTargets(conf);
@@ -42,8 +45,7 @@ public class TargetManager extends Thread {
 			// Configure all generated targets
 			for (ITarget target : targets) {
 				// Set target Id
-				target.setId(targetId);
-				targetId += 1;
+				target.setId(targetId++);
 
 				// Set custom timing
 				Timing timing = new Timing(conf.getRampUp(), conf.getDuration(), conf.getRampDown());
@@ -76,13 +78,14 @@ public class TargetManager extends Thread {
 				logger.info("Retrying to join target ... " + target.getId());
 			}
 
-			// Target was joined
-			logger.info("Target joined: " + target.getId());
-
 			// Dispose target
 			logger.info("Dispose target: " + target.getId());
-			target.dispose();
-			logger.info("Target disposed: " + target.getId());
+			try {
+				target.dispose();
+				logger.info("Target disposed: " + target.getId());
+			} catch (Exception ne) {
+				logger.error("Could not dispose target", ne);
+			}
 		}
 	}
 
@@ -90,27 +93,19 @@ public class TargetManager extends Thread {
 		// Set start benchmark time to now
 		startBenchmarkTime = System.currentTimeMillis();
 
-		// Go over the schedule
-		TargetConfiguration conf = null;
 		while (schedule.hasNext()) {
 			// Next target configuration
-			conf = schedule.next();
+			TargetConfiguration conf = schedule.next();
 
 			// How long to wait for the next target
 			long relativeTime = System.currentTimeMillis() - startBenchmarkTime;
 			long toWait = conf.getOffset() - relativeTime;
 
-			// Wait for target to start
+			// Wait until target start time is reached
 			delay(toWait);
 
 			// Create and start target with its agents
-			createTarget(conf);
-		}
-
-		// Wait for last target to finish
-		// Does not include startup phases - this is only an estimation
-		if (conf != null) {
-			delay((startBenchmarkTime + schedule.duration()) - System.currentTimeMillis());
+			createAndStartTargets(conf);
 		}
 
 		logger.info("Schedule processing complete");
@@ -139,6 +134,20 @@ public class TargetManager extends Thread {
 			} catch (InterruptedException e) {
 				// Doesn't matter, this runs in a loop
 				logger.debug("Interrupted thread in target manager", e);
+			}
+		}
+	}
+
+	public void joinTargetManagear() {
+		// Wait until the thread joins
+		while (true) {
+			try {
+				join();
+				break;
+			} catch (InterruptedException e) {
+				// Continue if interrupted
+				logger.info("Target manager interrupted while joining");
+				continue;
 			}
 		}
 	}

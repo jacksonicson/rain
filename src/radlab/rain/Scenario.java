@@ -57,21 +57,17 @@ public class Scenario {
 		targetManager = new TargetManager(config, targetSchedule);
 	}
 
-	void launch() throws JSONException, BenchmarkFailedException {
+	void execute() throws JSONException, BenchmarkFailedException {
 		logger.info("Launching scenario...");
 
 		// Start target manager
 		targetManager.start();
 
 		// Wait for manager to join
-		try {
-			targetManager.join();
-		} catch (InterruptedException e) {
-			throw new BenchmarkFailedException("Target manager was interrupted", e);
-		}
+		targetManager.joinTargetManagear();
 	}
 
-	public void statAggregation() throws JSONException {
+	public void runStatisticsAggregation() throws JSONException {
 		Aggregation aggregation = new Aggregation();
 		aggregation.aggregateScoreboards(targetManager.getAllTargets(), targetSchedule.duration());
 	}

@@ -30,7 +30,11 @@ public class Aggregation {
 		// Aggregate all targets
 		for (ITarget target : targets) {
 			// 0. Dump target statistics to Sonar
-			dumpTarget(target);
+			try {
+				dumpTarget(target);
+			} catch (NullPointerException e) {
+				logger.error("Could not dump target: " + target.getId());
+			}
 
 			// 1. Merge everything into global scorecard
 			IScoreboard scoreboard = target.getScoreboard();

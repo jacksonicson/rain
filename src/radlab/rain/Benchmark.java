@@ -173,11 +173,11 @@ public class Benchmark {
 
 			// Execute scenario ///////////////////////////////
 			// ////////////////////////////////////////////////
-			scenario.launch();
+			scenario.execute();
 			// ////////////////////////////////////////////////
 
 			// Aggregate scorecards
-			scenario.statAggregation();
+			scenario.runStatisticsAggregation();
 
 			// Trigger shutdown hooks
 			RainConfig.getInstance().triggerShutdown();
