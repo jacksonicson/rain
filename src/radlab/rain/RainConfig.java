@@ -85,8 +85,9 @@ public class RainConfig {
 	}
 
 	public synchronized void triggerShutdown() {
-		logger.info("running shutdown hooks...");
+		logger.info("Running shutdown hooks...");
 		for (IShutdown shutdown : shutdownHooks) {
+			logger.info("Shutdown hook: " + shutdown.getName());
 			shutdown.shutdown();
 		}
 	}

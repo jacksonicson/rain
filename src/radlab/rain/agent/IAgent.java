@@ -22,7 +22,7 @@ public interface IAgent {
 	void start();
 
 	// Wait for join
-	boolean agentJoin(long wait) throws InterruptedException;
+	boolean joinAgent(long wait) throws InterruptedException;
 
 	// Interrupt the agent thread and set the interrupted flag
 	public void setInterrupt();

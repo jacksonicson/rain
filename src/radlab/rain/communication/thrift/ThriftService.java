@@ -61,6 +61,10 @@ public class ThriftService implements IShutdown {
 		stop();
 	}
 
+	public String getName() {
+		return "ThriftService";
+	}
+
 	public int getPort() {
 		return port;
 	}

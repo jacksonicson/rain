@@ -66,23 +66,14 @@ public class TargetManager extends Thread {
 		// Wait for all targets to finish
 		logger.info("Waiting for all targets to join...");
 		for (ITarget target : targetsToJoin) {
-			for (int i = 0; i < 10; i++) {
+			while (true) {
 				try {
 					if (target.joinTarget(30000))
 						break;
 				} catch (InterruptedException e) {
 					logger.warn("Interrupted while joining target " + target.getId());
 				}
-				logger.info("Retrying to join target ... " + i + "th try");
-			}
-
-			try {
-				if (!target.joinTarget(10000)) {
-					logger.error("Unabel to join target " + target.getId());
-					continue;
-				}
-			} catch (InterruptedException e) {
-				logger.error("Interrupted while joining target " + target.getId());
+				logger.info("Retrying to join target ... " + target.getId());
 			}
 
 			// Target was joined
@@ -92,9 +83,6 @@ public class TargetManager extends Thread {
 			logger.info("Dispose target: " + target.getId());
 			target.dispose();
 			logger.info("Target disposed: " + target.getId());
-
-			// Log
-			logger.info("Target finished: " + target.getId());
 		}
 	}
 
@@ -103,9 +91,10 @@ public class TargetManager extends Thread {
 		startBenchmarkTime = System.currentTimeMillis();
 
 		// Go over the schedule
+		TargetConfiguration conf = null;
 		while (schedule.hasNext()) {
 			// Next target configuration
-			TargetConfiguration conf = schedule.next();
+			conf = schedule.next();
 
 			// How long to wait for the next target
 			long relativeTime = System.currentTimeMillis() - startBenchmarkTime;
@@ -116,6 +105,12 @@ public class TargetManager extends Thread {
 
 			// Create and start target with its agents
 			createTarget(conf);
+		}
+
+		// Wait for last target to finish
+		// Does not include startup phases - this is only an estimation
+		if (conf != null) {
+			delay((startBenchmarkTime + schedule.duration()) - System.currentTimeMillis());
 		}
 
 		logger.info("Schedule processing complete");

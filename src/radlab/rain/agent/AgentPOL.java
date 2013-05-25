@@ -90,11 +90,11 @@ public class AgentPOL extends Agent {
 
 	@Override
 	public void dispose() {
-		this.interrupt();
+		setInterrupt(); 
 		this.generator.dispose();
 	}
 
-	public boolean agentJoin(long wait) throws InterruptedException {
+	public boolean joinAgent(long wait) throws InterruptedException {
 		join(wait);
 		return isAlive() == false;
 	}

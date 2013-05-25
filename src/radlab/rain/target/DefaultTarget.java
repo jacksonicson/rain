@@ -180,8 +180,9 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 	private void joinAgents() {
 		// Sleep until end of run plus some buffer
 		try {
-			sleep(timing.endRun - System.currentTimeMillis() + 30000);
+			sleep(timing.endRun - System.currentTimeMillis());
 		} catch (InterruptedException e) {
+			// Just fall through and try joining all agents
 			logger.warn("Target interrupted while waiting for end time", e);
 		}
 
@@ -190,14 +191,15 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 			IAgent agent = agents.get(i);
 			logger.info("Joining agent " + i + " of " + agents.size());
 
-			// Try joining the agent
+			// Try joining the agent forever
 			while (true) {
 				try {
 					// Join and wait max 3 seconds for the agent
-					if (!agent.agentJoin(3000)) {
+					if (!agent.joinAgent(3000)) {
 						logger.info("Waiting for agent to join: " + agent.getName());
 						agent.setInterrupt();
 					} else {
+						// Agent joined, continue with next agent
 						break;
 					}
 				} catch (InterruptedException e) {
@@ -205,6 +207,8 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 				}
 			}
 		}
+
+		logger.info("All agents joined");
 	}
 
 	public void run() {
@@ -212,7 +216,7 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 		logger.info("Running target setup...");
 		setup();
 
-		// Initialize
+		// Initialize (timing)
 		try {
 			init();
 		} catch (BenchmarkFailedException e) {
@@ -223,11 +227,11 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 		}
 
 		// Starting load manager
-		logger.debug("Starting load manager");
+		logger.debug("Starting load manager...");
 		loadManager.start();
 
 		// Start the scoreboard
-		logger.debug("Starting scoreboard");
+		logger.debug("Starting scoreboard...");
 		scoreboard.start();
 
 		// Create agents
@@ -237,6 +241,7 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 		startAgents();
 
 		// Wait for all agents to finish
+		logger.info("Waiting for all agents to finish...");
 		joinAgents();
 
 		// Run shutdown code (stopping domains)
@@ -275,12 +280,15 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 	public void dispose() {
 		// Dispose agents
 		disposeAgents();
+		logger.info("Agents disposed");
 
 		// Shutdown load manager thread
 		disposeLoadManager();
+		logger.info("Load manager disposed");
 
 		// Stop the scoreboard
 		scoreboard.dispose();
+		logger.info("Scoreboard disposed");
 	}
 
 	public void loadConfiguration(JSONObject config) throws JSONException {
