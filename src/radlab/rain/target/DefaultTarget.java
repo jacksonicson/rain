@@ -83,6 +83,8 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 	// Markov chain matrices
 	protected Map<String, MixMatrix> mixMatrices = new HashMap<String, MixMatrix>();
 
+	// Ended flag
+	private boolean ended = false;
 	/*
 	 * Factories
 	 */
@@ -221,48 +223,52 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 	}
 
 	public void run() {
-		// Setup target (starting domains)
-		setContextClassLoader(cl);
-
-		// Setup target
-		logger.info("Running target setup...");
-		setup();
-
-		// Initialize (timing)
 		try {
-			initReferences();
-			init();
-		} catch (BenchmarkFailedException e) {
-			logger.error("Benchmark failed because target initialization failed", e);
-			System.exit(1);
-		} catch (Exception e) {
-			logger.warn("Error in initialization code", e);
-		}
+			// Setup target (starting domains)
+			setContextClassLoader(cl);
 
-		// Starting load manager
-		logger.debug("Starting load manager...");
-		loadManager.start();
+			// Setup target
+			logger.info("Running target setup...");
+			setup();
 
-		// Start the scoreboard
-		logger.debug("Starting scoreboard...");
-		scoreboard.start();
+			// Initialize (timing)
+			try {
+				initReferences();
+				init();
+			} catch (BenchmarkFailedException e) {
+				logger.error("Benchmark failed because target initialization failed", e);
+				System.exit(1);
+			} catch (Exception e) {
+				logger.warn("Error in initialization code", e);
+			}
 
-		// Create agents
-		createAgents();
+			// Starting load manager
+			logger.debug("Starting load manager...");
+			loadManager.start();
 
-		// Start agents
-		startAgents();
+			// Start the scoreboard
+			logger.debug("Starting scoreboard...");
+			scoreboard.start();
 
-		// Wait for all agents to finish
-		logger.info("Waiting for all agents to finish...");
-		joinAgents();
+			// Create agents
+			createAgents();
 
-		// Run shutdown code (stopping domains)
-		logger.info("Running target teardown ...");
-		try {
-			teardown();
-		} catch (Exception e) {
-			logger.warn("Exception in teardown checks", e);
+			// Start agents
+			startAgents();
+
+			// Wait for all agents to finish
+			logger.info("Waiting for all agents to finish...");
+			joinAgents();
+
+			// Run shutdown code (stopping domains)
+			logger.info("Running target teardown ...");
+			try {
+				teardown();
+			} catch (Exception e) {
+				logger.warn("Exception in teardown checks", e);
+			}
+		} finally {
+			ended = true;
 		}
 	}
 
@@ -287,7 +293,7 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 
 	public boolean joinTarget(long wait) throws InterruptedException {
 		join(wait);
-		return isAlive() == false;
+		return ended;
 	}
 
 	public void dispose() {

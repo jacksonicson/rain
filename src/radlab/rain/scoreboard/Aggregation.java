@@ -16,7 +16,14 @@ public class Aggregation {
 
 	private void dumpTarget(ITarget target) throws JSONException {
 		// Write detailed statistics to sonar
-		JSONObject stats = target.getScoreboard().getStatistics();
+		IScoreboard scoreboard = target.getScoreboard();
+		if (scoreboard == null) {
+			logger.error("Scoreboard is NULL");
+			return;
+		}
+
+		// Get stats
+		JSONObject stats = scoreboard.getStatistics();
 
 		// Log summary of the target
 		String strStats = stats.toString();

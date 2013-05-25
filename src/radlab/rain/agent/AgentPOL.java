@@ -65,8 +65,11 @@ public class AgentPOL extends Agent {
 	private long synchOperationsCount = 0;
 	private long asynchOperationsCount = 0;
 
-	// Interrupted
+	// Interrupted flag
 	private boolean interrupted = false;
+
+	// Ended flag
+	private boolean ended = false;
 
 	public AgentPOL(long targetId, long id) {
 		super(targetId, id);
@@ -90,13 +93,13 @@ public class AgentPOL extends Agent {
 
 	@Override
 	public void dispose() {
-		setInterrupt(); 
+		setInterrupt();
 		this.generator.dispose();
 	}
 
 	public boolean joinAgent(long wait) throws InterruptedException {
 		join(wait);
-		return isAlive() == false;
+		return ended;
 	}
 
 	private void triggerNextOperation(int lastOperationIndex) throws InterruptedException {
@@ -130,41 +133,45 @@ public class AgentPOL extends Agent {
 	 * Load generator loop. Runs the generator for each cycle and executes the returned operation.
 	 */
 	public void run() {
-		logger.debug("New agent thread " + super.id);
-
 		try {
-			// Sleep until its time to start
-			sleepUntil(timing.start);
+			logger.debug("New agent thread " + super.id);
 
-			// Last executed operation (required to run markov chains)
-			int lastOperationIndex = -1;
+			try {
+				// Sleep until its time to start
+				sleepUntil(timing.start);
 
-			// Check if benchmark is still running
-			while (System.currentTimeMillis() <= timing.endSteadyState && !interrupted) {
-				// If generator is not active
-				if (!isActive()) {
-					threadState = ThreadStates.Inactive;
-					// Sleep for 1 second and check active state again
-					Thread.sleep(1000);
-				} else { // Generator is active
+				// Last executed operation (required to run markov chains)
+				int lastOperationIndex = -1;
 
-					// IMPORTANT: Next operation is triggered here
-					try {
-						triggerNextOperation(lastOperationIndex);
-					} catch (Exception e) {
-						logger.warn("Exception while triggering next operation", e);
-						continue;
+				// Check if benchmark is still running
+				while (System.currentTimeMillis() <= timing.endSteadyState && !interrupted) {
+					// If generator is not active
+					if (!isActive()) {
+						threadState = ThreadStates.Inactive;
+						// Sleep for 1 second and check active state again
+						Thread.sleep(1000);
+					} else { // Generator is active
+
+						// IMPORTANT: Next operation is triggered here
+						try {
+							triggerNextOperation(lastOperationIndex);
+						} catch (Exception e) {
+							logger.warn("Exception while triggering next operation", e);
+							continue;
+						}
 					}
 				}
+
+				logger.debug("Agent ended - interrupted: " + interrupted);
+
+			} catch (InterruptedException ie) {
+				logger.error("Load generation thread interrupted exiting!");
+			} catch (Exception e) {
+				logger.error("Load generation thread died by exception! Reason: " + e.toString());
+				e.printStackTrace();
 			}
-
-			logger.debug("Agent ended - interrupted: " + interrupted);
-
-		} catch (InterruptedException ie) {
-			logger.error("Load generation thread interrupted exiting!");
-		} catch (Exception e) {
-			logger.error("Load generation thread died by exception! Reason: " + e.toString());
-			e.printStackTrace();
+		} finally {
+			ended = true;
 		}
 	}
 
