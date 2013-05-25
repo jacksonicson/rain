@@ -1,9 +1,16 @@
 package radlab.rain;
 
-import java.lang.reflect.Constructor;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
@@ -29,7 +36,7 @@ public class TargetSchedule {
 		loadConfigurations(config);
 	}
 
-	private ITargetFactory buildTargetFactory(JSONObject config) throws BenchmarkFailedException {
+	private Object[] buildTargetFactory(JSONObject config) throws BenchmarkFailedException {
 		try {
 			// Factory class
 			String className = config.getString("targetFactoryClass");
@@ -37,15 +44,36 @@ public class TargetSchedule {
 			// Parameters
 			JSONObject factoryConfig = config.getJSONObject("targetFactoryParams");
 
-			// Create class instance
-			Class<ITargetFactory> creatorClass = (Class<ITargetFactory>) Class.forName(className);
-			Constructor<ITargetFactory> creatorCtor = creatorClass.getConstructor(new Class[] {});
-			ITargetFactory creator = (ITargetFactory) creatorCtor.newInstance((Object[]) null);
+			// Create a new classpath as a URL list
+			String classPathFile = config.getString("targetClasspathFile");
+
+			List<URL> urls = new ArrayList<URL>();
+			BufferedReader reader = null;
+			try {
+				reader = new BufferedReader(new FileReader(classPathFile));
+				String buffer = null;
+				while ((buffer = reader.readLine()) != null) {
+					File f = new File(buffer);
+					URL url = f.toURI().toURL();
+					urls.add(url);
+					logger.info("URL: " + url);
+				}
+			} catch (IOException e) {
+				logger.error("Could not read classpath of target", e);
+			} finally {
+				if (reader != null)
+					reader.close();
+			}
+
+			// Setup new class loader
+			ClassLoader classLoader = new URLClassLoader(urls.toArray(new URL[] {}), ClassLoader.getSystemClassLoader());
+			Class<?> classFactory = classLoader.loadClass(className);
+			ITargetFactory creator = (ITargetFactory) classFactory.newInstance();
 
 			// Configure factory
 			creator.configure(factoryConfig);
 
-			return creator;
+			return new Object[] { creator, classLoader };
 		} catch (Exception e) {
 			throw new BenchmarkFailedException("Unable to instantiate track", e);
 		}
@@ -91,8 +119,10 @@ public class TargetSchedule {
 
 			// Create factory instance
 			JSONObject jsonFactoryConfig = factoryConfigurations.get(jsonConf.getString("targetFactory"));
-			ITargetFactory factory = buildTargetFactory(jsonFactoryConfig);
-			targetConf.setFactory(factory);
+			Object[] re = buildTargetFactory(jsonFactoryConfig);
+			ITargetFactory factory = (ITargetFactory) re[0];
+			ClassLoader cl = (ClassLoader) re[1];
+			targetConf.setFactory(factory, cl);
 
 			// Update duration
 			long finishTime = targetConf.getOffset() + targetConf.getRampUp() + targetConf.getDuration()

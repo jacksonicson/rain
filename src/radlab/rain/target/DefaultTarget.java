@@ -110,12 +110,18 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 	// Executer thread pool
 	protected ExecutorService executor;
 
+	private ClassLoader cl;
+
 	/*
 	 * Abstract methods
 	 */
 	protected abstract void setup();
 
 	protected abstract void teardown();
+
+	public DefaultTarget(ClassLoader cl) {
+		this.cl = cl;
+	}
 
 	protected void init() throws BenchmarkFailedException {
 		// Recalculate timing based on current timestamp
@@ -211,8 +217,12 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 		logger.info("All agents joined");
 	}
 
+
 	public void run() {
 		// Setup target (starting domains)
+		setContextClassLoader(cl);
+
+		// Setup target
 		logger.info("Running target setup...");
 		setup();
 
