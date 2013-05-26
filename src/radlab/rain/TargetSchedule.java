@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -36,7 +35,7 @@ public class TargetSchedule {
 		loadConfigurations(config);
 	}
 
-	private Object[] buildTargetFactory(JSONObject config) throws BenchmarkFailedException {
+	private ITargetFactory buildTargetFactory(JSONObject config) throws BenchmarkFailedException {
 		try {
 			// Factory class
 			String className = config.getString("targetFactoryClass");
@@ -56,7 +55,7 @@ public class TargetSchedule {
 					File f = new File(buffer);
 					URL url = f.toURI().toURL();
 					urls.add(url);
-					logger.info("URL: " + url);
+					logger.debug("URL: " + url);
 				}
 			} catch (IOException e) {
 				logger.error("Could not read classpath of target", e);
@@ -66,14 +65,19 @@ public class TargetSchedule {
 			}
 
 			// Setup new class loader
-			ClassLoader classLoader = new URLClassLoader(urls.toArray(new URL[] {}), ClassLoader.getSystemClassLoader());
-			Class<?> classFactory = classLoader.loadClass(className);
-			ITargetFactory creator = (ITargetFactory) classFactory.newInstance();
+			// ClassLoader classLoader = new URLClassLoader(urls.toArray(new URL[] {}),
+			// ClassLoader.getSystemClassLoader());
+			// Class<?> classFactory = classLoader.loadClass(className);
+			// ITargetFactory creator = (ITargetFactory) classFactory.newInstance();
 
 			// Configure factory
-			creator.configure(factoryConfig);
+			// creator.configure(factoryConfig);
 
-			return new Object[] { creator, classLoader };
+			Class<?> classFactory = Class.forName(className);
+			ITargetFactory creator = (ITargetFactory) classFactory.newInstance();
+
+			return creator; 
+			
 		} catch (Exception e) {
 			throw new BenchmarkFailedException("Unable to instantiate track", e);
 		}
@@ -119,10 +123,8 @@ public class TargetSchedule {
 
 			// Create factory instance
 			JSONObject jsonFactoryConfig = factoryConfigurations.get(jsonConf.getString("targetFactory"));
-			Object[] re = buildTargetFactory(jsonFactoryConfig);
-			ITargetFactory factory = (ITargetFactory) re[0];
-			ClassLoader cl = (ClassLoader) re[1];
-			targetConf.setFactory(factory, cl);
+			ITargetFactory factory = buildTargetFactory(jsonFactoryConfig);
+			targetConf.setFactory(factory);
 
 			// Update duration
 			long finishTime = targetConf.getOffset() + targetConf.getRampUp() + targetConf.getDuration()

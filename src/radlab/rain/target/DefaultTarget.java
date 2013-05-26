@@ -112,8 +112,6 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 	// Executer thread pool
 	protected ExecutorService executor;
 
-	private ClassLoader cl;
-
 	/*
 	 * Abstract methods
 	 */
@@ -121,8 +119,7 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 
 	protected abstract void teardown();
 
-	public DefaultTarget(ClassLoader cl) {
-		this.cl = cl;
+	public DefaultTarget() {
 	}
 
 	private void initReferences() throws BenchmarkFailedException {
@@ -224,9 +221,6 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 
 	public void run() {
 		try {
-			// Setup target (starting domains)
-			setContextClassLoader(cl);
-
 			// Setup target
 			logger.info("Running target setup...");
 			setup();
