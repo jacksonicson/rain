@@ -33,9 +33,13 @@ public class TargetSchedule {
 			// Factory class
 			String className = config.getString("targetFactoryClass");
 
+			// Configuration
+			JSONObject factoryConfig = config.getJSONObject("targetFactoryParams");
+			
 			// Create a new factory instance
 			Class<?> classFactory = Class.forName(className);
 			ITargetFactory creator = (ITargetFactory) classFactory.newInstance();
+			creator.configure(factoryConfig);
 			return creator;
 		} catch (Exception e) {
 			throw new BenchmarkFailedException("Unable to instantiate track", e);
