@@ -68,27 +68,14 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-//import org.apache.http.HttpHost;
-//import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-//import org.apache.http.params.BasicHttpParams;
-//import org.apache.http.conn.ClientConnectionManager;
-//import org.apache.http.conn.params.ConnManagerParams;
-//import org.apache.http.conn.params.ConnPerRouteBean;
-//import org.apache.http.conn.routing.HttpRoute;
-//import org.apache.http.conn.scheme.PlainSocketFactory;
-//import org.apache.http.conn.scheme.Scheme;
-//import org.apache.http.conn.scheme.SchemeRegistry;
-//import org.apache.http.conn.ssl.SSLSocketFactory;
-// SSL 
+import org.apache.log4j.Logger;
 
 /**
  * The HttpTransport class is used to issue various HTTP requests.
  */
 public class HttpTransport 
 {
-	private static Logger logger = LoggerFactory.getLogger(HttpTransport.class);
+	private static Logger logger = Logger.getLogger(HttpTransport.class);
 	/** Default HTTP headers required for a POST request. */
 	private static Map<String, String> postHeaders;
 	static 

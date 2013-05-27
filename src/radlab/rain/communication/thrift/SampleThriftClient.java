@@ -2,20 +2,19 @@ package radlab.rain.communication.thrift;
 
 import java.io.IOException;
 
+import org.apache.log4j.Logger;
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 import org.apache.thrift.async.TAsyncClientManager;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TNonblockingSocket;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import de.tum.in.storm.rain.RainService;
 import de.tum.in.storm.rain.RainService.AsyncClient.startBenchmark_call;
 
 public class SampleThriftClient {
 	
-	private static Logger logger = LoggerFactory.getLogger(SampleThriftClient.class);
+	private static Logger logger = Logger.getLogger(SampleThriftClient.class);
 
 	private RainService.AsyncClient client;
 	private TNonblockingSocket socket;

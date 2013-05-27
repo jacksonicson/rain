@@ -31,15 +31,14 @@
 
 package radlab.rain.workload.http;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
 
 import radlab.rain.operation.Generator;
 import radlab.rain.operation.Operation;
 import radlab.rain.util.HttpTransport;
 
 public class TestGenerator extends Generator {
-	private static Logger logger = LoggerFactory.getLogger(TestGenerator.class);
+	private static Logger logger = Logger.getLogger(TestGenerator.class);
 
 	// Operation indices used in the mix matrix.
 	public static final int PING_HOMEPAGE = 0;

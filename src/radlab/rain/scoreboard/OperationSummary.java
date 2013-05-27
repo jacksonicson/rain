@@ -31,17 +31,16 @@
 
 package radlab.rain.scoreboard;
 
+import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import radlab.rain.RainConfig;
 import radlab.rain.operation.OperationExecution;
 import de.tum.in.dss.psquare.PSquared;
 
 public class OperationSummary {
-	private static Logger logger = LoggerFactory.getLogger(OperationSummary.class);
+	private static Logger logger = Logger.getLogger(OperationSummary.class);
 
 	// Operation summary was merged
 	private boolean merged = false;

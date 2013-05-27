@@ -33,8 +33,7 @@ package radlab.rain.agent;
 
 import java.util.Random;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
 
 import radlab.rain.UnexpectedDeathHandler;
 import radlab.rain.load.LoadDefinition;
@@ -43,11 +42,12 @@ import radlab.rain.operation.IOperation;
 import radlab.rain.operation.OperationExecution;
 import radlab.rain.scoreboard.IScoreboard;
 
+
 /**
  * Provides the main loop of the agent thread.
  */
 public class AgentPOL extends Agent {
-	private static Logger logger = LoggerFactory.getLogger(AgentPOL.class);
+	private static Logger logger = Logger.getLogger(AgentPOL.class);
 
 	// Scoreboard reference
 	protected IScoreboard scoreboard;

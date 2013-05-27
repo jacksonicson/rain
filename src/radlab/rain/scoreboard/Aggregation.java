@@ -3,16 +3,15 @@ package radlab.rain.scoreboard;
 import java.util.List;
 import java.util.TreeMap;
 
+import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import radlab.rain.Scenario;
 import radlab.rain.target.ITarget;
 
 public class Aggregation {
-	private static Logger logger = LoggerFactory.getLogger(Scenario.class);
+	private static Logger logger = Logger.getLogger(Scenario.class);
 
 	private void dumpTarget(ITarget target) throws JSONException {
 		// Write detailed statistics to sonar

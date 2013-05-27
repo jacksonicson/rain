@@ -39,11 +39,10 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import radlab.rain.BenchmarkFailedException;
 import radlab.rain.Timing;
@@ -60,7 +59,7 @@ import radlab.rain.scoreboard.Scoreboard;
 
 public abstract class DefaultTarget extends Thread implements ITarget {
 	// Logger
-	private static Logger logger = LoggerFactory.getLogger(DefaultTarget.class);
+	private static Logger logger = Logger.getLogger(DefaultTarget.class);
 
 	// Target id
 	protected long id;

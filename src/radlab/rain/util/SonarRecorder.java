@@ -5,14 +5,13 @@ import java.net.UnknownHostException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.apache.log4j.Logger;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import radlab.rain.IShutdown;
 import radlab.rain.RainConfig;
@@ -21,7 +20,7 @@ import de.tum.in.sonar.collector.Identifier;
 import de.tum.in.sonar.collector.MetricReading;
 
 public class SonarRecorder extends Thread implements IShutdown {
-	private static Logger logger = LoggerFactory.getLogger(SonarRecorder.class);
+	private static Logger logger = Logger.getLogger(SonarRecorder.class);
 
 	private static Object lock = new Object();
 	private static SonarRecorder singleton;
@@ -92,7 +91,7 @@ public class SonarRecorder extends Thread implements IShutdown {
 	}
 
 	public void disconnect() {
-//		transport.close();
+		// transport.close();
 	}
 
 	public void run() {

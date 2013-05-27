@@ -5,11 +5,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import radlab.rain.operation.OperationExecution;
 
@@ -19,7 +18,7 @@ import radlab.rain.operation.OperationExecution;
  * 
  */
 public class Scorecard {
-	private static Logger logger = LoggerFactory.getLogger(Scorecard.class);
+	private static Logger logger = Logger.getLogger(Scorecard.class);
 
 	// Aggregation identifier
 	private final String aggregationIdentifier;

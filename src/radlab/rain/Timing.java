@@ -1,12 +1,11 @@
 package radlab.rain;
 
+import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public final class Timing {
-	private static Logger logger = LoggerFactory.getLogger(Timing.class);
+	private static Logger logger = Logger.getLogger(Timing.class);
 
 	public final long start; // start of ramp up phase
 	public final long startSteadyState; // start steady state phase

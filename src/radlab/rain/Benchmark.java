@@ -37,10 +37,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import radlab.rain.communication.thrift.ThriftService;
 import radlab.rain.util.ConfigUtil;
@@ -49,7 +48,7 @@ import radlab.rain.util.ConfigUtil;
  * The Benchmark class provides a framework to initialize and run a benchmark specified by a provided scenario.
  */
 public class Benchmark {
-	private static Logger logger = LoggerFactory.getLogger(Benchmark.class);
+	private static Logger logger = Logger.getLogger(Benchmark.class);
 
 	private static JSONObject loadConfiguration(String filename) {
 		try {

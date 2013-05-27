@@ -33,13 +33,10 @@ package radlab.rain.workload.http;
 
 import java.io.IOException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import radlab.rain.scoreboard.IScoreboard;
+import org.apache.log4j.Logger;
 
 public class PingHomePageOperation extends TestOperation {
-	private static final Logger logger = LoggerFactory.getLogger(PingHomePageOperation.class);
+	private static final Logger logger = Logger.getLogger(PingHomePageOperation.class);
 
 	public PingHomePageOperation(TestGenerator generator) {
 		super(generator);

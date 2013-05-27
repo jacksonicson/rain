@@ -2,9 +2,8 @@ package radlab.rain.communication.thrift;
 
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.apache.thrift.TException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import radlab.rain.RainConfig;
 import radlab.rain.Scenario;
@@ -12,7 +11,7 @@ import de.tum.in.storm.rain.RainService;
 
 public class AsyncRainServiceImpl implements RainService.Iface {
 
-	private static Logger logger = LoggerFactory.getLogger(AsyncRainServiceImpl.class);
+	private static Logger logger = Logger.getLogger(AsyncRainServiceImpl.class);
 
 	private Scenario scenario;
 

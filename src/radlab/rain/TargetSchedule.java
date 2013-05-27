@@ -6,17 +6,16 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 
+import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import radlab.rain.target.ITargetFactory;
 import de.tum.in.storm.iaas.DomainSize;
 
 public class TargetSchedule {
-	private static Logger logger = LoggerFactory.getLogger(TargetSchedule.class);
+	private static Logger logger = Logger.getLogger(TargetSchedule.class);
 
 	// Target queue
 	private Queue<TargetConfiguration> targetsToLaunch = new LinkedList<TargetConfiguration>();

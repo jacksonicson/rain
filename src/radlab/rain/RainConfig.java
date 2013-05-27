@@ -34,8 +34,7 @@ package radlab.rain;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
 
 import radlab.rain.communication.thrift.ThriftService;
 
@@ -43,7 +42,7 @@ import radlab.rain.communication.thrift.ThriftService;
  * Singleton configuration class
  */
 public class RainConfig {
-	private static Logger logger = LoggerFactory.getLogger(RainConfig.class);
+	private static Logger logger = Logger.getLogger(RainConfig.class);
 
 	// What can we configure?
 	public boolean verboseErrors = true;

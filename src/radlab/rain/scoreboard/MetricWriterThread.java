@@ -3,8 +3,7 @@ package radlab.rain.scoreboard;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
 
 
 /**
@@ -12,7 +11,7 @@ import org.slf4j.LoggerFactory;
  * MetricWriter
  */
 class MetricWriterThread extends Thread {
-	private static Logger logger = LoggerFactory.getLogger(MetricWriterThread.class);
+	private static Logger logger = Logger.getLogger(MetricWriterThread.class);
 
 	// Interrupt metric writer thread
 	private boolean interrupted = false;

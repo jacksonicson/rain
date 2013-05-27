@@ -33,15 +33,14 @@ package radlab.rain;
 
 import java.lang.Thread.UncaughtExceptionHandler;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
 
 /**
  * The UnexpectedDeathHandler class serves as the default exception handler for all LoadGenerationStrategy threads so
  * that a useful error and stack trace is printed.
  */
 public class UnexpectedDeathHandler implements UncaughtExceptionHandler {
-	private static Logger logger = LoggerFactory.getLogger(UnexpectedDeathHandler.class);
+	private static Logger logger = Logger.getLogger(UnexpectedDeathHandler.class);
 
 	public void uncaughtException(Thread t, Throwable e) {
 		logger.error("Oops: Uncaught exception caused thread: " + t.getName() + " to die. Reason: " + e.toString(), e);

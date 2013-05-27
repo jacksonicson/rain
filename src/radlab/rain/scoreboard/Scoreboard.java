@@ -37,17 +37,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import radlab.rain.Timing;
 import radlab.rain.operation.OperationExecution;
 
 public class Scoreboard extends Thread implements Runnable, IScoreboard {
-	private static Logger logger = LoggerFactory.getLogger(Scoreboard.class);
+	private static Logger logger = Logger.getLogger(Scoreboard.class);
 
 	// Target that owns this scoreboard
 	private final long targetId;

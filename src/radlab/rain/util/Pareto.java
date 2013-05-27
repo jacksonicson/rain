@@ -33,12 +33,11 @@ package radlab.rain.util;
 
 import java.util.Random;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
 
 public class Pareto 
 {
-	private static Logger logger = LoggerFactory.getLogger(Pareto.class);
+	private static Logger logger = Logger.getLogger(Pareto.class);
 	private double _alpha = 0.0;
 	private double _beta = 0.0;
 	private Random _random = new Random();
