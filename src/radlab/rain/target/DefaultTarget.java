@@ -136,7 +136,7 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 		scoreboard = createScoreboard();
 
 		// Create a new load manager
-		loadManager = new LoadManager(timing, loadSchedule, mixMatrices.keySet());
+		loadManager = new LoadManager(id, timing, loadSchedule, mixMatrices.keySet());
 
 		// Create a new thread pool
 		executor = Executors.newCachedThreadPool();
@@ -220,6 +220,14 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 
 	public void run() {
 		try {
+			try {
+				JSONObject obj = new JSONObject();
+				obj.put("targetId", id);
+				logger.info("Target init: " + obj.toString());
+			} catch (JSONException e1) {
+				logger.error("Error while creating JSON object", e1);
+			}
+
 			// Setup target
 			logger.info("Running target setup...");
 			setup();
@@ -262,6 +270,14 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 			}
 		} finally {
 			ended = true;
+
+			try {
+				JSONObject obj = new JSONObject();
+				obj.put("targetId", id);
+				logger.info("Target ended: " + obj.toString());
+			} catch (JSONException e1) {
+				logger.error("Error while creating JSON object", e1);
+			}
 		}
 	}
 

@@ -4,11 +4,16 @@ import java.util.Random;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import radlab.rain.Timing;
 
 public class LoadManager extends Thread {
 	private static Logger logger = Logger.getLogger(LoadManager.class);
+
+	// Target id of this load manager
+	private long targetId;
 
 	// Current load unit
 	private LoadDefinition currentLoad = null;
@@ -31,7 +36,8 @@ public class LoadManager extends Thread {
 	// Set of workload mix identifiers which is used for validation purpose only
 	private Set<String> mixes;
 
-	public LoadManager(Timing timing, LoadSchedule loadSchedule, Set<String> mixes) {
+	public LoadManager(long targetId, Timing timing, LoadSchedule loadSchedule, Set<String> mixes) {
+		this.targetId = targetId;
 		this.rampUp = timing.rampUp;
 		this.loadSchedule = loadSchedule;
 		this.mixes = mixes;
@@ -100,7 +106,13 @@ public class LoadManager extends Thread {
 		}
 
 		// Log ramp up finished
-		logger.info("Ramp up finished");
+		try {
+			JSONObject obj = new JSONObject(); 
+			obj.put("targetId", targetId);
+			logger.info("Ramp up finished: " + obj.toString());
+		} catch (JSONException e1) {
+			logger.error("Error while creating JSON object", e1); 
+		} 
 
 		// Activate load profile
 		currentLoad.activate();
