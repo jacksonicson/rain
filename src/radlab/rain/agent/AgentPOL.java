@@ -42,7 +42,6 @@ import radlab.rain.operation.IOperation;
 import radlab.rain.operation.OperationExecution;
 import radlab.rain.scoreboard.IScoreboard;
 
-
 /**
  * Provides the main loop of the agent thread.
  */
@@ -88,13 +87,16 @@ public class AgentPOL extends Agent {
 
 	public void setInterrupt() {
 		interrupted = true;
-		interrupt();
 	}
 
 	@Override
 	public void dispose() {
-		setInterrupt();
-		this.generator.dispose();
+		if (ended) {
+			setInterrupt();
+			this.generator.dispose();
+		} else {
+			logger.error("Cannot dispose agent that is running target" + targetId);
+		}
 	}
 
 	public boolean joinAgent(long wait) throws InterruptedException {

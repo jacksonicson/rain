@@ -66,6 +66,7 @@ public class TargetManager extends Thread {
 	private void waitForShutdown() {
 		// Wait for all targets to finish
 		logger.info("Waiting for all targets to join...");
+		int i = 0;
 		for (ITarget target : targetsToJoin) {
 			while (true) {
 				try {
@@ -74,7 +75,8 @@ public class TargetManager extends Thread {
 				} catch (InterruptedException e) {
 					logger.warn("Interrupted while joining target " + target.getId());
 				}
-				logger.info("Retrying to join target ... " + target.getId());
+				logger.info("Retrying to join target ... " + target.getId() + " is " + i + " of "
+						+ targetsToJoin.size() + " in " + target.getEnd());
 			}
 
 			// Dispose target
@@ -85,6 +87,7 @@ public class TargetManager extends Thread {
 			} catch (Exception ne) {
 				logger.error("Could not dispose target", ne);
 			}
+			i++;
 		}
 	}
 

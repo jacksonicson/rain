@@ -27,4 +27,7 @@ public interface ITarget extends Runnable {
 
 	// Returns identifier
 	long getId();
+	
+	// Get remain
+	long getEnd();
 }

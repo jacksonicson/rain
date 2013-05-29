@@ -153,7 +153,6 @@ public class Benchmark {
 			if (RainConfig.getInstance().waitForStartSignal) {
 				// Wait until service is available
 				Thread.sleep(2000);
-
 				logger.info("Waiting for start signal...");
 			}
 
@@ -185,6 +184,10 @@ public class Benchmark {
 				logger.info("Stopping thrift communication! Using port: " + service.getPort());
 				service.stop();
 			}
+
+			// Stop log4j
+			logger.info("Stopping log4j...");
+			org.apache.log4j.LogManager.shutdown();
 
 			// Log joined message
 			logger.info("JOINED");
