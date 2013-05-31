@@ -40,6 +40,7 @@ public class Aggregation {
 				dumpTarget(target);
 			} catch (NullPointerException e) {
 				logger.error("Could not dump target: " + target.getId());
+				continue; 
 			}
 
 			// 1. Merge everything into global scorecard
