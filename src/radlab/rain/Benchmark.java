@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -185,10 +184,6 @@ public class Benchmark {
 				service.stop();
 			}
 
-			// Stop log4j
-			logger.info("Stopping log4j...");
-			org.apache.log4j.LogManager.shutdown();
-
 			// Log joined message
 			logger.info("JOINED");
 
@@ -197,7 +192,9 @@ public class Benchmark {
 		} catch (BenchmarkFailedException e) {
 			logger.error("Benchmark failed ", e);
 		} finally {
-			LogManager.shutdown();
+			// Stop log4j
+			logger.info("Stopping log4j...");
+			org.apache.log4j.LogManager.shutdown();
 		}
 	}
 }
