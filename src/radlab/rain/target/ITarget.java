@@ -11,7 +11,7 @@ public interface ITarget extends Runnable {
 	void setId(int id);
 
 	// Target hostname
-	void setHostname(String hostname); 
+	void setTargetDomain(String targetDomain); 
 	
 	// Start (Thread method)
 	void start();

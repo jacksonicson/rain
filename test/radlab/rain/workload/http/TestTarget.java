@@ -70,7 +70,7 @@ public class TestTarget extends DefaultTarget {
 	}
 
 	@Override
-	public void setHostname(String targetDomain) {
+	public void setTargetDomain(String targetDomain) {
 		this.targetDomain = targetDomain;
 	}
 }

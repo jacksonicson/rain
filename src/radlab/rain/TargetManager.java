@@ -46,6 +46,9 @@ public class TargetManager extends Thread {
 				// Set a global target Id
 				target.setId(targetId++);
 				
+				// Set target domain for IaaS rideover
+				target.setTargetDomain(conf.getDomainName()); 
+				
 				// Set custom timing
 				Timing timing = new Timing(conf.getRampUp(), conf.getDuration(), conf.getRampDown());
 				target.setTiming(timing);

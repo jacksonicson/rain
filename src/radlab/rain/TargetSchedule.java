@@ -81,9 +81,9 @@ public class TargetSchedule {
 			// Set domain size
 			targetConf.setDomainSize(jsonConf.getInt("domainSize"));
 
-			// Hostname (if not set a new domain will be allocated using IaaS)
-			targetConf.setHostname(jsonConf.getString("hostname"));
-
+			// Set target domain name
+			targetConf.setDomainName(jsonConf.getString("domainName"));
+			
 			// Create factory instance
 			JSONObject jsonFactoryConfig = factoryConfigurations.get(jsonConf.getString("targetFactory"));
 			ITargetFactory factory = buildTargetFactory(jsonFactoryConfig);

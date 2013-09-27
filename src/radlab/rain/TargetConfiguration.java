@@ -23,8 +23,8 @@ public class TargetConfiguration {
 	private String workloadProfileName;
 	private long workloadProfileOffset;
 
-	// Hostname
-	private String hostname; 
+	// Domain name of the target 
+	private String domainName; 
 	
 	public long getOffset() {
 		return offset;
@@ -98,11 +98,11 @@ public class TargetConfiguration {
 		this.domainSize = domainSize;
 	}
 
-	public String getHostname() {
-		return hostname;
+	public String getDomainName() {
+		return domainName;
 	}
 
-	public void setHostname(String hostname) {
-		this.hostname = hostname;
+	public void setDomainName(String domainName) {
+		this.domainName = domainName;
 	}
 }
