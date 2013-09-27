@@ -35,7 +35,7 @@ public class TestTarget extends DefaultTarget {
 		// Allocate a new target domain from the infrastructure
 		try {
 			// Get a new domain
-			targetDomain = iaas.getClient().allocateDomain(0, DomainSize.findByValue(size));
+			targetDomain = iaas.getClient().allocateDomain(0, size);
 
 			// Wait until the domain is available
 			while (!iaas.getClient().isDomainReady(targetDomain)) {
