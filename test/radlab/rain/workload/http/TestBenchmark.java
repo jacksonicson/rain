@@ -14,7 +14,6 @@ import radlab.rain.operation.Generator;
 import radlab.rain.operation.IGeneratorFactory;
 import radlab.rain.target.ITarget;
 import radlab.rain.target.ITargetFactory;
-import de.tum.in.storm.iaas.DomainSize;
 
 public class TestBenchmark implements ITargetFactory, IGeneratorFactory, IAgentFactory {
 
@@ -40,7 +39,7 @@ public class TestBenchmark implements ITargetFactory, IGeneratorFactory, IAgentF
 		return tracks;
 	}
 
-	protected ITarget createTarget(DomainSize domainSize) {
+	protected ITarget createTarget(int domainSize) {
 		TestTarget target = new TestTarget(domainSize);
 		try {
 			target.loadConfiguration(targetConfig);

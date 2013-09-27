@@ -10,7 +10,10 @@ public interface ITarget extends Runnable {
 	// Set identifier
 	void setId(int id);
 
-	// Start
+	// Target hostname
+	void setHostname(String hostname); 
+	
+	// Start (Thread method)
 	void start();
 
 	// Wait for target to finish

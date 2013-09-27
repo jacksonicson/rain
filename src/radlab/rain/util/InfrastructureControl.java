@@ -12,7 +12,6 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
 import radlab.rain.RainConfig;
-import de.tum.in.storm.iaas.DomainSize;
 import de.tum.in.storm.iaas.Infrastructure;
 
 public class InfrastructureControl {
@@ -21,10 +20,6 @@ public class InfrastructureControl {
 
 	private TTransport transport;
 	private Infrastructure.Client client;
-
-	public final DomainSize SIZE_SMALL = DomainSize.SMALL;
-	public final DomainSize SIZE_MEDIUM = DomainSize.MEDIUM;
-	public final DomainSize SIZE_LARGE = DomainSize.LARGE;
 
 	public InfrastructureControl() {
 		try {

@@ -43,9 +43,9 @@ public class TargetManager extends Thread {
 
 			// Configure all generated targets
 			for (ITarget target : targets) {
-				// Set target Id
+				// Set a global target Id
 				target.setId(targetId++);
-
+				
 				// Set custom timing
 				Timing timing = new Timing(conf.getRampUp(), conf.getDuration(), conf.getRampDown());
 				target.setTiming(timing);

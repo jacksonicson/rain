@@ -5,18 +5,19 @@ import org.apache.thrift.TException;
 
 import radlab.rain.target.DefaultTarget;
 import radlab.rain.util.InfrastructureControl;
-import de.tum.in.storm.iaas.DomainSize;
 
 public class TestTarget extends DefaultTarget {
 	private static final Logger logger = Logger.getLogger(TestTarget.class);
 
 	private String targetDomain;
 
+	private boolean onDemandDomain = false;
+
 	private InfrastructureControl iaas;
 
-	private DomainSize size;
+	private int size;
 
-	public TestTarget(DomainSize size) {
+	public TestTarget(int size) {
 		super();
 		this.iaas = new InfrastructureControl();
 		this.size = size;
@@ -24,19 +25,15 @@ public class TestTarget extends DefaultTarget {
 
 	@Override
 	public void setup() {
+		// Check if the target host is already running
+		onDemandDomain = targetDomain == null;
+		if (!onDemandDomain)
+			return;
+
+		// Allocate a new target domain from the infrastructure
 		try {
 			// Get a new domain
-			switch (size) {
-			case LARGE:
-				targetDomain = iaas.getClient().allocateDomain(2, iaas.SIZE_LARGE);
-				break;
-			case MEDIUM:
-				targetDomain = iaas.getClient().allocateDomain(2, iaas.SIZE_MEDIUM);
-				break;
-			case SMALL:
-				targetDomain = iaas.getClient().allocateDomain(2, iaas.SIZE_SMALL);
-				break;
-			}
+			targetDomain = iaas.getClient().allocateDomain(2, size);
 
 			// Wait until the domain is available
 			while (!iaas.getClient().isDomainReady(targetDomain)) {
@@ -58,14 +55,22 @@ public class TestTarget extends DefaultTarget {
 
 	@Override
 	public void teardown() {
-		try {
-			// Get rid of the domain
-			iaas.getClient().deleteDomain(targetDomain);
-		} catch (TException e) {
-			logger.error("error while deleting target domain");
-		}
+		// Handin only if an on demand domain was used 
+		if (onDemandDomain) {
+			try {
+				// Get rid of the domain
+				iaas.getClient().deleteDomain(targetDomain);
+			} catch (TException e) {
+				logger.error("error while deleting target domain");
+			}
 
-		// Disconnect from IaaS
-		iaas.disconnect();
+			// Disconnect from IaaS
+			iaas.disconnect();
+		}
+	}
+
+	@Override
+	public void setHostname(String targetDomain) {
+		this.targetDomain = targetDomain;
 	}
 }

@@ -1,7 +1,6 @@
 package radlab.rain;
 
 import radlab.rain.target.ITargetFactory;
-import de.tum.in.storm.iaas.DomainSize;
 
 public class TargetConfiguration {
 
@@ -9,7 +8,7 @@ public class TargetConfiguration {
 	private ITargetFactory factory;
 
 	// Domain size
-	private DomainSize domainSize;
+	private int domainSize;
 
 	// Timings
 	private long rampUp;
@@ -24,6 +23,9 @@ public class TargetConfiguration {
 	private String workloadProfileName;
 	private long workloadProfileOffset;
 
+	// Hostname
+	private String hostname; 
+	
 	public long getOffset() {
 		return offset;
 	}
@@ -88,11 +90,19 @@ public class TargetConfiguration {
 		this.workloadProfileOffset = workloadProfileOffset;
 	}
 
-	public DomainSize getDomainSize() {
+	public int getDomainSize() {
 		return domainSize;
 	}
 
-	public void setDomainSize(DomainSize domainSize) {
+	public void setDomainSize(int domainSize) {
 		this.domainSize = domainSize;
+	}
+
+	public String getHostname() {
+		return hostname;
+	}
+
+	public void setHostname(String hostname) {
+		this.hostname = hostname;
 	}
 }

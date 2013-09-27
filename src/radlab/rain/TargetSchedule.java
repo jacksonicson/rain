@@ -12,7 +12,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import radlab.rain.target.ITargetFactory;
-import de.tum.in.storm.iaas.DomainSize;
 
 public class TargetSchedule {
 	private static Logger logger = Logger.getLogger(TargetSchedule.class);
@@ -34,7 +33,7 @@ public class TargetSchedule {
 
 			// Configuration
 			JSONObject factoryConfig = config.getJSONObject("targetFactoryParams");
-			
+
 			// Create a new factory instance
 			Class<?> classFactory = Class.forName(className);
 			ITargetFactory creator = (ITargetFactory) classFactory.newInstance();
@@ -80,8 +79,10 @@ public class TargetSchedule {
 			targetConf.setWorkloadProfileOffset(jsonConf.getLong("workloadProfileOffset")); // workload profile offset
 
 			// Set domain size
-			String domainSize = jsonConf.getString("domainSize");
-			targetConf.setDomainSize(DomainSize.valueOf(domainSize));
+			targetConf.setDomainSize(jsonConf.getInt("domainSize"));
+
+			// Hostname (if not set a new domain will be allocated using IaaS)
+			targetConf.setHostname(jsonConf.getString("hostname"));
 
 			// Create factory instance
 			JSONObject jsonFactoryConfig = factoryConfigurations.get(jsonConf.getString("targetFactory"));
