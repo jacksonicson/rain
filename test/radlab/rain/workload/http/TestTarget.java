@@ -3,6 +3,8 @@ package radlab.rain.workload.http;
 import org.apache.log4j.Logger;
 import org.apache.thrift.TException;
 
+import de.tum.in.storm.iaas.DomainSize;
+
 import radlab.rain.target.DefaultTarget;
 import radlab.rain.util.InfrastructureControl;
 
@@ -33,7 +35,7 @@ public class TestTarget extends DefaultTarget {
 		// Allocate a new target domain from the infrastructure
 		try {
 			// Get a new domain
-			targetDomain = iaas.getClient().allocateDomain(2, size);
+			targetDomain = iaas.getClient().allocateDomain(0, DomainSize.findByValue(size));
 
 			// Wait until the domain is available
 			while (!iaas.getClient().isDomainReady(targetDomain)) {
