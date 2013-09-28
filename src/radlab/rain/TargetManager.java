@@ -78,8 +78,9 @@ public class TargetManager extends Thread {
 				} catch (InterruptedException e) {
 					logger.warn("Interrupted while joining target " + target.getId());
 				}
+				double hoursUntilEnd = (double)target.getEnd() / 1000f / 60f / 60f; 
 				logger.info("Retrying to join target ... " + target.getId() + " is " + i + " of "
-						+ targetsToJoin.size() + " in " + target.getEnd());
+						+ targetsToJoin.size() + " in " + hoursUntilEnd + " hours");
 			}
 
 			// Dispose target
