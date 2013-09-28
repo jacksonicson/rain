@@ -46,9 +46,6 @@ public class TargetManager extends Thread {
 				// Set a global target Id
 				target.setId(targetId++);
 				
-				// Set target domain for IaaS rideover
-				target.setTargetDomain(conf.getDomainName()); 
-				
 				// Set custom timing
 				Timing timing = new Timing(conf.getRampUp(), conf.getDuration(), conf.getRampDown());
 				target.setTiming(timing);
@@ -73,6 +70,7 @@ public class TargetManager extends Thread {
 		for (ITarget target : targetsToJoin) {
 			while (true) {
 				try {
+					// Log all 30 seconds
 					if (target.joinTarget(30000))
 						break;
 				} catch (InterruptedException e) {

@@ -82,7 +82,7 @@ public class TargetSchedule {
 			targetConf.setDomainSize(jsonConf.getInt("domainSize"));
 
 			// Set target domain name
-			targetConf.setDomainName(jsonConf.getString("domainName"));
+			targetConf.setTargetDomainName(jsonConf.getString("domainName"));
 			
 			// Create factory instance
 			JSONObject jsonFactoryConfig = factoryConfigurations.get(jsonConf.getString("targetFactory"));

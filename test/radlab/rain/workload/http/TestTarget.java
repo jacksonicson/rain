@@ -3,8 +3,6 @@ package radlab.rain.workload.http;
 import org.apache.log4j.Logger;
 import org.apache.thrift.TException;
 
-import de.tum.in.storm.iaas.DomainSize;
-
 import radlab.rain.target.DefaultTarget;
 import radlab.rain.util.InfrastructureControl;
 
@@ -21,8 +19,13 @@ public class TestTarget extends DefaultTarget {
 
 	public TestTarget(int size) {
 		super();
-		this.iaas = new InfrastructureControl();
 		this.size = size;
+		this.iaas = new InfrastructureControl();
+	}
+	
+	public TestTarget(int size, String targetDomain) {
+		this(size);
+		this.targetDomain = targetDomain;
 	}
 
 	@Override
@@ -57,7 +60,7 @@ public class TestTarget extends DefaultTarget {
 
 	@Override
 	public void teardown() {
-		// Handin only if an on demand domain was used 
+		// Handin only if an on demand domain was used
 		if (onDemandDomain) {
 			try {
 				// Get rid of the domain
@@ -69,10 +72,5 @@ public class TestTarget extends DefaultTarget {
 			// Disconnect from IaaS
 			iaas.disconnect();
 		}
-	}
-
-	@Override
-	public void setTargetDomain(String targetDomain) {
-		this.targetDomain = targetDomain;
 	}
 }

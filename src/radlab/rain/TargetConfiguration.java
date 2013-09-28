@@ -23,8 +23,8 @@ public class TargetConfiguration {
 	private String workloadProfileName;
 	private long workloadProfileOffset;
 
-	// Domain name of the target 
-	private String domainName; 
+	// Domain name of the target (optional for static targets)
+	private String targetDomainName; 
 	
 	public long getOffset() {
 		return offset;
@@ -98,11 +98,11 @@ public class TargetConfiguration {
 		this.domainSize = domainSize;
 	}
 
-	public String getDomainName() {
-		return domainName;
+	public String getTargetDomainName() {
+		return targetDomainName;
 	}
 
-	public void setDomainName(String domainName) {
-		this.domainName = domainName;
+	public void setTargetDomainName(String targetDomainName) {
+		this.targetDomainName = targetDomainName;
 	}
 }

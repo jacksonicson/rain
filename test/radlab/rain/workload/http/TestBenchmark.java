@@ -34,13 +34,13 @@ public class TestBenchmark implements ITargetFactory, IGeneratorFactory, IAgentF
 
 		List<ITarget> tracks = new LinkedList<ITarget>();
 		for (int i = 0; i < targetCount; i++) {
-			tracks.add(createTarget(conf.getDomainSize()));
+			tracks.add(createTarget(conf.getDomainSize(), conf.getTargetDomainName()));
 		}
 		return tracks;
 	}
 
-	protected ITarget createTarget(int domainSize) {
-		TestTarget target = new TestTarget(domainSize);
+	protected ITarget createTarget(int domainSize, String targetDomain) {
+		TestTarget target = new TestTarget(domainSize, targetDomain);
 		try {
 			target.loadConfiguration(targetConfig);
 		} catch (JSONException e) {
