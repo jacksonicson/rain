@@ -61,10 +61,6 @@ public class AgentPOL extends Agent {
 	// The random number generator used to decide which loop to use
 	private Random random = new Random();
 
-	// Statistic: number of synchronous and asynchronous operations run
-	private long synchOperationsCount = 0;
-	private long asynchOperationsCount = 0;
-
 	// Interrupted flag
 	private boolean interrupted = false;
 
@@ -182,9 +178,6 @@ public class AgentPOL extends Agent {
 	 * Runs the provided operation asynchronously and sleeps this thread on the cycle time.
 	 */
 	private void doAsyncOperation(IOperation operation) throws InterruptedException {
-		// Update operation counters
-		asynchOperationsCount++;
-
 		// Calculate timings
 		long cycleTime = generator.getCycleTime();
 		long now = System.currentTimeMillis();
@@ -233,9 +226,6 @@ public class AgentPOL extends Agent {
 	 * Runs the provided operation synchronously and sleeps this thread on the think time.
 	 */
 	private void doSyncOperation(IOperation operation) throws InterruptedException {
-		// Update operation counters
-		synchOperationsCount++;
-
 		// Configure operation
 		operation.setAsync(false);
 
