@@ -55,7 +55,8 @@ public class AgentPOL extends Agent {
 	private Generator generator;
 
 	// The probability of using open loop vs. closed loop
-	private double openLoopProbability;
+	// by default all operations are synchronous
+	private double openLoopProbability = -1;
 
 	// The random number generator used to decide which loop to use
 	private Random random = new Random();
