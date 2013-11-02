@@ -21,7 +21,6 @@ public class TargetConfiguration {
 	// Workload profile
 	private int workloadProfileIndex;
 	private String workloadProfileName;
-	private long workloadProfileOffset;
 
 	// Domain name of the target (optional for static targets)
 	private String targetDomainName; 
@@ -80,14 +79,6 @@ public class TargetConfiguration {
 
 	public String getWorkloadProfileName() {
 		return this.workloadProfileName;
-	}
-
-	public long getWorkloadProfileOffset() {
-		return workloadProfileOffset;
-	}
-
-	public void setWorkloadProfileOffset(long workloadProfileOffset) {
-		this.workloadProfileOffset = workloadProfileOffset;
 	}
 
 	public int getDomainSize() {

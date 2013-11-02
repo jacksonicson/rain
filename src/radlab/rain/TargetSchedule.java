@@ -65,9 +65,6 @@ public class TargetSchedule {
 			// JSON configuration
 			JSONObject jsonConf = scheduleConf.getJSONObject(i);
 
-			// Offset
-			targetConf.setOffset(jsonConf.getLong("offset") * 1000); // to milliseconds
-
 			// Timing
 			targetConf.setRampUp(jsonConf.getLong("rampUp") * 1000); // to milliseconds
 			targetConf.setDuration(jsonConf.getLong("duration") * 1000); // to milliseconds
@@ -76,7 +73,6 @@ public class TargetSchedule {
 			// Workload profile
 			targetConf.setWorkloadProfileIndex(jsonConf.getInt("workloadProfileIndex")); // workload profile index
 			targetConf.setWorkloadProfileName(jsonConf.getString("workloadProfileName")); // workload profile name
-			targetConf.setWorkloadProfileOffset(jsonConf.getLong("workloadProfileOffset")); // workload profile offset
 
 			// Set domain size
 			targetConf.setDomainSize(jsonConf.getInt("domainSize"));

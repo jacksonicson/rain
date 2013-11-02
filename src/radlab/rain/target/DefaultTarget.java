@@ -127,7 +127,7 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 
 		// Create load schedule creator and load schedule
 		try {
-			loadSchedule = loadScheduleFactory.createSchedule();
+			loadSchedule = loadScheduleFactory.createSchedule(timing);
 		} catch (JSONException e) {
 			throw new BenchmarkFailedException("Error while configuring target load schedule", e);
 		}
@@ -186,9 +186,9 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 	}
 
 	public long getEnd() {
-		return timing.endRun - System.currentTimeMillis(); 
+		return timing.endRun - System.currentTimeMillis();
 	}
-	
+
 	private void joinAgents() {
 		// Sleep until end of run plus some buffer
 		try {
@@ -415,9 +415,9 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 	public void setId(int id) {
 		this.id = id;
 	}
-	
+
 	public String toString() {
 		return " target" + id;
 	}
-	
+
 }
