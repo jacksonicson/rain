@@ -66,10 +66,11 @@ public class TargetSchedule {
 			JSONObject jsonConf = scheduleConf.getJSONObject(i);
 
 			// Timing
+			targetConf.setOffset((long)(jsonConf.getDouble("offset") * 1000)); // to milliseconds 
 			targetConf.setRampUp(jsonConf.getLong("rampUp") * 1000); // to milliseconds
 			targetConf.setDuration(jsonConf.getLong("duration") * 1000); // to milliseconds
 			targetConf.setRampDown(jsonConf.getLong("rampDown") * 1000); // to milliseconds
-
+			
 			// Workload profile
 			targetConf.setWorkloadProfileIndex(jsonConf.getInt("workloadProfileIndex")); // workload profile index
 			targetConf.setWorkloadProfileName(jsonConf.getString("workloadProfileName")); // workload profile name
@@ -78,7 +79,8 @@ public class TargetSchedule {
 			targetConf.setDomainSize(jsonConf.getInt("domainSize"));
 
 			// Set target domain name
-			targetConf.setTargetDomainName(jsonConf.getString("domainName"));
+			if(jsonConf.has("domainName"))
+				targetConf.setTargetDomainName(jsonConf.getString("domainName"));
 			
 			// Create factory instance
 			JSONObject jsonFactoryConfig = factoryConfigurations.get(jsonConf.getString("targetFactory"));

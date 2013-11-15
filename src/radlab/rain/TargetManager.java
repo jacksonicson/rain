@@ -106,6 +106,7 @@ public class TargetManager extends Thread {
 			long toWait = conf.getOffset() - relativeTime;
 
 			// Wait until target start time is reached
+			logger.info("Milliseconds to wait for next schedule entry: " + toWait); 
 			delay(toWait);
 
 			// Create and start target with its agents

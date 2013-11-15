@@ -42,6 +42,7 @@ import org.json.JSONObject;
 
 import radlab.rain.communication.thrift.ThriftService;
 import radlab.rain.util.ConfigUtil;
+import radlab.rain.util.SonarRecorder;
 
 /**
  * The Benchmark class provides a framework to initialize and run a benchmark specified by a provided scenario.
@@ -178,6 +179,9 @@ public class Benchmark {
 
 			// Trigger shutdown hooks
 			RainConfig.getInstance().triggerShutdown();
+			
+			// Join sonar recorder
+			SonarRecorder.getInstance().join();
 
 			if (service != null) {
 				logger.info("Stopping thrift communication! Using port: " + service.getPort());

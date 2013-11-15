@@ -35,7 +35,7 @@ class MetricWriterThread extends Thread {
 
 	@Override
 	public void run() {
-		while (!interrupted) {
+		while (!interrupted || !queue.isEmpty()) {
 			try {
 				ResponseTimeStat nextStat = queue.take();
 				metricWriter.write(nextStat);
