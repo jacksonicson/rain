@@ -7,6 +7,7 @@ Rain+ was designed to generate realistic variable workload on an IaaS cloud test
 * Thrift RPC interfaces to configure and trigger a Rain+ workload driver instances. This allows to synchronize multiple Rain+ instances. 
 * Complete refactoring of the Scoreboard implementation to gather statistics. Percentiles on the operation duration are calculated by the [P-Square](https://github.com/jacksonicson/psquared) algorithm without storing samples. 
 
+Rain+ is implemented in Java and uses threads to simulate concurrent user sessions. We implemented [Cloudburst](https://github.com/jacksonicson/cloudburst), a completely new workload driver as a replacement. It is based on Google's Golang programming language leveraging go-routines with a much lower memory footprint compared to Java threads. 
 
 ## Usage scenario
 
