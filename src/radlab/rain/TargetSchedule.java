@@ -12,7 +12,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import radlab.rain.target.ITargetFactory;
-import de.tum.in.storm.iaas.DomainSize;
 
 public class TargetSchedule {
 	private static Logger logger = Logger.getLogger(TargetSchedule.class);
@@ -34,7 +33,7 @@ public class TargetSchedule {
 
 			// Configuration
 			JSONObject factoryConfig = config.getJSONObject("targetFactoryParams");
-			
+
 			// Create a new factory instance
 			Class<?> classFactory = Class.forName(className);
 			ITargetFactory creator = (ITargetFactory) classFactory.newInstance();
@@ -66,23 +65,23 @@ public class TargetSchedule {
 			// JSON configuration
 			JSONObject jsonConf = scheduleConf.getJSONObject(i);
 
-			// Offset
-			targetConf.setOffset(jsonConf.getLong("offset") * 1000); // to milliseconds
-
 			// Timing
+			targetConf.setOffset((long)(jsonConf.getDouble("offset") * 1000)); // to milliseconds 
 			targetConf.setRampUp(jsonConf.getLong("rampUp") * 1000); // to milliseconds
 			targetConf.setDuration(jsonConf.getLong("duration") * 1000); // to milliseconds
 			targetConf.setRampDown(jsonConf.getLong("rampDown") * 1000); // to milliseconds
-
+			
 			// Workload profile
 			targetConf.setWorkloadProfileIndex(jsonConf.getInt("workloadProfileIndex")); // workload profile index
 			targetConf.setWorkloadProfileName(jsonConf.getString("workloadProfileName")); // workload profile name
-			targetConf.setWorkloadProfileOffset(jsonConf.getLong("workloadProfileOffset")); // workload profile offset
 
 			// Set domain size
-			String domainSize = jsonConf.getString("domainSize");
-			targetConf.setDomainSize(DomainSize.valueOf(domainSize));
+			targetConf.setDomainSize(jsonConf.getInt("domainSize"));
 
+			// Set target domain name
+			if(jsonConf.has("domainName"))
+				targetConf.setTargetDomainName(jsonConf.getString("domainName"));
+			
 			// Create factory instance
 			JSONObject jsonFactoryConfig = factoryConfigurations.get(jsonConf.getString("targetFactory"));
 			ITargetFactory factory = buildTargetFactory(jsonFactoryConfig);

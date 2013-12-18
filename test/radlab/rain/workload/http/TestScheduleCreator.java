@@ -36,6 +36,7 @@ import java.util.List;
 
 import org.json.JSONException;
 
+import radlab.rain.Timing;
 import radlab.rain.load.LoadDefinition;
 import radlab.rain.load.LoadSchedule;
 import radlab.rain.load.LoadScheduleFactory;
@@ -43,7 +44,7 @@ import radlab.rain.load.LoadScheduleFactory;
 public class TestScheduleCreator implements LoadScheduleFactory {
 
 	@Override
-	public LoadSchedule createSchedule() throws JSONException {
+	public LoadSchedule createSchedule(Timing timing) throws JSONException {
 		List<LoadDefinition> loadSchedule = new ArrayList<LoadDefinition>();
 
 		LoadDefinition i1 = new LoadDefinition(300 * 1000, 5, null, 0, "first");

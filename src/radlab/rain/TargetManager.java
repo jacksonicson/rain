@@ -43,9 +43,9 @@ public class TargetManager extends Thread {
 
 			// Configure all generated targets
 			for (ITarget target : targets) {
-				// Set target Id
+				// Set a global target Id
 				target.setId(targetId++);
-
+				
 				// Set custom timing
 				Timing timing = new Timing(conf.getRampUp(), conf.getDuration(), conf.getRampDown());
 				target.setTiming(timing);
@@ -66,15 +66,19 @@ public class TargetManager extends Thread {
 	private void waitForShutdown() {
 		// Wait for all targets to finish
 		logger.info("Waiting for all targets to join...");
+		int i = 0;
 		for (ITarget target : targetsToJoin) {
 			while (true) {
 				try {
+					// Log all 30 seconds
 					if (target.joinTarget(30000))
 						break;
 				} catch (InterruptedException e) {
 					logger.warn("Interrupted while joining target " + target.getId());
 				}
-				logger.info("Retrying to join target ... " + target.getId());
+				double hoursUntilEnd = (double)target.getEnd() / 1000f / 60f / 60f; 
+				logger.info("Retrying to join target ... " + target.getId() + " is " + i + " of "
+						+ targetsToJoin.size() + " in " + hoursUntilEnd + " hours");
 			}
 
 			// Dispose target
@@ -85,6 +89,7 @@ public class TargetManager extends Thread {
 			} catch (Exception ne) {
 				logger.error("Could not dispose target", ne);
 			}
+			i++;
 		}
 	}
 
@@ -101,6 +106,7 @@ public class TargetManager extends Thread {
 			long toWait = conf.getOffset() - relativeTime;
 
 			// Wait until target start time is reached
+			logger.info("Milliseconds to wait for next schedule entry: " + toWait); 
 			delay(toWait);
 
 			// Create and start target with its agents

@@ -127,7 +127,7 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 
 		// Create load schedule creator and load schedule
 		try {
-			loadSchedule = loadScheduleFactory.createSchedule();
+			loadSchedule = loadScheduleFactory.createSchedule(timing);
 		} catch (JSONException e) {
 			throw new BenchmarkFailedException("Error while configuring target load schedule", e);
 		}
@@ -185,10 +185,15 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 			agent.start();
 	}
 
+	public long getEnd() {
+		return timing.endRun - System.currentTimeMillis();
+	}
+
 	private void joinAgents() {
 		// Sleep until end of run plus some buffer
 		try {
 			sleep(timing.endRun - System.currentTimeMillis());
+			logger.info("Target returned from sleep" + id);
 		} catch (InterruptedException e) {
 			// Just fall through and try joining all agents
 			logger.warn("Target interrupted while waiting for end time", e);
@@ -203,7 +208,7 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 				try {
 					// Join and wait max 3 seconds for the agent
 					if (!agent.joinAgent(3000)) {
-						logger.info("Waiting for agent to join: " + agent.getName());
+						logger.info("Waiting for agent to join: " + agent.getName() + id);
 						agent.setInterrupt();
 					} else {
 						// Agent joined, continue with next agent
@@ -229,55 +234,61 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 			}
 
 			// Setup target
-			logger.info("Running target setup...");
+			logger.info("Running target setup... " + id);
 			setup();
 
 			// Initialize (timing)
 			try {
+				logger.info("Init references... " + id);
 				initReferences();
+
+				logger.info("Running target init... " + id);
 				init();
 			} catch (BenchmarkFailedException e) {
 				logger.error("Benchmark failed because target initialization failed", e);
 				System.exit(1);
 			} catch (Exception e) {
-				logger.warn("Error in initialization code", e);
+				logger.warn("Error in initialization code " + id, e);
 			}
 
 			// Starting load manager
-			logger.debug("Starting load manager...");
+			logger.info("Starting load manager... " + id);
 			loadManager.start();
 
 			// Start the scoreboard
-			logger.debug("Starting scoreboard...");
+			logger.info("Starting scoreboard... " + id);
 			scoreboard.start();
 
 			// Create agents
+			logger.info("Creating agents... " + id);
 			createAgents();
 
 			// Start agents
+			logger.info("Starting agents... " + id);
 			startAgents();
 
 			// Wait for all agents to finish
-			logger.info("Waiting for all agents to finish...");
+			logger.info("Waiting for all agents to finish... " + id);
 			joinAgents();
 
 			// Run shutdown code (stopping domains)
-			logger.info("Running target teardown ...");
+			logger.info("Running target teardown ... " + id);
 			try {
 				teardown();
 			} catch (Exception e) {
-				logger.warn("Exception in teardown checks", e);
+				logger.warn("Exception in teardown checks " + id, e);
 			}
-		} finally {
-			ended = true;
 
 			try {
 				JSONObject obj = new JSONObject();
 				obj.put("targetId", id);
 				logger.info("Target ended: " + obj.toString());
 			} catch (JSONException e1) {
-				logger.error("Error while creating JSON object", e1);
+				logger.error("Error while creating JSON object " + id, e1);
 			}
+
+		} finally {
+			ended = true;
 		}
 	}
 
@@ -404,4 +415,9 @@ public abstract class DefaultTarget extends Thread implements ITarget {
 	public void setId(int id) {
 		this.id = id;
 	}
+
+	public String toString() {
+		return " target" + id;
+	}
+
 }

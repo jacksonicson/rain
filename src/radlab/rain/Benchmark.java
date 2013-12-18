@@ -36,13 +36,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import radlab.rain.communication.thrift.ThriftService;
 import radlab.rain.util.ConfigUtil;
+import radlab.rain.util.SonarRecorder;
 
 /**
  * The Benchmark class provides a framework to initialize and run a benchmark specified by a provided scenario.
@@ -153,7 +153,6 @@ public class Benchmark {
 			if (RainConfig.getInstance().waitForStartSignal) {
 				// Wait until service is available
 				Thread.sleep(2000);
-
 				logger.info("Waiting for start signal...");
 			}
 
@@ -180,6 +179,9 @@ public class Benchmark {
 
 			// Trigger shutdown hooks
 			RainConfig.getInstance().triggerShutdown();
+			
+			// Join sonar recorder
+			SonarRecorder.getInstance().join();
 
 			if (service != null) {
 				logger.info("Stopping thrift communication! Using port: " + service.getPort());
@@ -194,7 +196,9 @@ public class Benchmark {
 		} catch (BenchmarkFailedException e) {
 			logger.error("Benchmark failed ", e);
 		} finally {
-			LogManager.shutdown();
+			// Stop log4j
+			logger.info("Stopping log4j...");
+			org.apache.log4j.LogManager.shutdown();
 		}
 	}
 }

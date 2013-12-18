@@ -10,7 +10,7 @@ public interface ITarget extends Runnable {
 	// Set identifier
 	void setId(int id);
 
-	// Start
+	// Start (Thread method)
 	void start();
 
 	// Wait for target to finish
@@ -27,4 +27,7 @@ public interface ITarget extends Runnable {
 
 	// Returns identifier
 	long getId();
+	
+	// Get remain
+	long getEnd();
 }

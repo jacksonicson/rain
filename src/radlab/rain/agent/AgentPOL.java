@@ -42,7 +42,6 @@ import radlab.rain.operation.IOperation;
 import radlab.rain.operation.OperationExecution;
 import radlab.rain.scoreboard.IScoreboard;
 
-
 /**
  * Provides the main loop of the agent thread.
  */
@@ -56,14 +55,11 @@ public class AgentPOL extends Agent {
 	private Generator generator;
 
 	// The probability of using open loop vs. closed loop
-	private double openLoopProbability;
+	// by default all operations are synchronous
+	private double openLoopProbability = -1;
 
 	// The random number generator used to decide which loop to use
 	private Random random = new Random();
-
-	// Statistic: number of synchronous and asynchronous operations run
-	private long synchOperationsCount = 0;
-	private long asynchOperationsCount = 0;
 
 	// Interrupted flag
 	private boolean interrupted = false;
@@ -88,13 +84,16 @@ public class AgentPOL extends Agent {
 
 	public void setInterrupt() {
 		interrupted = true;
-		interrupt();
 	}
 
 	@Override
 	public void dispose() {
-		setInterrupt();
-		this.generator.dispose();
+		if (ended) {
+			setInterrupt();
+			this.generator.dispose();
+		} else {
+			logger.error("Cannot dispose agent that is running target" + targetId);
+		}
 	}
 
 	public boolean joinAgent(long wait) throws InterruptedException {
@@ -179,9 +178,6 @@ public class AgentPOL extends Agent {
 	 * Runs the provided operation asynchronously and sleeps this thread on the cycle time.
 	 */
 	private void doAsyncOperation(IOperation operation) throws InterruptedException {
-		// Update operation counters
-		asynchOperationsCount++;
-
 		// Calculate timings
 		long cycleTime = generator.getCycleTime();
 		long now = System.currentTimeMillis();
@@ -230,9 +226,6 @@ public class AgentPOL extends Agent {
 	 * Runs the provided operation synchronously and sleeps this thread on the think time.
 	 */
 	private void doSyncOperation(IOperation operation) throws InterruptedException {
-		// Update operation counters
-		synchOperationsCount++;
-
 		// Configure operation
 		operation.setAsync(false);
 
