@@ -28,7 +28,7 @@
 
 		"workloadProfile" : 1,
 		"workloadProfileOffset" : 0,
-		"workloadProfileName" : "O2_business_ADDORDER_profile_user",
+		"workloadProfileName" : "PUSER_MEDIUM_MIXMKII_O2_business_ADDLINEORDER",
 		},
 	],
 }
